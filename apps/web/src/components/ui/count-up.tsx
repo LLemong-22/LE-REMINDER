@@ -28,13 +28,13 @@ export function CountUp({
 
 	useEffect(() => {
 		return springValue.on("change", (latest) => {
-			if (ref.current) ref.current.textContent = `${Math.round(latest)}`;
+			if (ref.current) ref.current.textContent = `${Math.round(latest)}%`;
 		});
 	}, [springValue]);
 
 	return (
 		<span className={className} ref={ref}>
-			{Math.round(from)}
+			{Math.round(from)}%
 		</span>
 	);
 }
