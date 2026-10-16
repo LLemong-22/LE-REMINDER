@@ -1,40 +1,16 @@
 "use client";
 
-import { motion } from "motion/react";
-
-// Hand-built ambient backdrop — two soft blurred blobs drifting slowly
-// behind the hero, low-opacity so it reads as warmth/depth rather than
-// decoration competing with the data.
+// Subtle monochrome ambient specular glow behind panels
 export function AuroraGlow() {
 	return (
 		<div
 			aria-hidden
 			className="pointer-events-none absolute inset-0 -z-10 overflow-hidden"
 		>
-			<motion.div
-				className="absolute top-[-40%] left-[-10%] size-[380px] rounded-full blur-[90px] motion-reduce:transform-none"
-				style={{ background: "#3B82F633", willChange: "transform" }}
-				animate={{
-					x: [0, 40, -20, 0],
-					y: [0, 20, -10, 0],
-				}}
-				transition={{
-					duration: 22,
-					repeat: Number.POSITIVE_INFINITY,
-					ease: "easeInOut",
-				}}
-			/>
-			<motion.div
-				className="absolute right-[-10%] bottom-[-50%] size-[320px] rounded-full blur-[90px] motion-reduce:transform-none"
-				style={{ background: "#06B6D426", willChange: "transform" }}
-				animate={{
-					x: [0, -30, 20, 0],
-					y: [0, -20, 10, 0],
-				}}
-				transition={{
-					duration: 26,
-					repeat: Number.POSITIVE_INFINITY,
-					ease: "easeInOut",
+			<div
+				className="absolute -top-24 left-1/2 size-72 -translate-x-1/2 rounded-full blur-[100px]"
+				style={{
+					background: "rgba(255, 255, 255, 0.04)",
 				}}
 			/>
 		</div>

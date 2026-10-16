@@ -18,32 +18,32 @@ const TYPE_CONFIG: Record<
 	{
 		label: string;
 		nodeColor: string;
-		badgeClass: string;
+		dotColor: string;
 		icon: React.ComponentType<{ className?: string }>;
 	}
 > = {
 	study: {
 		label: "Study & Work",
-		nodeColor: "bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]",
-		badgeClass: "border-sky-500/30 bg-sky-950/40 text-sky-300",
+		nodeColor: "bg-[#EDEDEF]",
+		dotColor: "bg-[#EDEDEF]",
 		icon: BookOpen,
 	},
 	physical: {
 		label: "Physical & Gym",
-		nodeColor: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]",
-		badgeClass: "border-emerald-500/30 bg-emerald-950/40 text-emerald-300",
+		nodeColor: "bg-zinc-400",
+		dotColor: "bg-zinc-400",
 		icon: Dumbbell,
 	},
 	meal: {
 		label: "Nutrition & Fuel",
-		nodeColor: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]",
-		badgeClass: "border-amber-500/30 bg-amber-950/40 text-amber-300",
+		nodeColor: "bg-zinc-400",
+		dotColor: "bg-zinc-400",
 		icon: Utensils,
 	},
 	rest: {
 		label: "Rest & Recovery",
-		nodeColor: "bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.5)]",
-		badgeClass: "border-purple-500/30 bg-purple-950/40 text-purple-300",
+		nodeColor: "bg-zinc-500",
+		dotColor: "bg-zinc-500",
 		icon: Moon,
 	},
 };
@@ -98,7 +98,7 @@ function parseEventTimeRange(
 		}
 	}
 
-	// Fallback for standalone point in time: 45-minute active window or midnight
+	// Fallback for standalone point in time: 45-minute active window
 	const end = new Date(start.getTime() + 45 * 60 * 1000);
 	const endOfDay = new Date(referenceDate);
 	endOfDay.setHours(23, 59, 59, 999);
@@ -106,7 +106,6 @@ function parseEventTimeRange(
 }
 
 export function ScheduleView() {
-	// Initialize with today's day of week (0 = Sunday, 1 = Monday, etc.)
 	const [selectedDay, setSelectedDay] = useState<number>(() =>
 		new Date().getDay(),
 	);
@@ -115,7 +114,7 @@ export function ScheduleView() {
 	const liveEventRef = useRef<HTMLDivElement | null>(null);
 	const hasAutoScrolledRef = useRef(false);
 
-	// Low-overhead 60-second ticker (0% battery drain, no requestAnimationFrame)
+	// Low-overhead 60-second ticker
 	useEffect(() => {
 		const interval = setInterval(() => {
 			setCurrentTime(new Date());
@@ -162,24 +161,24 @@ export function ScheduleView() {
 			<div className="flex flex-col gap-3">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2">
-						<Calendar className="size-5 text-[#3B82F6]" />
-						<h2 className="font-extrabold text-[#FFFFFF] text-[18px] tracking-tight">
+						<Calendar className="size-4 text-zinc-400" />
+						<h2 className="font-semibold text-[#EDEDEF] text-base tracking-tight">
 							Master Schedule
 						</h2>
 					</div>
-					<div className="flex items-center gap-2 font-mono text-[#7888A0] text-xs">
+					<div className="flex items-center gap-2 font-mono text-xs text-zinc-500">
 						<span>Daily Rundown</span>
 						{isSelectedDayToday && (
-							<span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 text-[10px] text-emerald-400">
-								<span className="size-1.5 animate-pulse rounded-full bg-emerald-400" />
+							<span className="flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2 py-0.5 font-mono text-[#EDEDEF] text-[10px]">
+								<span className="size-1.5 animate-pulse rounded-full bg-[#EDEDEF]" />
 								LIVE
 							</span>
 						)}
 					</div>
 				</div>
 
-				{/* Horizontal Scrollable Day Picker */}
-				<div className="-mx-2 flex items-center gap-2 overflow-x-auto scroll-smooth px-2 pb-1.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+				{/* Horizontal Day Picker (Smoked-Glass Cards) */}
+				<div className="-mx-2 flex items-center gap-2 overflow-x-auto scroll-smooth px-2 pb-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 					{MASTER_SCHEDULE.map((schedule) => {
 						const isSelected = schedule.dayOfWeek === selectedDay;
 						const isToday = schedule.dayOfWeek === todayDayOfWeek;
@@ -195,28 +194,28 @@ export function ScheduleView() {
 									}
 								}}
 								className={cn(
-									"relative flex min-h-[44px] shrink-0 cursor-pointer flex-col items-center justify-center rounded-xl px-4 py-2 text-xs transition-all duration-200 active:scale-95",
+									"relative flex min-h-[44px] shrink-0 cursor-pointer select-none flex-col items-center justify-center rounded-xl px-4 py-2 text-xs transition-all duration-150 active:scale-95",
 									isSelected
-										? "border border-cyan-400/50 bg-[#0E1A2D] text-white shadow-[0_0_14px_-2px_rgba(6,182,212,0.35)]"
-										: "border border-white/5 bg-[#1A1F2C]/60 text-[#94A3B8] hover:border-white/20 hover:text-[#F1F5F9]",
+										? "border border-white/30 bg-white/[0.08] text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18)]"
+										: "border border-white/[0.06] bg-zinc-900/50 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
 								)}
 							>
-								<div className="flex items-center gap-1.5 font-semibold text-[13px]">
+								<div className="flex items-center gap-1.5 font-medium text-xs">
 									<span>{schedule.dayName}</span>
 									{isToday && (
 										<span
 											className={cn(
-												"rounded-full px-1.5 py-0.2 font-mono text-[9px] uppercase tracking-wider",
+												"rounded-md px-1.5 py-0.2 font-mono text-[9px] uppercase tracking-wider",
 												isSelected
-													? "bg-cyan-500/20 text-cyan-300"
-													: "bg-white/10 text-[#94A3B8]",
+													? "bg-white/15 text-white"
+													: "bg-white/[0.06] text-zinc-400",
 											)}
 										>
 											Today
 										</span>
 									)}
 								</div>
-								<span className="font-mono text-[#7888A0] text-[10px] opacity-90">
+								<span className="font-mono text-[10px] text-zinc-500 tabular-nums">
 									{schedule.events.length} events
 								</span>
 							</button>
@@ -226,26 +225,26 @@ export function ScheduleView() {
 			</div>
 
 			{/* Day Theme Banner */}
-			<div className="relative overflow-hidden rounded-xl border border-white/5 bg-[#1A1F2C]/60 p-4 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-md sm:p-5">
+			<div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md sm:p-5">
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center gap-2">
-							<span className="font-mono text-cyan-400 text-xs uppercase tracking-wider">
+							<span className="font-mono text-xs text-zinc-400 uppercase tracking-wider">
 								{currentDaySchedule.dayName}
 							</span>
 							{isSelectedDayToday && (
-								<span className="flex items-center gap-1 rounded-full border border-cyan-400/40 bg-cyan-950/50 px-2 py-0.5 font-mono text-[10px] text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.3)]">
-									<Radio className="size-2.5 animate-pulse text-cyan-400" />
+								<span className="flex items-center gap-1 rounded-full border border-white/20 bg-white/[0.08] px-2 py-0.5 font-mono text-[#EDEDEF] text-[10px]">
+									<Radio className="size-2.5 animate-pulse text-[#EDEDEF]" />
 									Active Day
 								</span>
 							)}
 						</div>
-						<h3 className="font-bold text-[#F1F5F9] text-base sm:text-lg">
+						<h3 className="font-medium text-[#EDEDEF] text-sm tracking-tight sm:text-base">
 							{currentDaySchedule.theme}
 						</h3>
 					</div>
 
-					{/* Quick stats pills */}
+					{/* Unified Monochrome Activity Pills */}
 					<div className="flex flex-wrap items-center gap-1.5 pt-1 sm:pt-0">
 						{(
 							Object.keys(eventCountByType) as readonly ScheduleEventType[]
@@ -256,13 +255,13 @@ export function ScheduleView() {
 							return (
 								<div
 									key={type}
-									className={cn(
-										"flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10.5px]",
-										config.badgeClass,
-									)}
+									className="flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 font-mono text-[10.5px] text-zinc-300"
 								>
-									<Icon className="size-3" />
-									<span>
+									<span
+										className={cn("size-1.5 rounded-full", config.dotColor)}
+									/>
+									<Icon className="size-3 text-zinc-400" />
+									<span className="tabular-nums">
 										{count} {config.label.split(" ")[0]}
 									</span>
 								</div>
@@ -272,8 +271,8 @@ export function ScheduleView() {
 				</div>
 			</div>
 
-			{/* Vertical Timeline */}
-			<div className="relative ml-3 space-y-4 border-white/10 border-l pl-5 sm:ml-4 sm:pl-7">
+			{/* Vertical Timeline with Gradient Spine */}
+			<div className="relative ml-3 space-y-4 border-gradient-to-b border-l from-white/20 via-white/10 to-transparent pl-5 sm:ml-4 sm:pl-7">
 				{currentDaySchedule.events.map((event, index) => {
 					const config = TYPE_CONFIG[event.type];
 					const Icon = config.icon;
@@ -300,76 +299,54 @@ export function ScheduleView() {
 							key={`${event.time}-${index}`}
 							ref={isLive ? liveEventRef : null}
 							className={cn(
-								"group relative transition-all duration-300",
-								isPast && "opacity-45 grayscale-[25%] hover:opacity-75",
+								"group relative transition-all duration-200",
+								isPast && "opacity-45 hover:opacity-75",
 							)}
 						>
 							{/* Node on the timeline track */}
 							<div
 								className={cn(
-									"absolute top-4.5 -left-[25px] size-2.5 rounded-full ring-4 ring-[#131722] transition-all duration-300 sm:-left-[33px]",
+									"absolute top-4 -left-[25px] size-2 rounded-full ring-4 ring-[#09090B] transition-all duration-200 sm:-left-[33px]",
 									isLive
-										? "animate-pulse bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)] ring-cyan-500/20"
+										? "size-2.5 bg-[#EDEDEF] shadow-[0_0_10px_rgba(255,255,255,0.7)] ring-white/20"
 										: isPast
-											? "bg-slate-600 ring-[#131722]"
+											? "bg-zinc-600 ring-[#09090B]"
 											: config.nodeColor,
 								)}
 							/>
 
-							{/* Event Card: Neon Edge wrapper if Live, standard frosted glass if normal/past */}
-							{isLive ? (
-								<div className="relative rounded-xl bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 p-[1px] shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-									<div className="flex flex-col gap-2 rounded-[11px] bg-[#1A1F2C]/90 p-3.5 backdrop-blur-md transition-all duration-200 sm:p-4">
-										<div className="flex items-center justify-between gap-3">
-											<div className="flex items-center gap-2 font-mono font-semibold text-cyan-300 text-xs sm:text-[13px]">
-												<Clock className="size-3.5 animate-pulse text-cyan-400" />
-												<span>{event.time}</span>
-											</div>
-											<div className="flex items-center gap-1.5">
-												<span className="flex items-center gap-1 rounded-full border border-cyan-400/50 bg-cyan-950/60 px-2 py-0.5 font-bold font-mono text-[9.5px] text-cyan-300 tracking-wider shadow-[0_0_8px_rgba(6,182,212,0.5)]">
-													<span className="size-1.5 animate-ping rounded-full bg-cyan-400" />
-													LIVE NOW
-												</span>
-												<span
-													className={cn(
-														"flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider",
-														config.badgeClass,
-													)}
-												>
-													<Icon className="size-2.5" />
-													<span>{config.label.split(" ")[0]}</span>
-												</span>
-											</div>
-										</div>
-
-										<div className="font-semibold text-[14px] text-white leading-relaxed sm:text-[15px]">
-											{event.activity}
-										</div>
+							{/* Event Card */}
+							<div
+								className={cn(
+									"flex flex-col gap-2 rounded-xl p-3.5 transition-all duration-150 sm:p-4",
+									isLive
+										? "border border-white/30 bg-zinc-850/80 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.25),0_8px_32px_rgba(0,0,0,0.5)] backdrop-blur-md"
+										: "border border-white/[0.06] bg-zinc-900/50 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md hover:border-white/[0.12]",
+								)}
+							>
+								<div className="flex items-center justify-between gap-3">
+									<div className="flex items-center gap-1.5 font-mono text-xs text-zinc-300 tabular-nums">
+										<Clock className="size-3 text-zinc-400" />
+										<span>{event.time}</span>
 									</div>
-								</div>
-							) : (
-								<div className="flex flex-col gap-2 rounded-xl border border-white/5 bg-[#1A1F2C]/60 p-3.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md transition-all duration-200 hover:border-white/15 sm:p-4">
-									<div className="flex items-center justify-between gap-3">
-										<div className="flex items-center gap-2 font-mono text-sky-400/90 text-xs sm:text-[13px]">
-											<Clock className="size-3.5 text-sky-400/70" />
-											<span>{event.time}</span>
-										</div>
-										<span
-											className={cn(
-												"flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider",
-												config.badgeClass,
-											)}
-										>
-											<Icon className="size-2.5" />
+									<div className="flex items-center gap-1.5">
+										{isLive && (
+											<span className="flex items-center gap-1 rounded-md border border-white/25 bg-white/10 px-1.5 py-0.5 font-mono text-[#EDEDEF] text-[9px] uppercase tracking-wider">
+												<span className="size-1.5 animate-ping rounded-full bg-white" />
+												LIVE NOW
+											</span>
+										)}
+										<span className="flex items-center gap-1 rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 font-mono text-[9.5px] text-zinc-400 uppercase tracking-wider">
+											<Icon className="size-2.5 text-zinc-400" />
 											<span>{config.label.split(" ")[0]}</span>
 										</span>
 									</div>
-
-									<div className="font-medium text-[13.5px] text-white leading-relaxed sm:text-[14.5px]">
-										{event.activity}
-									</div>
 								</div>
-							)}
+
+								<div className="font-normal text-[#EDEDEF] text-xs leading-relaxed sm:text-[13px]">
+									{event.activity}
+								</div>
+							</div>
 						</div>
 					);
 				})}

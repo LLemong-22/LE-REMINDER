@@ -42,16 +42,16 @@ function TabButton({
 			type="button"
 			onClick={onClick}
 			className={cn(
-				"relative cursor-pointer whitespace-nowrap rounded-sm px-1 py-1.5 font-semibold text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B82F6]/40",
-				active ? "text-[#F1F5F9]" : "text-[#94A3B8] hover:text-[#F1F5F9]",
+				"relative cursor-pointer select-none rounded-full px-3.5 py-1 font-medium text-xs transition-colors duration-150 focus-visible:outline-none",
+				active ? "text-[#EDEDEF]" : "text-zinc-400 hover:text-[#EDEDEF]",
 			)}
 		>
 			{children}
 			{active && (
 				<motion.div
-					layoutId="activeTabUnderline"
+					layoutId="activeTab"
 					transition={{ type: "spring", stiffness: 450, damping: 35 }}
-					className="absolute inset-x-0 -bottom-[17px] h-[2px] rounded-full bg-[#3B82F6]"
+					className="absolute inset-0 -z-10 rounded-full border border-white/[0.12] bg-white/[0.1] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
 				/>
 			)}
 		</button>
@@ -60,19 +60,19 @@ function TabButton({
 
 function RoutinesLoadingState() {
 	return (
-		<div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4">
+		<div className="grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))] gap-4">
 			{Array.from({ length: 6 }).map((_, i) => (
 				<div
 					key={i}
-					className="flex flex-col gap-3 rounded-[10px] border border-[#2E384D]/60 bg-[#1E2433]/60 p-[17px]"
+					className="flex flex-col gap-3 rounded-xl border border-white/[0.06] bg-zinc-900/40 p-4"
 				>
 					<div className="flex items-center justify-between">
-						<div className="size-3 animate-pulse rounded-full bg-[#2E384D]/80" />
-						<div className="h-4 w-16 animate-pulse rounded-full bg-[#2E384D]/70" />
+						<div className="size-2.5 animate-pulse rounded-full bg-white/10" />
+						<div className="h-3.5 w-14 animate-pulse rounded-md bg-white/10" />
 					</div>
-					<div className="h-5 w-3/4 animate-pulse rounded bg-[#2E384D]/80" />
-					<div className="h-3.5 w-1/2 animate-pulse rounded bg-[#2E384D]/60" />
-					<div className="h-3 w-1/3 animate-pulse rounded bg-[#2E384D]/40" />
+					<div className="h-4 w-3/4 animate-pulse rounded bg-white/10" />
+					<div className="h-3 w-1/2 animate-pulse rounded bg-white/5" />
+					<div className="h-2.5 w-1/3 animate-pulse rounded bg-white/5" />
 				</div>
 			))}
 		</div>
@@ -81,14 +81,14 @@ function RoutinesLoadingState() {
 
 function RoutinesErrorState({ onRetry }: { onRetry: () => void }) {
 	return (
-		<div className="flex flex-col items-center gap-3 rounded-xl border border-[#2E384D] bg-[#1E2433] px-4 py-16 text-center">
-			<div className="text-[#94A3B8] text-sm">
+		<div className="flex flex-col items-center gap-3 rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-12 text-center backdrop-blur-md">
+			<div className="font-mono text-xs text-zinc-400">
 				Couldn't load routines from the database.
 			</div>
 			<button
 				type="button"
 				onClick={onRetry}
-				className="cursor-pointer rounded-lg border border-[#38445C] bg-[#1E2433] px-3 py-1.5 font-semibold text-[#F1F5F9] text-xs transition-colors hover:border-[#3B82F6] active:scale-95"
+				className="cursor-pointer rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 font-medium text-[#EDEDEF] text-xs transition-all hover:bg-white/20 active:scale-95"
 			>
 				Retry
 			</button>
@@ -96,10 +96,6 @@ function RoutinesErrorState({ onRetry }: { onRetry: () => void }) {
 	);
 }
 
-// Step 14: real tRPC + Turso backend. Routines and Today's To-Do are both
-// server state now (useQuery + mutations, invalidated on writes) — see
-// todo-sidebar.tsx. The hero's Daily Task checklist is still a local-only
-// scratchpad by design — see hero-panel.tsx.
 export default function Home() {
 	const router = useRouter();
 	const [searchInput, setSearchInput] = useState("");
@@ -120,12 +116,6 @@ export default function Home() {
 		toDashboardRoutine,
 	);
 
-	// proxy.ts only checks that a session cookie is present, not that it's
-	// still valid — an expired/revoked session reaches this page and the
-	// first protectedProcedure call throws UNAUTHORIZED. Without this, that
-	// showed as "Couldn't load routines from the database" with a Retry
-	// button that would fail forever, instead of sending the user back to
-	// where they can actually fix it.
 	useEffect(() => {
 		const error = routinesQuery.error;
 		if (
@@ -147,11 +137,6 @@ export default function Home() {
 		queryClient.invalidateQueries(trpc.routine.pathFilter());
 	}
 
-	// Shared onMutate/onError plumbing for the three highest-frequency
-	// actions (complete/pause/delete are single taps on the main grid —
-	// waiting on a Turso round-trip before anything visibly happens reads
-	// as broken). create/edit stay invalidate-only: they're dialog-based,
-	// lower-frequency, and a temp-id insert isn't worth the complexity.
 	async function cancelAndSnapshot() {
 		await queryClient.cancelQueries(listQueryOptions);
 		return queryClient.getQueryData(listQueryOptions.queryKey);
@@ -264,14 +249,20 @@ export default function Home() {
 
 	return (
 		<div
-			className="min-h-screen text-[#F1F5F9]"
-			style={{ background: "#131722" }}
+			className="min-h-screen text-[#EDEDEF]"
+			style={{
+				background: "#09090B",
+				backgroundImage:
+					"radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 255, 255, 0.06), transparent 70%)",
+			}}
 		>
-			<div className="sticky top-0 z-20 flex items-center justify-between border-white/5 border-b bg-[#131722]/80 px-4 py-4 backdrop-blur-md sm:px-10">
-				<div className="w-auto shrink-0 font-extrabold text-[17px] text-white tracking-tight drop-shadow-[0_0_12px_rgba(6,182,212,0.3)] sm:w-[180px] sm:text-[19px]">
+			{/* Floating Smoked-Glass Navigation Bar */}
+			<header className="sticky top-3 z-40 mx-auto flex w-[calc(100%-2rem)] max-w-5xl items-center justify-between rounded-full border border-white/[0.08] bg-zinc-900/70 px-5 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.1)] backdrop-blur-md">
+				<div className="w-auto shrink-0 font-semibold text-[#EDEDEF] text-xs uppercase tracking-wider sm:w-[160px]">
 					LE-REMINDER
 				</div>
-				<div className="flex items-center gap-5 overflow-x-auto [scrollbar-width:none] sm:gap-8">
+
+				<div className="flex items-center gap-1 sm:gap-2">
 					<TabButton
 						active={activeTab === "home"}
 						onClick={() => setActiveTab("home")}
@@ -297,48 +288,49 @@ export default function Home() {
 						Analytics
 					</TabButton>
 				</div>
-				<div className="flex w-auto shrink-0 justify-end sm:w-[180px]">
+
+				<div className="flex w-auto shrink-0 justify-end sm:w-[160px]">
 					<a
 						href="https://github.com/Lemong-22/LE-REMINDER.git"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-semibold text-[#94A3B8] text-xs transition-colors hover:bg-white/5 hover:text-[#F1F5F9]"
+						className="flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[11px] text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-[#EDEDEF]"
 					>
-						<Github className="size-4" />
+						<Github className="size-3.5" />
 						<span className="hidden sm:inline">Lemong-22</span>
 					</a>
 				</div>
-			</div>
+			</header>
 
-			<div className="flex flex-col gap-6 px-4 pt-[26px] pb-14 sm:px-10">
+			<main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pt-6 pb-16 sm:px-8">
 				{activeTab === "home" && (
 					<HeroPanel routines={routines} onComplete={handleComplete} />
 				)}
 
-				<div className="flex flex-col items-start gap-[22px] lg:flex-row">
+				<div className="flex flex-col items-start gap-6 lg:flex-row">
 					<div className="flex min-w-0 flex-1 flex-col gap-6">
 						{activeTab === "home" && (
 							<>
-								<div className="flex flex-col gap-2.5">
+								<div className="flex flex-col gap-3">
 									<div className="flex items-center justify-between gap-4">
-										<div className="flex flex-1 items-center gap-4">
-											<div className="shrink-0 font-extrabold text-[#FFFFFF] text-[18px] tracking-tight">
+										<div className="flex flex-1 items-center gap-3">
+											<h2 className="shrink-0 font-semibold text-[#EDEDEF] text-base tracking-tight">
 												Routines
-											</div>
+											</h2>
 											<div className="relative flex w-full max-w-xs items-center">
-												<Search className="pointer-events-none absolute left-3 size-3.5 text-[#64748B]" />
+												<Search className="pointer-events-none absolute left-3 size-3.5 text-zinc-500" />
 												<input
 													type="text"
 													placeholder="Search tasks & routines..."
 													value={searchInput}
 													onChange={(e) => setSearchInput(e.target.value)}
-													className="w-full rounded-lg border border-[#38445C] bg-[#181E2B] py-1.5 pr-8 pl-8.5 font-sans text-[#F1F5F9] text-[12.5px] placeholder-[#64748B] outline-none transition-all duration-200 focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20"
+													className="w-full rounded-lg border border-white/[0.08] bg-zinc-950/70 py-1.5 pr-8 pl-8 font-sans text-[#EDEDEF] text-xs placeholder-zinc-500 outline-none transition-all duration-150 focus:border-white/30 focus:ring-1 focus:ring-white/20"
 												/>
 												{searchInput && (
 													<button
 														type="button"
 														onClick={() => setSearchInput("")}
-														className="absolute right-2.5 cursor-pointer text-[#64748B] transition-colors hover:text-[#F1F5F9]"
+														className="absolute right-2.5 cursor-pointer text-zinc-500 transition-colors hover:text-[#EDEDEF]"
 														aria-label="Clear search"
 													>
 														<X className="size-3.5" />
@@ -346,10 +338,11 @@ export default function Home() {
 												)}
 											</div>
 										</div>
+
 										<button
 											type="button"
 											onClick={handleOpenCreate}
-											className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg border border-[#3B82F6] bg-[#3B82F6] px-[15px] py-2 font-semibold text-[13px] text-white shadow-[0_0_16px_-3px_rgba(59,130,246,0.5)] transition-all duration-200 hover:scale-[1.02] hover:bg-[#2563EB] active:scale-95"
+											className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg bg-[#EDEDEF] px-3.5 py-1.5 font-medium text-[#09090B] text-xs shadow-sm transition-all duration-150 hover:scale-[1.02] hover:bg-white active:scale-95"
 										>
 											+ New Routine
 										</button>
@@ -363,8 +356,8 @@ export default function Home() {
 												className={cn(
 													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 													selectedCategory === null
-														? "border-cyan-400/50 bg-[#0E1A2D] font-semibold text-cyan-300 shadow-[0_0_10px_-2px_rgba(6,182,212,0.35)]"
-														: "border-white/5 bg-[#1A1F2C]/60 text-[#94A3B8] hover:border-white/20 hover:text-white",
+														? "border-white/25 bg-white/[0.1] font-semibold text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+														: "border-white/[0.06] bg-zinc-900/40 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
 												)}
 											>
 												All
@@ -381,15 +374,15 @@ export default function Home() {
 													className={cn(
 														"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 														selectedCategory === cat
-															? "border-cyan-400/50 bg-[#0E1A2D] font-semibold text-cyan-300 shadow-[0_0_10px_-2px_rgba(6,182,212,0.35)]"
-															: "border-white/5 bg-[#1A1F2C]/60 text-[#94A3B8] hover:border-cyan-400/40 hover:text-white",
+															? "border-white/25 bg-white/[0.1] font-semibold text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+															: "border-white/[0.06] bg-zinc-900/40 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
 													)}
 												>
 													{cat}
 												</button>
 											))}
 											{(searchInput || selectedCategory) && (
-												<span className="ml-2 font-mono text-[#7888A0] text-[11px]">
+												<span className="ml-2 font-mono text-xs text-zinc-500 tabular-nums">
 													Showing {sortedRoutines.length} of {routines.length}
 												</span>
 											)}
@@ -402,16 +395,16 @@ export default function Home() {
 								) : routinesQuery.isError ? (
 									<RoutinesErrorState onRetry={() => routinesQuery.refetch()} />
 								) : sortedRoutines.length === 0 ? (
-									<div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-[#2E384D]/70 border-dashed bg-[#1E2433]/40 px-6 py-12 text-center">
-										<div className="flex size-11 items-center justify-center rounded-full border border-[#2E384D] bg-[#181E2B]/80 text-[#64748B] shadow-[inset_0_1px_1px_rgba(255,255,255,0.03)]">
-											<Inbox className="size-5 stroke-[1.5]" />
+									<div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/[0.08] border-dashed bg-zinc-950/40 px-6 py-12 text-center">
+										<div className="flex size-10 items-center justify-center rounded-full border border-white/[0.08] bg-zinc-900/60 text-zinc-500">
+											<Inbox className="size-4 stroke-[1.5]" />
 										</div>
-										<p className="font-serif text-[#7888A0] text-sm italic">
+										<p className="font-mono text-xs text-zinc-500">
 											{selectedCategory
 												? `No tasks for "${selectedCategory}".`
 												: searchInput
 													? `No tasks matching "${searchInput}".`
-													: "No tasks for this category."}
+													: "No tasks configured."}
 										</p>
 										<button
 											type="button"
@@ -419,7 +412,7 @@ export default function Home() {
 												setSearchInput("");
 												setSelectedCategory(null);
 											}}
-											className="cursor-pointer font-medium text-[#60A5FA] text-xs underline underline-offset-4 transition-colors hover:text-[#3B82F6] active:scale-95"
+											className="cursor-pointer font-mono text-[11px] text-zinc-400 underline underline-offset-4 transition-colors hover:text-[#EDEDEF] active:scale-95"
 										>
 											View all tasks
 										</button>
@@ -439,26 +432,26 @@ export default function Home() {
 
 						{activeTab === "all" && (
 							<div className="flex flex-col gap-4">
-								<div className="flex flex-col gap-2.5">
+								<div className="flex flex-col gap-3">
 									<div className="flex items-center justify-between gap-4">
-										<div className="flex flex-1 items-center gap-4">
-											<div className="shrink-0 font-extrabold text-[#FFFFFF] text-[18px] tracking-tight">
+										<div className="flex flex-1 items-center gap-3">
+											<h2 className="shrink-0 font-semibold text-[#EDEDEF] text-base tracking-tight">
 												All Tasks
-											</div>
+											</h2>
 											<div className="relative flex w-full max-w-xs items-center">
-												<Search className="pointer-events-none absolute left-3 size-3.5 text-[#64748B]" />
+												<Search className="pointer-events-none absolute left-3 size-3.5 text-zinc-500" />
 												<input
 													type="text"
 													placeholder="Search tasks & routines..."
 													value={searchInput}
 													onChange={(e) => setSearchInput(e.target.value)}
-													className="w-full rounded-lg border border-[#38445C] bg-[#181E2B] py-1.5 pr-8 pl-8.5 font-sans text-[#F1F5F9] text-[12.5px] placeholder-[#64748B] outline-none transition-all duration-200 focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20"
+													className="w-full rounded-lg border border-white/[0.08] bg-zinc-950/70 py-1.5 pr-8 pl-8 font-sans text-[#EDEDEF] text-xs placeholder-zinc-500 outline-none transition-all duration-150 focus:border-white/30 focus:ring-1 focus:ring-white/20"
 												/>
 												{searchInput && (
 													<button
 														type="button"
 														onClick={() => setSearchInput("")}
-														className="absolute right-2.5 cursor-pointer text-[#64748B] transition-colors hover:text-[#F1F5F9]"
+														className="absolute right-2.5 cursor-pointer text-zinc-500 transition-colors hover:text-[#EDEDEF]"
 														aria-label="Clear search"
 													>
 														<X className="size-3.5" />
@@ -476,8 +469,8 @@ export default function Home() {
 												className={cn(
 													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 													selectedCategory === null
-														? "border-[#3B82F6] bg-[#3B82F6] font-semibold text-white"
-														: "border-[#2E384D] bg-[#1E2433] text-[#94A3B8] hover:border-[#F1F5F9]",
+														? "border-white/25 bg-white/[0.1] font-semibold text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+														: "border-white/[0.06] bg-zinc-900/40 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
 												)}
 											>
 												All
@@ -494,15 +487,15 @@ export default function Home() {
 													className={cn(
 														"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 														selectedCategory === cat
-															? "border-[#3B82F6] bg-[#3B82F6] font-semibold text-white"
-															: "border-[#2E384D] bg-[#1E2433] text-[#94A3B8] hover:border-[#3B82F6]",
+															? "border-white/25 bg-white/[0.1] font-semibold text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+															: "border-white/[0.06] bg-zinc-900/40 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
 													)}
 												>
 													{cat}
 												</button>
 											))}
 											{(searchInput || selectedCategory) && (
-												<span className="ml-2 font-mono text-[#7888A0] text-[11px]">
+												<span className="ml-2 font-mono text-xs text-zinc-500 tabular-nums">
 													Showing {sortedRoutines.length} of {routines.length}
 												</span>
 											)}
@@ -511,16 +504,16 @@ export default function Home() {
 								</div>
 
 								{sortedRoutines.length === 0 ? (
-									<div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-[#2E384D]/70 border-dashed bg-[#1E2433]/40 px-6 py-12 text-center">
-										<div className="flex size-11 items-center justify-center rounded-full border border-[#2E384D] bg-[#181E2B]/80 text-[#64748B] shadow-[inset_0_1px_1px_rgba(255,255,255,0.03)]">
-											<Inbox className="size-5 stroke-[1.5]" />
+									<div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/[0.08] border-dashed bg-zinc-950/40 px-6 py-12 text-center">
+										<div className="flex size-10 items-center justify-center rounded-full border border-white/[0.08] bg-zinc-900/60 text-zinc-500">
+											<Inbox className="size-4 stroke-[1.5]" />
 										</div>
-										<p className="font-serif text-[#7888A0] text-sm italic">
+										<p className="font-mono text-xs text-zinc-500">
 											{selectedCategory
 												? `No tasks for "${selectedCategory}".`
 												: searchInput
 													? `No tasks matching "${searchInput}".`
-													: "No tasks for this category."}
+													: "No tasks configured."}
 										</p>
 										<button
 											type="button"
@@ -528,18 +521,18 @@ export default function Home() {
 												setSearchInput("");
 												setSelectedCategory(null);
 											}}
-											className="cursor-pointer font-medium text-[#60A5FA] text-xs underline underline-offset-4 transition-colors hover:text-[#3B82F6] active:scale-95"
+											className="cursor-pointer font-mono text-[11px] text-zinc-400 underline underline-offset-4 transition-colors hover:text-[#EDEDEF] active:scale-95"
 										>
 											View all tasks
 										</button>
 									</div>
 								) : (
-									<div className="overflow-hidden rounded-xl border border-white/5 bg-[#1A1F2C]/60 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-md">
+									<div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/55 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
 										<AnimatePresence mode="popLayout" initial={false}>
 											{sortedRoutines.map((routine) => (
 												<motion.div
 													key={routine.id}
-													layout
+													layout="position"
 													initial={{ opacity: 0, y: -10 }}
 													animate={{ opacity: 1, y: 0 }}
 													exit={{
@@ -549,8 +542,9 @@ export default function Home() {
 														transition: { duration: 0.2 },
 													}}
 													transition={{
-														layout: { duration: 0.28, ease: [0.25, 1, 0.5, 1] },
-														duration: 0.2,
+														type: "spring",
+														stiffness: 450,
+														damping: 32,
 													}}
 												>
 													<RoutineListRow routine={routine} />
@@ -565,28 +559,28 @@ export default function Home() {
 						{activeTab === "analytics" && (
 							<div className="flex flex-col gap-5">
 								<div className="flex items-center gap-2">
-									<BarChart2 className="size-5 text-[#3B82F6]" />
-									<div className="font-extrabold text-[#F1F5F9] text-[18px] tracking-[-0.015em]">
+									<BarChart2 className="size-4 text-zinc-400" />
+									<h2 className="font-semibold text-[#EDEDEF] text-base tracking-tight">
 										System Analytics
-									</div>
+									</h2>
 								</div>
 								<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-									<div className="flex flex-col gap-1 rounded-xl border border-[#2E384D]/70 bg-[#1E2433] p-4 shadow-xs">
-										<div className="font-mono text-[#7888A0] text-[11px] uppercase tracking-wider">
+									<div className="flex flex-col gap-1 rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+										<div className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
 											Total Routines
 										</div>
-										<div className="font-extrabold text-2xl text-[#F1F5F9]">
+										<div className="font-semibold text-3xl text-[#EDEDEF] tabular-nums">
 											{routines.length}
 										</div>
-										<div className="text-[#94A3B8] text-[11.5px]">
+										<div className="text-[11px] text-zinc-500">
 											Configured in your dashboard
 										</div>
 									</div>
-									<div className="flex flex-col gap-1 rounded-xl border border-[#2E384D]/70 bg-[#1E2433] p-4 shadow-xs">
-										<div className="font-mono text-[#7888A0] text-[11px] uppercase tracking-wider">
+									<div className="flex flex-col gap-1 rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+										<div className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
 											Cycle Completion
 										</div>
-										<div className="font-extrabold text-2xl text-[#F1F5F9]">
+										<div className="font-semibold text-3xl text-[#EDEDEF] tabular-nums">
 											{routines.length > 0
 												? Math.round(
 														(routines.filter(
@@ -599,30 +593,30 @@ export default function Home() {
 												: 0}
 											%
 										</div>
-										<div className="text-[#94A3B8] text-[11.5px]">
+										<div className="text-[11px] text-zinc-500">
 											Current period completion
 										</div>
 									</div>
-									<div className="flex flex-col gap-1 rounded-xl border border-[#2E384D]/70 bg-[#1E2433] p-4 shadow-xs">
-										<div className="font-mono text-[#7888A0] text-[11px] uppercase tracking-wider">
+									<div className="flex flex-col gap-1 rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+										<div className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
 											Active Categories
 										</div>
-										<div className="font-extrabold text-2xl text-[#F1F5F9]">
+										<div className="font-semibold text-3xl text-[#EDEDEF] tabular-nums">
 											{allCategories.length}
 										</div>
-										<div className="text-[#94A3B8] text-[11.5px]">
+										<div className="text-[11px] text-zinc-500">
 											Distinct routine categories
 										</div>
 									</div>
 								</div>
-								<div className="flex items-start gap-3 rounded-xl border border-[#2E384D]/60 bg-[#181E2B]/80 p-4 text-[#94A3B8] text-[12.5px]">
-									<Sparkles className="mt-0.5 size-4 shrink-0 text-[#3B82F6]" />
+								<div className="flex items-start gap-3 rounded-2xl border border-white/[0.08] bg-zinc-900/40 p-4 text-xs text-zinc-400">
+									<Sparkles className="mt-0.5 size-4 shrink-0 text-zinc-400" />
 									<div className="leading-relaxed">
-										<strong className="text-[#F1F5F9]">
+										<strong className="text-[#EDEDEF]">
 											Phase 0 Architecture:
 										</strong>{" "}
 										LE-REMINDER records every{" "}
-										<code className="font-mono text-[#F1F5F9]">
+										<code className="font-mono text-[#EDEDEF]">
 											CompletionEvent
 										</code>{" "}
 										directly in your database. Historical charts, consistency
@@ -636,7 +630,7 @@ export default function Home() {
 
 					<TodoSidebar />
 				</div>
-			</div>
+			</main>
 
 			<RoutineFormDialog
 				open={dialogOpen}

@@ -1,13 +1,13 @@
-// Zero-dependency Cyber/Game-Style Particle Explosion Engine
+// Zero-dependency Low-Latency Particle Spark Engine
 // Renders to a lightweight, temporary full-viewport canvas with hardware-accelerated RAF.
-// Strictly themed to the LE-REMINDER Luminous Midnight Blue palette.
+// Strictly themed to the Monochrome Smoked-Glass (Obsidian & Alabaster) palette.
 
-const MIDNIGHT_CYBER_PALETTE = [
-	"#3B82F6", // Electric Blue accent
-	"#60A5FA", // Bright Sky Blue
-	"#06B6D4", // Luminous Cyan
-	"#10B981", // Emerald spark
-	"#F1F5F9", // Radiant Light Slate
+const MONOCHROME_SPARK_PALETTE = [
+	"#EDEDEF", // Soft Alabaster
+	"#FFFFFF", // Pure Specular Spark
+	"#D4D4D8", // Light Zinc 300
+	"#A1A1AA", // Pewter Zinc 400
+	"#71717A", // Slate Pewter 500
 ];
 
 interface Particle {
@@ -98,35 +98,38 @@ function renderFrame() {
 		activeCtx.globalAlpha = p.alpha;
 		activeCtx.fillStyle = p.color;
 
+		const half = p.size / 2;
+
 		switch (p.shape) {
-			case "diamond": {
+			case "diamond":
 				activeCtx.beginPath();
-				activeCtx.moveTo(0, -p.size * 1.5);
-				activeCtx.lineTo(p.size, 0);
-				activeCtx.lineTo(0, p.size * 1.5);
-				activeCtx.lineTo(-p.size, 0);
+				activeCtx.moveTo(0, -p.size);
+				activeCtx.lineTo(half, 0);
+				activeCtx.lineTo(0, p.size);
+				activeCtx.lineTo(-half, 0);
 				activeCtx.closePath();
 				activeCtx.fill();
 				break;
-			}
-			case "shard": {
+
+			case "shard":
 				activeCtx.beginPath();
-				activeCtx.moveTo(-p.size * 0.4, -p.size * 1.8);
-				activeCtx.lineTo(p.size * 0.6, -p.size * 0.4);
-				activeCtx.lineTo(p.size * 0.2, p.size * 1.8);
-				activeCtx.lineTo(-p.size * 0.8, p.size * 0.2);
+				activeCtx.moveTo(-half / 2, -p.size * 1.2);
+				activeCtx.lineTo(half / 2, -p.size * 1.2);
+				activeCtx.lineTo(half, p.size * 1.2);
+				activeCtx.lineTo(-half, p.size * 1.2);
 				activeCtx.closePath();
 				activeCtx.fill();
 				break;
-			}
-			case "spark": {
-				activeCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+
+			case "spark":
+				activeCtx.beginPath();
+				activeCtx.arc(0, 0, half, 0, Math.PI * 2);
+				activeCtx.fill();
 				break;
-			}
-			default: {
-				activeCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+
+			default:
+				activeCtx.fillRect(-half, -half, p.size, p.size);
 				break;
-			}
 		}
 
 		activeCtx.restore();
@@ -137,10 +140,7 @@ function renderFrame() {
 	if (particles.length > 0) {
 		animFrameId = requestAnimationFrame(renderFrame);
 	} else {
-		if (animFrameId) {
-			cancelAnimationFrame(animFrameId);
-			animFrameId = null;
-		}
+		animFrameId = null;
 		if (activeCanvas?.parentNode) {
 			activeCanvas.parentNode.removeChild(activeCanvas);
 			activeCanvas = null;
@@ -149,51 +149,54 @@ function renderFrame() {
 	}
 }
 
-const MAX_PARTICLES = 64;
+const MAX_PARTICLES = 60;
 
 /**
- * Triggers a snappy, high-tech cyber explosion originating from the given
- * DOM element or mouse/pointer event.
+ * Triggers a crisp, low-latency monochrome spark explosion originating from the center of target element.
+ * Snappy 450ms decay feels instantaneous and responsive.
  */
 export function triggerCyberExplosion(
-	target: HTMLElement | { clientX: number; clientY: number },
+	target: HTMLElement | MouseEvent | { clientX: number; clientY: number },
 ) {
 	if (typeof window === "undefined") return;
 
-	const prefersReducedMotion = window.matchMedia(
-		"(prefers-reduced-motion: reduce)",
-	).matches;
-	if (prefersReducedMotion) return;
+	// Respect system reduced-motion preferences
+	if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+		return;
+	}
 
-	const surface = ensureCanvas();
-	if (!surface) return;
+	const bundle = ensureCanvas();
+	if (!bundle) return;
 
 	let originX = window.innerWidth / 2;
 	let originY = window.innerHeight / 2;
 
-	if ("getBoundingClientRect" in target) {
+	if (
+		"getBoundingClientRect" in target &&
+		typeof target.getBoundingClientRect === "function"
+	) {
 		const rect = target.getBoundingClientRect();
 		originX = rect.left + rect.width / 2;
 		originY = rect.top + rect.height / 2;
-	} else if ("clientX" in target) {
+	} else if ("clientX" in target && "clientY" in target) {
 		originX = target.clientX;
 		originY = target.clientY;
 	}
 
 	// Evict oldest particles if approaching upper threshold during rapid clicks
-	if (particles.length > MAX_PARTICLES - 28) {
-		particles.splice(0, particles.length - (MAX_PARTICLES - 28));
+	if (particles.length > MAX_PARTICLES - 24) {
+		particles.splice(0, particles.length - (MAX_PARTICLES - 24));
 	}
 
-	// 1. Core High-Velocity Radial Shockwave Shards (fast, snappy cyber blast)
-	const coreParticleCount = 18;
+	// 1. Core High-Velocity Radial Spark Shards (snappy alabaster blast, ~400ms decay)
+	const coreParticleCount = 14;
 	for (let i = 0; i < coreParticleCount; i++) {
 		const angle =
 			(i / coreParticleCount) * (Math.PI * 2) + (Math.random() * 0.2 - 0.1);
-		const speed = 7 + Math.random() * 8;
+		const speed = 6 + Math.random() * 7;
 		const color =
-			MIDNIGHT_CYBER_PALETTE[
-				Math.floor(Math.random() * MIDNIGHT_CYBER_PALETTE.length)
+			MONOCHROME_SPARK_PALETTE[
+				Math.floor(Math.random() * MONOCHROME_SPARK_PALETTE.length)
 			];
 		const shapes: Particle["shape"][] = ["shard", "diamond", "square"];
 
@@ -202,41 +205,41 @@ export function triggerCyberExplosion(
 			y: originY,
 			vx: Math.cos(angle) * speed,
 			vy: Math.sin(angle) * speed,
-			size: 2.2 + Math.random() * 3,
+			size: 2 + Math.random() * 2.5,
 			color,
 			alpha: 1,
 			rotation: Math.random() * Math.PI * 2,
 			rotationSpeed: (Math.random() - 0.5) * 0.35,
 			shape: shapes[Math.floor(Math.random() * shapes.length)],
-			drag: 0.91,
+			drag: 0.9,
 			gravity: 0.14,
 			life: 0,
-			maxLife: 30 + Math.floor(Math.random() * 15),
+			maxLife: 22 + Math.floor(Math.random() * 8), // ~350-450ms at 60fps
 		});
 	}
 
-	// 2. Micro Spark Embers (faster, smaller spark discharge)
-	const sparkCount = 12;
+	// 2. Micro Spark Embers (fast, subtle specular sparks)
+	const sparkCount = 10;
 	for (let i = 0; i < sparkCount; i++) {
 		const angle = Math.random() * Math.PI * 2;
-		const speed = 4 + Math.random() * 7;
-		const color = Math.random() > 0.4 ? "#3B82F6" : "#06B6D4";
+		const speed = 4 + Math.random() * 6;
+		const color = Math.random() > 0.4 ? "#EDEDEF" : "#A1A1AA";
 
 		particles.push({
 			x: originX,
 			y: originY,
 			vx: Math.cos(angle) * speed,
 			vy: Math.sin(angle) * speed,
-			size: 1.5 + Math.random() * 1.5,
+			size: 1.2 + Math.random() * 1.4,
 			color,
 			alpha: 1,
 			rotation: 0,
 			rotationSpeed: 0,
 			shape: "spark",
-			drag: 0.93,
+			drag: 0.92,
 			gravity: 0.08,
 			life: 0,
-			maxLife: 22 + Math.floor(Math.random() * 15),
+			maxLife: 18 + Math.floor(Math.random() * 8),
 		});
 	}
 

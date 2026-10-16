@@ -3,10 +3,10 @@ import { STATUS_FILL } from "@/lib/status-visual";
 
 // Status is never conveyed by color alone: each status also gets a distinct
 // glyph shape (triangle/ring/filled/outlined) so it reads under color-blindness
-// or grayscale printing.
+// or monochrome screens.
 export function StatusShape({
 	status,
-	size = 12,
+	size = 11,
 }: {
 	status: RoutineStatus;
 	size?: number;
@@ -29,7 +29,11 @@ export function StatusShape({
 			<div
 				aria-hidden
 				className="shrink-0 rounded-full"
-				style={{ ...style, border: `2px solid ${fill}` }}
+				style={{
+					...style,
+					border: `1.5px solid ${fill}`,
+					background: "rgba(237, 237, 239, 0.25)",
+				}}
 			/>
 		);
 	}
@@ -38,8 +42,8 @@ export function StatusShape({
 		return (
 			<div
 				aria-hidden
-				className="shrink-0 rounded-full border border-[#64748B]"
-				style={{ ...style, background: "#2E384D" }}
+				className="shrink-0 rounded-full border border-white/10"
+				style={{ ...style, background: "#27272A" }}
 			/>
 		);
 	}

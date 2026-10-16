@@ -1,19 +1,19 @@
 import type { RoutineStatus } from "@LE-REMINDER/core/domain/routine-status";
 
-// Fill = the saturated color used for status glyphs/legend dots.
-// Text = a bright, high-contrast shade of the same hue for labels on midnight blue surfaces (#131722 / #1E2433).
+// Fill = the semantic tone used for status micro-glyphs/legend dots in the smoked-glass palette.
+// Text = high-readability alabaster and pewter shades on Obsidian (#09090B) surfaces.
 export const STATUS_FILL: Record<RoutineStatus, string> = {
-	Overdue: "#EF4444",
-	Due: "#38BDF8",
-	Done: "#10B981",
-	Paused: "#C084FC",
-	Finished: "#64748B",
+	Overdue: "#F43F5E", // Muted crimson
+	Due: "#EDEDEF", // Crisp alabaster
+	Done: "#71717A", // Subtle pewter
+	Paused: "#52525B", // Dim zinc
+	Finished: "#3F3F46", // Darker zinc
 };
 
 export const STATUS_TEXT: Record<RoutineStatus, string> = {
-	Overdue: "#FCA5A5",
-	Due: "#BAE6FD",
-	Done: "#6EE7B7",
-	Paused: "#E9D5FF",
-	Finished: "#94A3B8",
+	Overdue: "#FDA4AF", // Rose-300
+	Due: "#EDEDEF", // Soft alabaster
+	Done: "#71717A", // Pewter
+	Paused: "#71717A", // Dim pewter
+	Finished: "#52525B", // Muted zinc
 };

@@ -25,7 +25,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type { inferRouterOutputs } from "@trpc/server";
-import { GripVertical, Inbox } from "lucide-react";
+import { GripVertical, Inbox, Plus } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
@@ -34,12 +34,6 @@ import { queryClient, trpc } from "@/utils/trpc";
 
 type Todo = inferRouterOutputs<AppRouter>["todo"]["list"][number];
 
-const ACCENT = "#3B82F6";
-
-// The row's inner markup, shared by the in-list sortable row and the
-// DragOverlay copy so the picked-up item is pixel-identical to the one it
-// detached from. The grip is passed in as a node because only the sortable
-// row has real drag listeners to attach — the overlay's grip is decorative.
 function TodoRowContent({
 	todo,
 	editMode,
@@ -56,8 +50,8 @@ function TodoRowContent({
 	return (
 		<div
 			className={cn(
-				"group/todo -mx-1.5 flex items-center gap-2 rounded-md px-1.5 py-1 transition-colors duration-200 hover:bg-white/5",
-				todo.done && "opacity-60",
+				"group/todo -mx-1.5 flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-white/[0.03]",
+				todo.done && "opacity-50",
 			)}
 		>
 			{grip}
@@ -67,7 +61,7 @@ function TodoRowContent({
 				onClick={(e) => {
 					onToggle?.(e.currentTarget);
 				}}
-				className="size-4 cursor-pointer rounded border-[#38445C] transition-all duration-150 active:scale-90 group-hover/todo:scale-105 data-checked:border-[#3B82F6] data-checked:bg-[#3B82F6]"
+				className="size-3.5 cursor-pointer rounded-sm border-white/20 bg-zinc-950/60 transition-all duration-150 active:scale-90 group-hover/todo:border-white/40 data-checked:border-[#EDEDEF] data-checked:bg-[#EDEDEF] data-checked:text-zinc-950"
 			/>
 			<button
 				type="button"
@@ -75,10 +69,10 @@ function TodoRowContent({
 					onToggle?.(e.currentTarget);
 				}}
 				className={cn(
-					"flex-1 cursor-pointer bg-transparent text-left text-[13.5px] transition-colors duration-200 active:scale-[0.99]",
+					"flex-1 cursor-pointer bg-transparent text-left text-xs transition-colors duration-150 active:scale-[0.99]",
 					todo.done
-						? "text-[#64748B] line-through"
-						: "text-[#F1F5F9] group-hover/todo:text-[#38BDF8]",
+						? "text-zinc-500 line-through"
+						: "text-[#EDEDEF] hover:text-white",
 				)}
 			>
 				{todo.text}
@@ -88,7 +82,7 @@ function TodoRowContent({
 					type="button"
 					onClick={onDelete}
 					aria-label={`Remove ${todo.text}`}
-					className="cursor-pointer bg-transparent px-1 text-[#64748B] text-sm transition-all hover:scale-110 hover:text-[#60A5FA] active:scale-90"
+					className="cursor-pointer bg-transparent px-1 text-sm text-zinc-500 transition-all hover:scale-110 hover:text-rose-400 active:scale-90"
 				>
 					×
 				</button>
@@ -105,7 +99,7 @@ function GripHandle({
 		<button
 			type="button"
 			aria-label={`Reorder ${label}`}
-			className="cursor-grab touch-none bg-transparent text-[#64748B] active:cursor-grabbing"
+			className="cursor-grab touch-none bg-transparent text-zinc-600 transition-colors hover:text-zinc-300 active:cursor-grabbing"
 			{...props}
 		>
 			<GripVertical className="size-3.5" />
@@ -113,11 +107,6 @@ function GripHandle({
 	);
 }
 
-// One sortable, animated row. dnd-kit's transform/transition make the
-// non-dragged rows slide out of the way smoothly; the dragged row itself
-// stays in the list as a low-opacity ghost while the fully-opaque
-// DragOverlay copy follows the cursor. framer-motion owns opacity/scale/height
-// for mount/unmount and position layout when not dragging.
 function SortableTodoRow({
 	todo,
 	editMode,
@@ -166,15 +155,11 @@ function SortableTodoRow({
 		>
 			{indicator && (
 				<span
-					aria-hidden
+					aria-hidden="true"
 					className={cn(
-						"absolute inset-x-0 h-[2px] rounded-full",
-						indicator === "above" ? "-top-[6px]" : "-bottom-[6px]",
+						"absolute inset-x-0 h-[2px] rounded-full bg-[#EDEDEF] shadow-[0_0_8px_rgba(255,255,255,0.6)]",
+						indicator === "above" ? "-top-[5px]" : "-bottom-[5px]",
 					)}
-					style={{
-						background: ACCENT,
-						boxShadow: "0 0 6px rgba(59, 130, 246, 0.6)",
-					}}
 				/>
 			)}
 			<TodoRowContent
@@ -188,21 +173,111 @@ function SortableTodoRow({
 	);
 }
 
-// Synced via tRPC/Turso (packages/api/src/routers/todo.ts), scoped to the
-// signed-in account, so it's the same list across devices/sessions —
-// still deliberately not a Routine: plain text, no schedule, no
-// computeRoutineStatus involvement (see packages/db/src/schema/todo.ts).
 export function TodoSidebar() {
 	const [editMode, setEditMode] = useState(false);
 	const [newText, setNewText] = useState("");
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [overId, setOverId] = useState<string | null>(null);
 
-	const listQueryOptions = trpc.todo.list.queryOptions();
-	const todosQuery = useQuery(listQueryOptions);
-	const todos = todosQuery.data ?? [];
-	const sortedTodos = [...todos].sort((a, b) =>
-		a.done === b.done ? 0 : a.done ? 1 : -1,
+	const todosQuery = useQuery(trpc.todo.list.queryOptions());
+	const sortedTodos = todosQuery.data ?? [];
+
+	function invalidateTodos() {
+		queryClient.invalidateQueries(trpc.todo.pathFilter());
+	}
+
+	const addMutation = useMutation(
+		trpc.todo.add.mutationOptions({
+			onSuccess: () => {
+				setNewText("");
+				invalidateTodos();
+			},
+		}),
+	);
+
+	const toggleMutation = useMutation(
+		trpc.todo.toggle.mutationOptions({
+			onMutate: async ({ todoId }) => {
+				await queryClient.cancelQueries(trpc.todo.list.queryOptions());
+				const prev = queryClient.getQueryData(
+					trpc.todo.list.queryOptions().queryKey,
+				);
+				queryClient.setQueryData(
+					trpc.todo.list.queryOptions().queryKey,
+					(old) =>
+						old?.map((t) => (t.id === todoId ? { ...t, done: !t.done } : t)),
+				);
+				return { prev };
+			},
+			onError: (_err, _vars, ctx) => {
+				if (ctx?.prev) {
+					queryClient.setQueryData(
+						trpc.todo.list.queryOptions().queryKey,
+						ctx.prev,
+					);
+				}
+			},
+			onSettled: invalidateTodos,
+		}),
+	);
+
+	const deleteMutation = useMutation(
+		trpc.todo.delete.mutationOptions({
+			onMutate: async ({ todoId }) => {
+				await queryClient.cancelQueries(trpc.todo.list.queryOptions());
+				const prev = queryClient.getQueryData(
+					trpc.todo.list.queryOptions().queryKey,
+				);
+				queryClient.setQueryData(
+					trpc.todo.list.queryOptions().queryKey,
+					(old) => old?.filter((t) => t.id !== todoId),
+				);
+				return { prev };
+			},
+			onError: (_err, _vars, ctx) => {
+				if (ctx?.prev) {
+					queryClient.setQueryData(
+						trpc.todo.list.queryOptions().queryKey,
+						ctx.prev,
+					);
+				}
+			},
+			onSettled: invalidateTodos,
+		}),
+	);
+
+	const reorderMutation = useMutation(
+		trpc.todo.reorder.mutationOptions({
+			onMutate: async ({ todoIds }) => {
+				await queryClient.cancelQueries(trpc.todo.list.queryOptions());
+				const prev = queryClient.getQueryData(
+					trpc.todo.list.queryOptions().queryKey,
+				);
+				queryClient.setQueryData(
+					trpc.todo.list.queryOptions().queryKey,
+					(old) => {
+						if (!old) return old;
+						const map = new Map(old.map((t) => [t.id, t]));
+						return todoIds
+							.map((id, index) => {
+								const t = map.get(id);
+								return t ? { ...t, position: index } : null;
+							})
+							.filter((t): t is Todo => t !== null);
+					},
+				);
+				return { prev };
+			},
+			onError: (_err, _vars, ctx) => {
+				if (ctx?.prev) {
+					queryClient.setQueryData(
+						trpc.todo.list.queryOptions().queryKey,
+						ctx.prev,
+					);
+				}
+			},
+			onSettled: invalidateTodos,
+		}),
 	);
 
 	const sensors = useSensors(
@@ -212,86 +287,26 @@ export function TodoSidebar() {
 		}),
 	);
 
-	function invalidate() {
-		queryClient.invalidateQueries(trpc.todo.pathFilter());
-	}
-
-	const addMutation = useMutation(
-		trpc.todo.add.mutationOptions({ onSuccess: invalidate }),
-	);
-
-	// Toggling and reordering are the most frequent interactions, so both
-	// get an optimistic update instead of waiting on the Turso round-trip;
-	// add/delete stay invalidate-on-success since they're infrequent and
-	// the skeleton/list reflow is cheap either way.
-	const toggleMutation = useMutation(
-		trpc.todo.toggle.mutationOptions({
-			onMutate: async ({ todoId }) => {
-				await queryClient.cancelQueries(listQueryOptions);
-				const previous = queryClient.getQueryData(listQueryOptions.queryKey);
-				queryClient.setQueryData(listQueryOptions.queryKey, (old) =>
-					old?.map((todo) =>
-						todo.id === todoId ? { ...todo, done: !todo.done } : todo,
-					),
-				);
-				return { previous };
-			},
-			onError: (_error, _vars, context) => {
-				if (context?.previous) {
-					queryClient.setQueryData(listQueryOptions.queryKey, context.previous);
-				}
-			},
-			onSettled: invalidate,
-		}),
-	);
-
-	const reorderMutation = useMutation(
-		trpc.todo.reorder.mutationOptions({
-			onMutate: async ({ todoIds }) => {
-				await queryClient.cancelQueries(listQueryOptions);
-				const previous = queryClient.getQueryData(listQueryOptions.queryKey);
-				if (previous) {
-					const byId = new Map(previous.map((todo) => [todo.id, todo]));
-					const reordered = todoIds
-						.map((id) => byId.get(id))
-						.filter((todo): todo is Todo => todo !== undefined);
-					queryClient.setQueryData(listQueryOptions.queryKey, reordered);
-				}
-				return { previous };
-			},
-			onError: (_error, _vars, context) => {
-				if (context?.previous) {
-					queryClient.setQueryData(listQueryOptions.queryKey, context.previous);
-				}
-			},
-			onSettled: invalidate,
-		}),
-	);
-
-	const deleteMutation = useMutation(
-		trpc.todo.delete.mutationOptions({ onSuccess: invalidate }),
-	);
-
 	function addTodo() {
-		const text = newText.trim();
-		if (!text) return;
-		addMutation.mutate({ text });
-		setNewText("");
+		const trimmed = newText.trim();
+		if (!trimmed) return;
+		addMutation.mutate({ text: trimmed });
 	}
 
 	function handleDragStart(event: DragStartEvent) {
-		setActiveId(String(event.active.id));
+		setActiveId(event.active.id as string);
+		setOverId(null);
 	}
 
 	function handleDragOver(event: DragOverEvent) {
-		setOverId(event.over ? String(event.over.id) : null);
+		setOverId((event.over?.id as string) ?? null);
 	}
 
 	function handleDragEnd(event: DragEndEvent) {
+		const { active, over } = event;
 		setActiveId(null);
 		setOverId(null);
 
-		const { active, over } = event;
 		if (!over || active.id === over.id) return;
 
 		const oldIndex = sortedTodos.findIndex((todo) => todo.id === active.id);
@@ -307,9 +322,6 @@ export function TodoSidebar() {
 		setOverId(null);
 	}
 
-	// The drop line goes below the hovered row when dragging downward and
-	// above it when dragging upward — matching where arrayMove will actually
-	// insert the item on drop.
 	function indicatorFor(todoId: string): "above" | "below" | null {
 		if (!activeId || !overId || overId === activeId || todoId !== overId) {
 			return null;
@@ -322,9 +334,9 @@ export function TodoSidebar() {
 	const activeTodo = sortedTodos.find((todo) => todo.id === activeId) ?? null;
 
 	return (
-		<div className="sticky top-[76px] flex max-h-[calc(100vh-96px)] w-[280px] shrink-0 flex-col gap-3.5 overflow-y-auto rounded-xl border border-white/5 bg-[#1A1F2C]/60 p-5 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-md">
+		<div className="sticky top-20 flex max-h-[calc(100vh-96px)] w-[280px] shrink-0 select-none flex-col gap-3.5 overflow-y-auto rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md sm:p-5">
 			<div className="flex items-center justify-between">
-				<div className="font-extrabold text-[#FFFFFF] text-[18px] tracking-tight">
+				<div className="font-semibold text-[#EDEDEF] text-sm tracking-tight">
 					Today's To-Do
 				</div>
 				<div className="flex items-center gap-2">
@@ -336,7 +348,7 @@ export function TodoSidebar() {
 									deleteMutation.mutate({ todoId: t.id });
 								}
 							}}
-							className="cursor-pointer font-semibold text-[#60A5FA] text-[11px] hover:underline active:scale-95"
+							className="cursor-pointer font-mono text-[11px] text-zinc-400 hover:text-[#EDEDEF] hover:underline active:scale-95"
 						>
 							Clear Done
 						</button>
@@ -344,24 +356,25 @@ export function TodoSidebar() {
 					<button
 						type="button"
 						onClick={() => setEditMode((v) => !v)}
-						className="cursor-pointer bg-transparent p-0.5 font-semibold text-[#94A3B8] text-[11.5px] transition-all duration-150 hover:scale-105 hover:text-[#F1F5F9] active:scale-95"
+						className="cursor-pointer font-mono text-[11px] text-zinc-400 transition-colors hover:text-[#EDEDEF] active:scale-95"
 					>
 						{editMode ? "Done" : "Edit List"}
 					</button>
 				</div>
 			</div>
 
-			<div className="flex flex-col gap-2.5">
+			<div className="flex flex-col gap-2">
 				{!todosQuery.isLoading && sortedTodos.length === 0 && (
-					<div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-[#2E384D]/60 border-dashed bg-[#181E2B]/40 px-4 py-7 text-center">
-						<div className="flex size-9 items-center justify-center rounded-full border border-[#2E384D] bg-[#151A26] text-[#64748B]">
-							<Inbox className="size-4 stroke-[1.5]" />
+					<div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/[0.06] border-dashed bg-zinc-950/40 px-4 py-8 text-center">
+						<div className="flex size-8 items-center justify-center rounded-full border border-white/[0.08] bg-zinc-900/60 text-zinc-500">
+							<Inbox className="size-3.5 stroke-[1.5]" />
 						</div>
-						<span className="font-serif text-[#7888A0] text-xs italic">
-							Nothing on your scratchpad.
+						<span className="font-mono text-xs text-zinc-500">
+							Scratchpad is empty.
 						</span>
 					</div>
 				)}
+
 				<DndContext
 					sensors={sensors}
 					collisionDetection={closestCenter}
@@ -374,7 +387,7 @@ export function TodoSidebar() {
 						items={sortedTodos.map((todo) => todo.id)}
 						strategy={verticalListSortingStrategy}
 					>
-						<div className="flex flex-col gap-1">
+						<div className="flex flex-col gap-0.5">
 							<AnimatePresence mode="popLayout" initial={false}>
 								{!todosQuery.isLoading &&
 									sortedTodos.map((todo) => (
@@ -397,16 +410,12 @@ export function TodoSidebar() {
 							</AnimatePresence>
 						</div>
 					</SortableContext>
-					{/* Portaled to <body>: the sidebar is overflow-y-auto, which
-					    would clip an in-place overlay the moment the drag leaves
-					    the panel. The overlay copy is the "picked up" item —
-					    fully opaque, slightly scaled and shadowed — while the
-					    original stays in the list as the 30%-opacity ghost. */}
+
 					{typeof document !== "undefined" &&
 						createPortal(
 							<DragOverlay>
 								{activeTodo && (
-									<div className="w-[240px] scale-[1.03] rounded-lg border border-[#2E384D] bg-[#1E2433] px-2 py-1.5 shadow-[0_12px_28px_-4px_rgba(0,0,0,0.6)] transition-transform duration-150">
+									<div className="w-[240px] scale-[1.02] rounded-lg border border-white/20 bg-zinc-900/95 px-2 py-1.5 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-md">
 										<TodoRowContent
 											todo={activeTodo}
 											editMode={editMode}
@@ -420,7 +429,8 @@ export function TodoSidebar() {
 				</DndContext>
 			</div>
 
-			<div className="flex gap-1.5 border-[#263044] border-t pt-1">
+			{/* Inline Quick Add Input */}
+			<div className="flex items-center gap-1.5 border-white/[0.06] border-t pt-2">
 				<input
 					type="text"
 					value={newText}
@@ -429,14 +439,15 @@ export function TodoSidebar() {
 						if (e.key === "Enter") addTodo();
 					}}
 					placeholder="Add a task…"
-					className="min-w-0 flex-1 rounded-lg border border-[#38445C] bg-[#181E2B] px-2.5 py-1.5 text-[#F1F5F9] text-[12.5px] outline-none transition-all duration-150 focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/25"
+					className="min-w-0 flex-1 rounded-lg border border-white/[0.08] bg-zinc-950/70 px-2.5 py-1.5 font-sans text-[#EDEDEF] text-xs placeholder-zinc-500 outline-none transition-all duration-150 focus:border-white/30 focus:ring-1 focus:ring-white/20"
 				/>
 				<button
 					type="button"
 					onClick={addTodo}
-					className="cursor-pointer rounded-lg border border-[#3B82F6] bg-[#3B82F6] px-2.5 py-1.5 font-semibold text-[13px] text-white transition-all duration-150 hover:scale-105 hover:bg-[#2563EB] active:scale-95"
+					aria-label="Add task"
+					className="flex size-7 cursor-pointer items-center justify-center rounded-lg bg-[#EDEDEF] text-zinc-950 shadow-sm transition-all duration-150 hover:scale-105 hover:bg-white active:scale-95"
 				>
-					+
+					<Plus className="size-4 stroke-[2.5]" />
 				</button>
 			</div>
 		</div>

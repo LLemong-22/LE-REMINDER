@@ -12,22 +12,12 @@ const EXIT_DURATION_MS = 350;
 
 type Phase = "waiting" | "shown" | "exiting";
 
-// GitHub's OAuth callback lands here (see login/page.tsx's callbackURL)
-// instead of routing straight to "/" — gives the glass card a beat to
-// fade in, show a welcome state, then fade out before the real dashboard
-// mounts, instead of an instant snap.
 export default function AuthLoadingPage() {
 	const router = useRouter();
 	const { data: session, isPending } = useSession();
 	const [phase, setPhase] = useState<Phase>("waiting");
 	const startedRef = useRef(false);
 
-	// Deliberately depends on `isPending` only, not `phase` — this effect
-	// itself calls setPhase("shown"), and if `phase` were a dependency too,
-	// that state update would re-run the effect, whose cleanup would clear
-	// the timer it had just scheduled a moment earlier. Net effect: phase
-	// gets stuck on "shown" forever and the page never advances past
-	// /auth/loading. startedRef guards against running twice.
 	useEffect(() => {
 		if (isPending || startedRef.current) return;
 		startedRef.current = true;
@@ -38,9 +28,6 @@ export default function AuthLoadingPage() {
 
 	useEffect(() => {
 		if (phase !== "exiting") return;
-		// The whitelist can still reject a brand-new account at this point
-		// (databaseHooks.user.create.before in packages/auth) — no session
-		// means bounce back to /login instead of dead-ending here.
 		const timer = setTimeout(() => {
 			if (session) {
 				router.replace("/");
@@ -54,7 +41,7 @@ export default function AuthLoadingPage() {
 	const exiting = phase === "exiting";
 
 	return (
-		<div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#131722]">
+		<div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#09090B]">
 			<div className="absolute inset-0">
 				<SoftAurora />
 			</div>
@@ -70,14 +57,14 @@ export default function AuthLoadingPage() {
 					duration: exiting ? EXIT_DURATION_MS / 1000 : 0.5,
 					ease: "easeOut",
 				}}
-				className="relative z-10 flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-[#1E2433]/70 px-10 py-9 text-center shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-xl"
+				className="relative z-10 flex flex-col items-center gap-4 rounded-2xl border border-white/[0.08] bg-zinc-900/80 px-10 py-9 text-center shadow-[0_16px_48px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.12)] backdrop-blur-md"
 			>
-				<Loader2 className="size-6 animate-spin text-[#3B82F6]" />
-				<div className="font-extrabold text-[#F1F5F9] text-[17px] tracking-[-0.015em]">
+				<Loader2 className="size-5 animate-spin text-[#EDEDEF]" />
+				<div className="font-medium text-[#EDEDEF] text-sm tracking-tight">
 					{isPending ? "Verifying your session…" : "Welcome back"}
 				</div>
-				<div className="text-[#94A3B8] text-[12px]">
-					Taking you to your dashboard…
+				<div className="font-mono text-xs text-zinc-500">
+					{isPending ? "Connecting to auth provider" : "Opening dashboard"}
 				</div>
 			</motion.div>
 		</div>

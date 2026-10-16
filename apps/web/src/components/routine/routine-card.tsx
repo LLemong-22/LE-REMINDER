@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@LE-REMINDER/ui/components/badge";
 import { Button } from "@LE-REMINDER/ui/components/button";
 import { cn } from "@LE-REMINDER/ui/lib/utils";
 import { Star } from "lucide-react";
@@ -37,11 +36,7 @@ export function RoutineCard({
 	const [revealed, setRevealed] = useState(false);
 	const cardRef = useRef<HTMLDivElement>(null);
 
-	// Hover reveals the action row on desktop, but touch devices have no
-	// hover state — tapping the card reveals it instead, and tapping
-	// anywhere outside collapses it back, mirroring the tap-to-reveal
-	// pattern of mobile task apps rather than showing actions permanently
-	// on every card in a dense grid.
+	// On mobile, tap toggles action toolbar visibility; tap outside collapses it.
 	useEffect(() => {
 		if (!revealed) return;
 		function handlePointerDown(event: PointerEvent) {
@@ -75,151 +70,144 @@ export function RoutineCard({
 	return (
 		<motion.div
 			ref={cardRef}
-			whileHover={{ scale: 1.02, y: -2 }}
-			whileTap={{ scale: 0.98 }}
-			transition={{ type: "spring", stiffness: 400, damping: 25 }}
+			layout="position"
+			transition={{ type: "spring", stiffness: 450, damping: 32 }}
 			onClick={() => setRevealed((v) => !v)}
 			className={cn(
-				"group relative rounded-[12px] transition-[box-shadow,opacity] duration-200",
+				"group relative flex select-none flex-col justify-between overflow-hidden rounded-xl p-4 transition-all duration-200",
 				isDue
-					? "bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 p-[1px] shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:shadow-[0_0_24px_rgba(6,182,212,0.6)]"
-					: "border border-white/5 bg-[#1A1F2C]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.05),0_8px_32px_0_rgba(0,0,0,0.37)] backdrop-blur-md hover:border-white/10 hover:shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_12px_36px_0_rgba(0,0,0,0.45)]",
-				isCompleted && "opacity-65 hover:opacity-100",
+					? "border border-white/25 bg-zinc-900/70 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.28),0_8px_32px_rgba(0,0,0,0.5)] hover:border-white/35"
+					: isCompleted
+						? "border border-white/[0.04] bg-zinc-950/40 opacity-55 hover:opacity-85"
+						: "border border-white/[0.07] bg-zinc-900/55 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] hover:-translate-y-0.5 hover:border-white/[0.18] hover:bg-zinc-850/60",
 			)}
 		>
-			<div
-				className={cn(
-					"relative flex h-full w-full flex-col gap-2.5 rounded-[11px] backdrop-blur-md transition-colors duration-200",
-					isDue
-						? "bg-[#1A1F2C]/95 p-[16px] shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)]"
-						: "bg-transparent p-[17px]",
-				)}
-			>
-				{flipping && (
-					<div
-						aria-hidden
-						className="absolute inset-0 origin-left animate-[sweep-flip_0.4s_ease_forwards] rounded-[11px] bg-emerald-400/[0.14]"
-					/>
-				)}
+			{flipping && (
+				<div
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-0 origin-left animate-[sweep-flip_0.4s_ease_forwards] rounded-xl bg-white/[0.08]"
+				/>
+			)}
 
+			<div className="flex flex-col gap-2.5">
+				{/* Header Row: Status & Badges */}
 				<div className="flex items-center justify-between gap-2">
-					<div className="flex items-center gap-[7px]">
+					<div className="flex items-center gap-2">
 						<div className="relative flex items-center justify-center">
 							{isDue && (
 								<span
-									aria-hidden
-									className="absolute -inset-1 animate-ping rounded-full bg-cyan-400/35"
-									style={{ animationDuration: "2.2s" }}
+									aria-hidden="true"
+									className="absolute -inset-1 animate-ping rounded-full bg-white/30"
+									style={{ animationDuration: "2.4s" }}
 								/>
 							)}
-							<StatusShape status={routine.status} />
+							<StatusShape status={routine.status} size={10} />
 						</div>
-						<div
+						<span
 							className={cn(
-								"font-mono font-semibold text-[10.5px]",
-								isDue && "animate-pulse text-cyan-300",
+								"font-medium font-mono text-[10.5px] uppercase tracking-wider",
+								isDue && "text-[#EDEDEF]",
 							)}
 							style={{ color: isDue ? undefined : STATUS_TEXT[routine.status] }}
 						>
 							{routine.status}
-						</div>
+						</span>
 					</div>
+
 					<div className="flex items-center gap-1.5">
-						<Badge
-							variant="outline"
-							className={cn(
-								"rounded-full px-[8px] py-0.5 font-bold font-mono text-[9px] uppercase tracking-[0.06em] transition-all",
-								routine.isTask
-									? "border-cyan-400/40 bg-[#091528]/90 text-cyan-300 shadow-[0_0_10px_-2px_rgba(6,182,212,0.35)]"
-									: "border-blue-500/35 bg-[#080E1C]/90 text-sky-300 shadow-[0_0_10px_-2px_rgba(59,130,246,0.3)]",
-							)}
-						>
+						<span className="rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 font-mono text-[9.5px] text-zinc-400 uppercase tracking-wider">
 							{routine.isTask ? "Task" : "Routine"}
-						</Badge>
-						<Badge
-							variant="secondary"
-							className="rounded-full border border-cyan-500/25 bg-[#091322]/90 px-[9px] py-0.5 font-bold font-mono text-[9.5px] text-cyan-200 uppercase tracking-[0.08em] shadow-[0_0_10px_-3px_rgba(6,182,212,0.25),inset_0_1px_1px_rgba(255,255,255,0.06)]"
-						>
-							{routine.category}
-						</Badge>
+						</span>
+						{routine.category && (
+							<span className="rounded-md border border-white/[0.08] bg-white/[0.04] px-1.5 py-0.5 font-mono text-[9.5px] text-zinc-400 uppercase tracking-wider">
+								{routine.category}
+							</span>
+						)}
 					</div>
 				</div>
 
-				<div className="flex items-center gap-1.5">
+				{/* Title & Importance */}
+				<div className="flex items-center gap-1.5 pt-0.5">
 					{routine.isImportant && (
-						<Star className="size-4 shrink-0 fill-[#F59E0B] text-[#F59E0B] drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
+						<Star className="size-3.5 shrink-0 fill-amber-400/80 text-amber-400/80" />
 					)}
-					<div
+					<h3
 						className={cn(
-							"font-bold text-[15px] tracking-[-0.01em] transition-colors",
-							isCompleted ? "text-[#64748B] line-through" : "text-[#FFFFFF]",
+							"font-medium text-[14.5px] leading-snug tracking-tight transition-colors",
+							isCompleted ? "text-[#52525B] line-through" : "text-[#EDEDEF]",
 						)}
 					>
 						{routine.name}
+					</h3>
+				</div>
+
+				{/* Schedule & Metadata */}
+				<div className="flex flex-col gap-1 font-mono text-xs text-zinc-400 tabular-nums">
+					<div className="flex items-center gap-1.5">
+						{showMandatoryDot && (
+							<span
+								aria-hidden="true"
+								className={cn(
+									"size-1.5 shrink-0 rounded-full",
+									isMandatory(routine)
+										? "bg-[#EDEDEF]"
+										: "border border-zinc-600 bg-transparent",
+								)}
+							/>
+						)}
+						<span className="text-zinc-300">
+							{describeTaskType(routine.taskType, routine.status)}
+						</span>
+					</div>
+					<div className="text-[11px] text-zinc-500">
+						Last done · {formatLastCompleted(routine.lastCompletedAt)}
 					</div>
 				</div>
+			</div>
 
-				<div className="flex items-center gap-1.5 font-mono text-[#94A3B8] text-[11.5px]">
-					{showMandatoryDot && (
-						<span
-							aria-hidden
-							className={cn(
-								"size-1.5 shrink-0 rounded-full",
-								isMandatory(routine)
-									? "bg-[#FFFFFF] shadow-[0_0_6px_rgba(255,255,255,0.7)]"
-									: "border border-[#64748B] bg-transparent",
-							)}
-						/>
-					)}
-					<span>{describeTaskType(routine.taskType, routine.status)}</span>
-				</div>
-				<div className="font-mono text-[#94A3B8] text-[11px]">
-					Last done · {formatLastCompleted(routine.lastCompletedAt)}
-				</div>
-
-				<div
-					className={cn(
-						"pointer-events-none flex gap-1.5 opacity-0 transition-all duration-200 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100",
-						revealed && "pointer-events-auto opacity-100",
-					)}
-				>
-					{showComplete && (
-						<Button
-							size="sm"
-							onClick={(e) => {
-								e.stopPropagation();
-								handleComplete(e.currentTarget);
-							}}
-							className="h-auto rounded-md border border-emerald-400/40 bg-emerald-500/15 px-2.5 py-1 font-semibold text-[11px] text-emerald-300 shadow-[0_0_12px_-2px_rgba(16,185,129,0.3)] backdrop-blur-xs transition-all duration-200 hover:scale-[1.04] hover:border-emerald-400/60 hover:bg-emerald-500/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/40 active:scale-95"
-						>
-							Complete
-						</Button>
-					)}
-					{showPauseResume && (
-						<Button
-							size="sm"
-							variant="outline"
-							onClick={(e) => {
-								e.stopPropagation();
-								onTogglePause();
-							}}
-							className="h-auto rounded-md border border-white/10 bg-[#161C2C]/70 px-2.5 py-1 font-normal text-[11px] text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-xs transition-all duration-200 hover:scale-[1.03] hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40 active:scale-95"
-						>
-							{isPaused ? "Resume" : "Pause"}
-						</Button>
-					)}
+			{/* Sliding Frosted Action Pill Toolbar */}
+			<div
+				className={cn(
+					"pointer-events-none flex translate-y-1 items-center gap-1.5 pt-3 opacity-0 transition-all duration-150 group-focus-within:pointer-events-auto group-focus-within:translate-y-0 group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:translate-y-0 group-hover:opacity-100",
+					revealed && "pointer-events-auto translate-y-0 opacity-100",
+				)}
+			>
+				{showComplete && (
 					<Button
-						size="sm"
+						size="xs"
+						onClick={(e) => {
+							e.stopPropagation();
+							handleComplete(e.currentTarget);
+						}}
+						className="h-6.5 rounded-md border border-white/20 bg-white/10 px-2.5 font-medium text-[#EDEDEF] text-[11px] shadow-sm backdrop-blur-xs transition-all hover:bg-white/20 active:scale-95"
+					>
+						Complete
+					</Button>
+				)}
+				{showPauseResume && (
+					<Button
+						size="xs"
 						variant="outline"
 						onClick={(e) => {
 							e.stopPropagation();
-							onEdit();
+							onTogglePause();
 						}}
-						className="h-auto rounded-md border border-white/10 bg-[#161C2C]/70 px-2.5 py-1 font-normal text-[11px] text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-xs transition-all duration-200 hover:scale-[1.03] hover:border-white/20 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40 active:scale-95"
+						className="h-6.5 rounded-md border border-white/[0.08] bg-white/[0.04] px-2.5 font-normal text-[11px] text-zinc-300 backdrop-blur-xs transition-all hover:bg-white/[0.1] hover:text-[#EDEDEF] active:scale-95"
 					>
-						Edit
+						{isPaused ? "Resume" : "Pause"}
 					</Button>
-				</div>
+				)}
+				<Button
+					size="xs"
+					variant="outline"
+					onClick={(e) => {
+						e.stopPropagation();
+						onEdit();
+					}}
+					className="h-6.5 rounded-md border border-white/[0.08] bg-white/[0.04] px-2.5 font-normal text-[11px] text-zinc-300 backdrop-blur-xs transition-all hover:bg-white/[0.1] hover:text-[#EDEDEF] active:scale-95"
+				>
+					Edit
+				</Button>
 			</div>
 		</motion.div>
 	);

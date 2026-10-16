@@ -1,360 +1,76 @@
 "use client";
 
-import { Mesh, Program, Renderer, Triangle } from "ogl";
-import { useEffect, useRef } from "react";
+import { cn } from "@LE-REMINDER/ui/lib/utils";
 
-function hexToVec3(hex: string): [number, number, number] {
-	const h = hex.replace("#", "");
-	return [
-		Number.parseInt(h.slice(0, 2), 16) / 255,
-		Number.parseInt(h.slice(2, 4), 16) / 255,
-		Number.parseInt(h.slice(4, 6), 16) / 255,
-	];
-}
-
-const vertexShader = `
-attribute vec2 uv;
-attribute vec2 position;
-varying vec2 vUv;
-void main() {
-  vUv = uv;
-  gl_Position = vec4(position, 0, 1);
-}
-`;
-
-const fragmentShader = `
-precision highp float;
-
-uniform float uTime;
-uniform vec3 uResolution;
-uniform float uSpeed;
-uniform float uScale;
-uniform float uBrightness;
-uniform vec3 uColor1;
-uniform vec3 uColor2;
-uniform float uNoiseFreq;
-uniform float uNoiseAmp;
-uniform float uBandHeight;
-uniform float uBandSpread;
-uniform float uOctaveDecay;
-uniform float uLayerOffset;
-uniform float uColorSpeed;
-uniform vec2 uMouse;
-uniform float uMouseInfluence;
-uniform bool uEnableMouse;
-
-#define TAU 6.28318
-
-vec3 gradientHash(vec3 p) {
-  p = vec3(
-    dot(p, vec3(127.1, 311.7, 234.6)),
-    dot(p, vec3(269.5, 183.3, 198.3)),
-    dot(p, vec3(169.5, 283.3, 156.9))
-  );
-  vec3 h = fract(sin(p) * 43758.5453123);
-  float phi = acos(2.0 * h.x - 1.0);
-  float theta = TAU * h.y;
-  return vec3(cos(theta) * sin(phi), sin(theta) * cos(phi), cos(phi));
-}
-
-float quinticSmooth(float t) {
-  float t2 = t * t;
-  float t3 = t * t2;
-  return 6.0 * t3 * t2 - 15.0 * t2 * t2 + 10.0 * t3;
-}
-
-vec3 cosineGradient(float t, vec3 a, vec3 b, vec3 c, vec3 d) {
-  return a + b * cos(TAU * (c * t + d));
-}
-
-float perlin3D(float amplitude, float frequency, float px, float py, float pz) {
-  float x = px * frequency;
-  float y = py * frequency;
-
-  float fx = floor(x); float fy = floor(y); float fz = floor(pz);
-  float cx = ceil(x);  float cy = ceil(y);  float cz = ceil(pz);
-
-  vec3 g000 = gradientHash(vec3(fx, fy, fz));
-  vec3 g100 = gradientHash(vec3(cx, fy, fz));
-  vec3 g010 = gradientHash(vec3(fx, cy, fz));
-  vec3 g110 = gradientHash(vec3(cx, cy, fz));
-  vec3 g001 = gradientHash(vec3(fx, fy, cz));
-  vec3 g101 = gradientHash(vec3(cx, fy, cz));
-  vec3 g011 = gradientHash(vec3(fx, cy, cz));
-  vec3 g111 = gradientHash(vec3(cx, cy, cz));
-
-  float d000 = dot(g000, vec3(x - fx, y - fy, pz - fz));
-  float d100 = dot(g100, vec3(x - cx, y - fy, pz - fz));
-  float d010 = dot(g010, vec3(x - fx, y - cy, pz - fz));
-  float d110 = dot(g110, vec3(x - cx, y - cy, pz - fz));
-  float d001 = dot(g001, vec3(x - fx, y - fy, pz - cz));
-  float d101 = dot(g101, vec3(x - cx, y - fy, pz - cz));
-  float d011 = dot(g011, vec3(x - fx, y - cy, pz - cz));
-  float d111 = dot(g111, vec3(x - cx, y - cy, pz - cz));
-
-  float sx = quinticSmooth(x - fx);
-  float sy = quinticSmooth(y - fy);
-  float sz = quinticSmooth(pz - fz);
-
-  float lx00 = mix(d000, d100, sx);
-  float lx10 = mix(d010, d110, sx);
-  float lx01 = mix(d001, d101, sx);
-  float lx11 = mix(d011, d111, sx);
-
-  float ly0 = mix(lx00, lx10, sy);
-  float ly1 = mix(lx01, lx11, sy);
-
-  return amplitude * mix(ly0, ly1, sz);
-}
-
-float auroraGlow(float t, vec2 shift) {
-  vec2 uv = gl_FragCoord.xy / uResolution.y;
-  uv += shift;
-
-  float noiseVal = 0.0;
-  float freq = uNoiseFreq;
-  float amp = uNoiseAmp;
-  vec2 samplePos = uv * uScale;
-
-  for (float i = 0.0; i < 3.0; i += 1.0) {
-    noiseVal += perlin3D(amp, freq, samplePos.x, samplePos.y, t);
-    amp *= uOctaveDecay;
-    freq *= 2.0;
-  }
-
-  float yBand = uv.y * 10.0 - uBandHeight * 10.0;
-  return 0.3 * max(exp(uBandSpread * (1.0 - 1.1 * abs(noiseVal + yBand))), 0.0);
-}
-
-void main() {
-  vec2 uv = gl_FragCoord.xy / uResolution.xy;
-  float t = uSpeed * 0.4 * uTime;
-
-  vec2 shift = vec2(0.0);
-  if (uEnableMouse) {
-    shift = (uMouse - 0.5) * uMouseInfluence;
-  }
-
-  vec3 col = vec3(0.0);
-  col += 0.99 * auroraGlow(t, shift) * cosineGradient(uv.x + uTime * uSpeed * 0.2 * uColorSpeed, vec3(0.5), vec3(0.5), vec3(1.0), vec3(0.3, 0.20, 0.20)) * uColor1;
-  col += 0.99 * auroraGlow(t + uLayerOffset, shift) * cosineGradient(uv.x + uTime * uSpeed * 0.1 * uColorSpeed, vec3(0.5), vec3(0.5), vec3(2.0, 1.0, 0.0), vec3(0.5, 0.20, 0.25)) * uColor2;
-
-  col *= uBrightness;
-  float alpha = clamp(length(col), 0.0, 1.0);
-  gl_FragColor = vec4(col, alpha);
-}
-`;
-
-interface SoftAuroraProps {
+export interface SoftAuroraProps {
+	className?: string;
+	style?: React.CSSProperties;
 	speed?: number;
 	scale?: number;
 	brightness?: number;
-	color1?: string;
-	color2?: string;
-	noiseFrequency?: number;
-	noiseAmplitude?: number;
+	noiseFreq?: number;
+	noiseAmp?: number;
 	bandHeight?: number;
 	bandSpread?: number;
 	octaveDecay?: number;
 	layerOffset?: number;
+	color1?: string;
+	color2?: string;
 	colorSpeed?: number;
-	enableMouseInteraction?: boolean;
 	mouseInfluence?: number;
+	enableMouse?: boolean;
 }
 
-// Ported from the reactbits.dev-style SoftAurora snippet (ogl-based WebGL
-// shader, not the framer-motion blob in aurora-glow.tsx). Defaults are
-// tuned to modern electric blue and luminous cyan to sit on top of the
-// #131722 midnight blue background.
-export function SoftAurora({
-	speed = 0.4,
-	scale = 1.4,
-	brightness = 0.55,
-	color1 = "#3B82F6",
-	color2 = "#06B6D4",
-	noiseFrequency = 2.2,
-	noiseAmplitude = 0.7,
-	bandHeight = 0.5,
-	bandSpread = 0.9,
-	octaveDecay = 0.12,
-	layerOffset = 0.6,
-	colorSpeed = 0.6,
-	enableMouseInteraction = true,
-	mouseInfluence = 0.2,
-}: SoftAuroraProps) {
-	const containerRef = useRef<HTMLDivElement>(null);
+/**
+ * Zero-cost, high-performance CSS ambient backdrop with tactile SVG noise texture.
+ * Eliminates continuous WebGL GPU rendering loops in favor of hardware-accelerated CSS
+ * and a static SVG noise pattern for the Obsidian & Alabaster design system.
+ */
+export function SoftAurora({ className, style }: SoftAuroraProps) {
+	return (
+		<div
+			aria-hidden="true"
+			className={cn(
+				"pointer-events-none absolute inset-0 select-none overflow-hidden",
+				className,
+			)}
+			style={style}
+		>
+			{/* Top-center ambient specular sheen */}
+			<div
+				className="absolute inset-0"
+				style={{
+					background:
+						"radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 255, 255, 0.07), transparent 70%)",
+				}}
+			/>
 
-	useEffect(() => {
-		if (!containerRef.current) return;
-		// Explicit non-null type (not just a narrowed `const`) so the
-		// resize()/cleanup closures below — invoked later, outside this
-		// synchronous block — still see it as non-nullable.
-		const container: HTMLDivElement = containerRef.current;
+			{/* Subtle bottom-edge depth anchor */}
+			<div
+				className="absolute inset-x-0 bottom-0 h-1/3"
+				style={{
+					background:
+						"radial-gradient(ellipse 60% 40% at 50% 110%, rgba(255, 255, 255, 0.02), transparent 70%)",
+				}}
+			/>
 
-		const dpr = Math.min(
-			typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1,
-			1.25,
-		);
-		const renderer = new Renderer({
-			alpha: true,
-			premultipliedAlpha: false,
-		});
-		const gl = renderer.gl;
-		gl.clearColor(0, 0, 0, 0);
-
-		let program: Program | undefined;
-		const currentMouse: [number, number] = [0.5, 0.5];
-		let targetMouse: [number, number] = [0.5, 0.5];
-
-		function handleMouseMove(e: MouseEvent) {
-			const rect = gl.canvas.getBoundingClientRect();
-			targetMouse = [
-				(e.clientX - rect.left) / rect.width,
-				1.0 - (e.clientY - rect.top) / rect.height,
-			];
-		}
-
-		function handleMouseLeave() {
-			targetMouse = [0.5, 0.5];
-		}
-
-		function resize() {
-			const width = container.offsetWidth;
-			const height = container.offsetHeight;
-			renderer.setSize(Math.round(width * dpr), Math.round(height * dpr));
-			gl.canvas.style.width = `${width}px`;
-			gl.canvas.style.height = `${height}px`;
-			if (program) {
-				program.uniforms.uResolution.value = [
-					gl.canvas.width,
-					gl.canvas.height,
-					gl.canvas.width / gl.canvas.height,
-				];
-			}
-		}
-		window.addEventListener("resize", resize);
-		resize();
-
-		const geometry = new Triangle(gl);
-		program = new Program(gl, {
-			vertex: vertexShader,
-			fragment: fragmentShader,
-			uniforms: {
-				uTime: { value: 0 },
-				uResolution: {
-					value: [
-						gl.canvas.width,
-						gl.canvas.height,
-						gl.canvas.width / gl.canvas.height,
-					],
-				},
-				uSpeed: { value: speed },
-				uScale: { value: scale },
-				uBrightness: { value: brightness },
-				uColor1: { value: hexToVec3(color1) },
-				uColor2: { value: hexToVec3(color2) },
-				uNoiseFreq: { value: noiseFrequency },
-				uNoiseAmp: { value: noiseAmplitude },
-				uBandHeight: { value: bandHeight },
-				uBandSpread: { value: bandSpread },
-				uOctaveDecay: { value: octaveDecay },
-				uLayerOffset: { value: layerOffset },
-				uColorSpeed: { value: colorSpeed },
-				uMouse: { value: new Float32Array([0.5, 0.5]) },
-				uMouseInfluence: { value: mouseInfluence },
-				uEnableMouse: { value: enableMouseInteraction },
-			},
-		});
-
-		const mesh = new Mesh(gl, { geometry, program });
-		container.appendChild(gl.canvas);
-
-		if (enableMouseInteraction) {
-			gl.canvas.addEventListener("mousemove", handleMouseMove);
-			gl.canvas.addEventListener("mouseleave", handleMouseLeave);
-		}
-
-		const prefersReducedMotion = window.matchMedia(
-			"(prefers-reduced-motion: reduce)",
-		).matches;
-
-		let animationFrameId: number | null = null;
-		let isDestroyed = false;
-
-		function render(time: number) {
-			if (!program) return;
-			program.uniforms.uTime.value = time * 0.001;
-
-			if (enableMouseInteraction) {
-				currentMouse[0] += 0.05 * (targetMouse[0] - currentMouse[0]);
-				currentMouse[1] += 0.05 * (targetMouse[1] - currentMouse[1]);
-				(program.uniforms.uMouse.value as Float32Array)[0] = currentMouse[0];
-				(program.uniforms.uMouse.value as Float32Array)[1] = currentMouse[1];
-			} else {
-				(program.uniforms.uMouse.value as Float32Array)[0] = 0.5;
-				(program.uniforms.uMouse.value as Float32Array)[1] = 0.5;
-			}
-
-			renderer.render({ scene: mesh });
-		}
-
-		function update(time: number) {
-			if (isDestroyed || document.hidden) return;
-			render(time);
-			animationFrameId = requestAnimationFrame(update);
-		}
-
-		if (prefersReducedMotion) {
-			// Single static frame for reduced motion users
-			render(1000);
-		} else {
-			animationFrameId = requestAnimationFrame(update);
-		}
-
-		function handleVisibilityChange() {
-			if (prefersReducedMotion || isDestroyed) return;
-			if (document.hidden) {
-				if (animationFrameId !== null) {
-					cancelAnimationFrame(animationFrameId);
-					animationFrameId = null;
-				}
-			} else if (animationFrameId === null) {
-				animationFrameId = requestAnimationFrame(update);
-			}
-		}
-
-		document.addEventListener("visibilitychange", handleVisibilityChange);
-
-		return () => {
-			isDestroyed = true;
-			if (animationFrameId !== null) {
-				cancelAnimationFrame(animationFrameId);
-			}
-			window.removeEventListener("resize", resize);
-			document.removeEventListener("visibilitychange", handleVisibilityChange);
-			if (enableMouseInteraction) {
-				gl.canvas.removeEventListener("mousemove", handleMouseMove);
-				gl.canvas.removeEventListener("mouseleave", handleMouseLeave);
-			}
-			container.removeChild(gl.canvas);
-			gl.getExtension("WEBGL_lose_context")?.loseContext();
-		};
-	}, [
-		speed,
-		scale,
-		brightness,
-		color1,
-		color2,
-		noiseFrequency,
-		noiseAmplitude,
-		bandHeight,
-		bandSpread,
-		octaveDecay,
-		layerOffset,
-		colorSpeed,
-		enableMouseInteraction,
-		mouseInfluence,
-	]);
-
-	return <div ref={containerRef} className="h-full w-full" />;
+			{/* Tactile micro-noise overlay (zero layout cost, pure SVG filter data URI) */}
+			<svg
+				className="absolute inset-0 size-full opacity-[0.025]"
+				xmlns="http://www.w3.org/2000/svg"
+				aria-hidden="true"
+			>
+				<filter id="monochrome-noise">
+					<feTurbulence
+						type="fractalNoise"
+						baseFrequency="0.8"
+						numOctaves="3"
+						stitchTiles="stitch"
+					/>
+					<feColorMatrix type="saturate" values="0" />
+				</filter>
+				<rect width="100%" height="100%" filter="url(#monochrome-noise)" />
+			</svg>
+		</div>
+	);
 }
