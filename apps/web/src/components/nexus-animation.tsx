@@ -28,8 +28,8 @@ export function NexusAnimation({ className }: { className?: string }) {
 					cx="50"
 					cy="50"
 					r="46"
-					stroke="rgba(255, 255, 255, 0.08)"
 					strokeWidth="1"
+					className="light:stroke-stone-400/35 stroke-white/10"
 				/>
 
 				{/* Center crosshair reticle ticks */}
@@ -38,39 +38,59 @@ export function NexusAnimation({ className }: { className?: string }) {
 					y1="6"
 					x2="50"
 					y2="14"
-					stroke="rgba(255, 255, 255, 0.25)"
 					strokeWidth="1"
+					className="light:stroke-stone-600/50 stroke-white/25"
 				/>
 				<line
 					x1="50"
 					y1="86"
 					x2="50"
 					y2="94"
-					stroke="rgba(255, 255, 255, 0.25)"
 					strokeWidth="1"
+					className="light:stroke-stone-600/50 stroke-white/25"
 				/>
 				<line
 					x1="6"
 					y1="50"
 					x2="14"
 					y2="50"
-					stroke="rgba(255, 255, 255, 0.25)"
 					strokeWidth="1"
+					className="light:stroke-stone-600/50 stroke-white/25"
 				/>
 				<line
 					x1="86"
 					y1="50"
 					x2="94"
 					y2="50"
-					stroke="rgba(255, 255, 255, 0.25)"
 					strokeWidth="1"
+					className="light:stroke-stone-600/50 stroke-white/25"
 				/>
 
 				{/* Precision 45-degree corner micro-dots */}
-				<circle cx="21" cy="21" r="1" fill="rgba(255, 255, 255, 0.2)" />
-				<circle cx="79" cy="21" r="1" fill="rgba(255, 255, 255, 0.2)" />
-				<circle cx="21" cy="79" r="1" fill="rgba(255, 255, 255, 0.2)" />
-				<circle cx="79" cy="79" r="1" fill="rgba(255, 255, 255, 0.2)" />
+				<circle
+					cx="21"
+					cy="21"
+					r="1"
+					className="fill-white/20 light:fill-stone-500/40"
+				/>
+				<circle
+					cx="79"
+					cy="21"
+					r="1"
+					className="fill-white/20 light:fill-stone-500/40"
+				/>
+				<circle
+					cx="21"
+					cy="79"
+					r="1"
+					className="fill-white/20 light:fill-stone-500/40"
+				/>
+				<circle
+					cx="79"
+					cy="79"
+					r="1"
+					className="fill-white/20 light:fill-stone-500/40"
+				/>
 			</svg>
 
 			{/* Outer clockwise rotating dashed ring */}
@@ -85,12 +105,17 @@ export function NexusAnimation({ className }: { className?: string }) {
 					cx="50"
 					cy="50"
 					r="38"
-					stroke="rgba(255, 255, 255, 0.16)"
 					strokeWidth="1"
 					strokeDasharray="4 6"
+					className="light:stroke-stone-400/40 stroke-white/20"
 				/>
 				{/* Single precision indicator mark on the outer ring */}
-				<circle cx="50" cy="12" r="1.5" fill="#EDEDEF" />
+				<circle
+					cx="50"
+					cy="12"
+					r="1.5"
+					className="fill-[#EDEDEF] light:fill-stone-800"
+				/>
 			</svg>
 
 			{/* Inner counter-clockwise rotating ring */}
@@ -105,18 +130,28 @@ export function NexusAnimation({ className }: { className?: string }) {
 					cx="50"
 					cy="50"
 					r="26"
-					stroke="rgba(255, 255, 255, 0.12)"
 					strokeWidth="1"
 					strokeDasharray="2 4"
+					className="light:stroke-stone-400/30 stroke-white/15"
 				/>
-				<circle cx="24" cy="50" r="1.2" fill="#A1A1AA" />
-				<circle cx="76" cy="50" r="1.2" fill="#A1A1AA" />
+				<circle
+					cx="24"
+					cy="50"
+					r="1.2"
+					className="fill-[#A1A1AA] light:fill-stone-600"
+				/>
+				<circle
+					cx="76"
+					cy="50"
+					r="1.2"
+					className="fill-[#A1A1AA] light:fill-stone-600"
+				/>
 			</svg>
 
 			{/* Center Alabaster pulse core */}
 			<div className="relative flex items-center justify-center">
-				<div className="size-2 rounded-full bg-[#EDEDEF] shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
-				<div className="absolute -inset-1.5 animate-[core-pulse_3s_ease-in-out_infinite] rounded-full border border-white/20 motion-reduce:animate-none" />
+				<div className="size-2 rounded-full bg-[#EDEDEF] light:bg-stone-800 light:shadow-[0_0_8px_rgba(28,25,23,0.3)] shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
+				<div className="absolute -inset-1.5 animate-[core-pulse_3s_ease-in-out_infinite] rounded-full border border-white/20 light:border-stone-400/40 motion-reduce:animate-none" />
 			</div>
 		</div>
 	);

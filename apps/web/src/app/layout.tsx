@@ -26,8 +26,15 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en" suppressHydrationWarning>
+			<head>
+				<script
+					dangerouslySetInnerHTML={{
+						__html: `(function(){try{var t=localStorage.getItem("le-reminder-theme");if(t==="light"||(!t&&window.matchMedia("(prefers-color-scheme: light)").matches)){document.documentElement.classList.add("light");}}catch(e){}})();`,
+					}}
+				/>
+			</head>
 			<body
-				className={`${inter.variable} ${ibmPlexMono.variable} min-h-screen w-full bg-[#131722] text-[#F1F5F9] antialiased`}
+				className={`${inter.variable} ${ibmPlexMono.variable} min-h-screen w-full bg-[var(--canvas-bg,#09090B)] text-[var(--text-primary,#F4F4F6)] antialiased transition-colors duration-200`}
 			>
 				<Providers>{children}</Providers>
 			</body>

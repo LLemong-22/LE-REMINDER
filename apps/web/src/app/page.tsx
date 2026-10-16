@@ -5,7 +5,16 @@ import type { RoutineId } from "@LE-REMINDER/core/domain/identity";
 import { cn } from "@LE-REMINDER/ui/lib/utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { TRPCClientError } from "@trpc/client";
-import { BarChart2, Github, Inbox, Search, Sparkles, X } from "lucide-react";
+import {
+	BarChart2,
+	Github,
+	Inbox,
+	Moon,
+	Search,
+	Sparkles,
+	Sun,
+	X,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -43,7 +52,9 @@ function TabButton({
 			onClick={onClick}
 			className={cn(
 				"relative cursor-pointer select-none rounded-full px-3.5 py-1 font-medium text-xs transition-colors duration-150 focus-visible:outline-none",
-				active ? "text-[#EDEDEF]" : "text-zinc-400 hover:text-[#EDEDEF]",
+				active
+					? "light:text-stone-900 text-zinc-100"
+					: "light:text-stone-600 text-zinc-400 hover:text-zinc-100 light:hover:text-stone-900",
 			)}
 		>
 			{children}
@@ -51,7 +62,7 @@ function TabButton({
 				<motion.div
 					layoutId="activeTab"
 					transition={{ type: "spring", stiffness: 450, damping: 35 }}
-					className="absolute inset-0 -z-10 rounded-full border border-white/[0.12] bg-white/[0.1] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+					className="absolute inset-0 -z-10 rounded-full border border-white/[0.12] light:border-stone-400 bg-white/[0.1] light:bg-stone-200/80 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
 				/>
 			)}
 		</button>
@@ -64,15 +75,15 @@ function RoutinesLoadingState() {
 			{Array.from({ length: 6 }).map((_, i) => (
 				<div
 					key={i}
-					className="flex flex-col gap-3 rounded-xl border border-white/[0.06] bg-zinc-900/40 p-4"
+					className="flex flex-col gap-3 rounded-xl border border-white/[0.08] light:border-stone-300/80 bg-zinc-900/40 light:bg-stone-200/40 p-4"
 				>
 					<div className="flex items-center justify-between">
-						<div className="size-2.5 animate-pulse rounded-full bg-white/10" />
-						<div className="h-3.5 w-14 animate-pulse rounded-md bg-white/10" />
+						<div className="size-2.5 animate-pulse rounded-full bg-white/10 light:bg-stone-400/40" />
+						<div className="h-3.5 w-14 animate-pulse rounded-md bg-white/10 light:bg-stone-400/40" />
 					</div>
-					<div className="h-4 w-3/4 animate-pulse rounded bg-white/10" />
-					<div className="h-3 w-1/2 animate-pulse rounded bg-white/5" />
-					<div className="h-2.5 w-1/3 animate-pulse rounded bg-white/5" />
+					<div className="h-4 w-3/4 animate-pulse rounded bg-white/10 light:bg-stone-400/40" />
+					<div className="h-3 w-1/2 animate-pulse rounded bg-white/5 light:bg-stone-400/20" />
+					<div className="h-2.5 w-1/3 animate-pulse rounded bg-white/5 light:bg-stone-400/20" />
 				</div>
 			))}
 		</div>
@@ -81,14 +92,14 @@ function RoutinesLoadingState() {
 
 function RoutinesErrorState({ onRetry }: { onRetry: () => void }) {
 	return (
-		<div className="flex flex-col items-center gap-3 rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-12 text-center backdrop-blur-md">
-			<div className="font-mono text-xs text-zinc-400">
+		<div className="flex flex-col items-center gap-3 rounded-2xl border border-white/[0.11] light:border-stone-300/80 bg-zinc-900/65 light:bg-[#F5F4F0] p-12 text-center backdrop-blur-md">
+			<div className="font-mono light:text-stone-500 text-xs text-zinc-400">
 				Couldn't load routines from the database.
 			</div>
 			<button
 				type="button"
 				onClick={onRetry}
-				className="cursor-pointer rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 font-medium text-[#EDEDEF] text-xs transition-all hover:bg-white/20 active:scale-95"
+				className="cursor-pointer rounded-lg border border-white/20 light:border-stone-400 bg-white/10 light:bg-stone-200 px-3 py-1.5 font-medium light:text-stone-900 text-xs text-zinc-100 transition-all hover:bg-white/20 active:scale-95"
 			>
 				Retry
 			</button>
@@ -100,6 +111,29 @@ export default function Home() {
 	const router = useRouter();
 	const [searchInput, setSearchInput] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
+	const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+	// Synchronize theme state with DOM & localStorage on mount
+	useEffect(() => {
+		const isLight = document.documentElement.classList.contains("light");
+		setTheme(isLight ? "light" : "dark");
+	}, []);
+
+	function toggleTheme() {
+		const next = theme === "dark" ? "light" : "dark";
+		setTheme(next);
+		if (next === "light") {
+			document.documentElement.classList.add("light");
+			try {
+				localStorage.setItem("le-reminder-theme", "light");
+			} catch {}
+		} else {
+			document.documentElement.classList.remove("light");
+			try {
+				localStorage.setItem("le-reminder-theme", "dark");
+			} catch {}
+		}
+	}
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -249,16 +283,15 @@ export default function Home() {
 
 	return (
 		<div
-			className="min-h-screen text-[#EDEDEF]"
+			className="min-h-screen text-[var(--text-primary,#F4F4F6)] transition-colors duration-200"
 			style={{
-				background: "#09090B",
-				backgroundImage:
-					"radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 255, 255, 0.06), transparent 70%)",
+				background: "var(--canvas-bg)",
+				backgroundImage: "var(--canvas-glow)",
 			}}
 		>
-			{/* Floating Smoked-Glass Navigation Bar */}
-			<header className="sticky top-3 z-40 mx-auto flex w-[calc(100%-2rem)] max-w-5xl items-center justify-between rounded-full border border-white/[0.08] bg-zinc-900/70 px-5 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.1)] backdrop-blur-md">
-				<div className="w-auto shrink-0 font-semibold text-[#EDEDEF] text-xs uppercase tracking-wider sm:w-[160px]">
+			{/* Floating Smoked-Glass / Warm-Stone Navigation Bar */}
+			<header className="sticky top-3 z-40 mx-auto flex w-[calc(100%-2rem)] max-w-5xl items-center justify-between rounded-full border border-[var(--header-border)] bg-[var(--header-bg)] px-5 py-2 shadow-[var(--header-shadow)] backdrop-blur-md">
+				<div className="w-auto shrink-0 font-semibold light:text-stone-900 text-xs text-zinc-100 uppercase tracking-wider sm:w-[170px]">
 					LE-REMINDER
 				</div>
 
@@ -289,15 +322,30 @@ export default function Home() {
 					</TabButton>
 				</div>
 
-				<div className="flex w-auto shrink-0 justify-end sm:w-[160px]">
+				<div className="flex w-auto shrink-0 items-center justify-end gap-2 sm:w-[170px]">
+					{/* 1-Click Theme Toggle Button */}
+					<button
+						type="button"
+						onClick={toggleTheme}
+						title={`Switch to ${theme === "dark" ? "Warm Editorial Stone (Light)" : "Obsidian Titanium (Dark)"}`}
+						aria-label="Toggle theme"
+						className="flex size-7.5 cursor-pointer items-center justify-center rounded-full border border-white/10 light:border-stone-300 bg-white/[0.04] light:bg-stone-200/60 light:text-stone-700 text-zinc-300 transition-all hover:border-white/20 light:hover:border-stone-400 hover:bg-white/[0.08] hover:text-white light:hover:text-stone-900 active:scale-90"
+					>
+						{theme === "dark" ? (
+							<Sun className="size-3.5 transition-transform duration-300 hover:rotate-45" />
+						) : (
+							<Moon className="size-3.5 transition-transform duration-300 hover:-rotate-12" />
+						)}
+					</button>
+
 					<a
-						href="https://github.com/Lemong-22/LE-REMINDER.git"
+						href="https://github.com/LLemong-22/LE-REMINDER.git"
 						target="_blank"
 						rel="noopener noreferrer"
-						className="flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono text-[11px] text-zinc-400 transition-colors hover:bg-white/[0.06] hover:text-[#EDEDEF]"
+						className="flex items-center gap-1.5 rounded-full px-2.5 py-1 font-mono light:text-stone-600 text-[11px] text-zinc-400 transition-colors hover:bg-white/[0.06] light:hover:bg-stone-200/60 hover:text-zinc-100 light:hover:text-stone-900"
 					>
 						<Github className="size-3.5" />
-						<span className="hidden sm:inline">Lemong-22</span>
+						<span className="hidden sm:inline">LLemong-22</span>
 					</a>
 				</div>
 			</header>
@@ -314,23 +362,23 @@ export default function Home() {
 								<div className="flex flex-col gap-3">
 									<div className="flex items-center justify-between gap-4">
 										<div className="flex flex-1 items-center gap-3">
-											<h2 className="shrink-0 font-semibold text-[#EDEDEF] text-base tracking-tight">
+											<h2 className="shrink-0 font-semibold light:text-stone-900 text-base text-zinc-100 tracking-tight">
 												Routines
 											</h2>
 											<div className="relative flex w-full max-w-xs items-center">
-												<Search className="pointer-events-none absolute left-3 size-3.5 text-zinc-500" />
+												<Search className="pointer-events-none absolute left-3 size-3.5 light:text-stone-500 text-zinc-400" />
 												<input
 													type="text"
 													placeholder="Search tasks & routines..."
 													value={searchInput}
 													onChange={(e) => setSearchInput(e.target.value)}
-													className="w-full rounded-lg border border-white/[0.08] bg-zinc-950/70 py-1.5 pr-8 pl-8 font-sans text-[#EDEDEF] text-xs placeholder-zinc-500 outline-none transition-all duration-150 focus:border-white/30 focus:ring-1 focus:ring-white/20"
+													className="w-full rounded-lg border border-white/[0.08] light:border-stone-300 bg-zinc-950/70 light:bg-stone-100 py-1.5 pr-8 pl-8 font-sans light:text-stone-900 text-xs text-zinc-100 light:placeholder-stone-400 placeholder-zinc-500 outline-none transition-all duration-150 focus:border-white/30 light:focus:border-stone-500 focus:ring-1 focus:ring-white/20 light:focus:ring-stone-400/40"
 												/>
 												{searchInput && (
 													<button
 														type="button"
 														onClick={() => setSearchInput("")}
-														className="absolute right-2.5 cursor-pointer text-zinc-500 transition-colors hover:text-[#EDEDEF]"
+														className="absolute right-2.5 cursor-pointer light:text-stone-500 text-zinc-400 transition-colors hover:text-zinc-100 light:hover:text-stone-900"
 														aria-label="Clear search"
 													>
 														<X className="size-3.5" />
@@ -342,7 +390,7 @@ export default function Home() {
 										<button
 											type="button"
 											onClick={handleOpenCreate}
-											className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg bg-[#EDEDEF] px-3.5 py-1.5 font-medium text-[#09090B] text-xs shadow-sm transition-all duration-150 hover:scale-[1.02] hover:bg-white active:scale-95"
+											className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg bg-[var(--cta-bg)] px-3.5 py-1.5 font-medium text-[var(--cta-text)] text-xs shadow-sm transition-all duration-150 hover:scale-[1.02] hover:opacity-90 active:scale-95"
 										>
 											+ New Routine
 										</button>
@@ -356,8 +404,8 @@ export default function Home() {
 												className={cn(
 													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 													selectedCategory === null
-														? "border-white/25 bg-white/[0.1] font-semibold text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
-														: "border-white/[0.06] bg-zinc-900/40 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
+														? "border-white/25 light:border-stone-400 bg-white/[0.1] light:bg-stone-200 font-semibold light:text-stone-900 text-zinc-100 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+														: "border-white/[0.06] light:border-stone-300/80 bg-zinc-900/40 light:bg-stone-100 light:text-stone-600 text-zinc-400 hover:border-white/[0.14] light:hover:border-stone-400 hover:text-zinc-100 light:hover:text-stone-900",
 												)}
 											>
 												All
@@ -374,15 +422,15 @@ export default function Home() {
 													className={cn(
 														"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 														selectedCategory === cat
-															? "border-white/25 bg-white/[0.1] font-semibold text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
-															: "border-white/[0.06] bg-zinc-900/40 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
+															? "border-white/25 light:border-stone-400 bg-white/[0.1] light:bg-stone-200 font-semibold light:text-stone-900 text-zinc-100 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+															: "border-white/[0.06] light:border-stone-300/80 bg-zinc-900/40 light:bg-stone-100 light:text-stone-600 text-zinc-400 hover:border-white/[0.14] light:hover:border-stone-400 hover:text-zinc-100 light:hover:text-stone-900",
 													)}
 												>
 													{cat}
 												</button>
 											))}
 											{(searchInput || selectedCategory) && (
-												<span className="ml-2 font-mono text-xs text-zinc-500 tabular-nums">
+												<span className="ml-2 font-mono light:text-stone-500 text-xs text-zinc-400 tabular-nums">
 													Showing {sortedRoutines.length} of {routines.length}
 												</span>
 											)}
@@ -395,11 +443,11 @@ export default function Home() {
 								) : routinesQuery.isError ? (
 									<RoutinesErrorState onRetry={() => routinesQuery.refetch()} />
 								) : sortedRoutines.length === 0 ? (
-									<div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/[0.08] border-dashed bg-zinc-950/40 px-6 py-12 text-center">
-										<div className="flex size-10 items-center justify-center rounded-full border border-white/[0.08] bg-zinc-900/60 text-zinc-500">
+									<div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/[0.08] light:border-stone-300 border-dashed bg-zinc-950/40 light:bg-stone-200/40 px-6 py-12 text-center">
+										<div className="flex size-10 items-center justify-center rounded-full border border-white/[0.08] light:border-stone-300 bg-zinc-900/60 light:bg-stone-200 light:text-stone-600 text-zinc-400">
 											<Inbox className="size-4 stroke-[1.5]" />
 										</div>
-										<p className="font-mono text-xs text-zinc-500">
+										<p className="font-mono light:text-stone-500 text-xs text-zinc-400">
 											{selectedCategory
 												? `No tasks for "${selectedCategory}".`
 												: searchInput
@@ -412,7 +460,7 @@ export default function Home() {
 												setSearchInput("");
 												setSelectedCategory(null);
 											}}
-											className="cursor-pointer font-mono text-[11px] text-zinc-400 underline underline-offset-4 transition-colors hover:text-[#EDEDEF] active:scale-95"
+											className="cursor-pointer font-mono light:text-stone-600 text-[11px] text-zinc-400 underline underline-offset-4 transition-colors hover:text-zinc-100 light:hover:text-stone-900 active:scale-95"
 										>
 											View all tasks
 										</button>
@@ -435,23 +483,23 @@ export default function Home() {
 								<div className="flex flex-col gap-3">
 									<div className="flex items-center justify-between gap-4">
 										<div className="flex flex-1 items-center gap-3">
-											<h2 className="shrink-0 font-semibold text-[#EDEDEF] text-base tracking-tight">
+											<h2 className="shrink-0 font-semibold light:text-stone-900 text-base text-zinc-100 tracking-tight">
 												All Tasks
 											</h2>
 											<div className="relative flex w-full max-w-xs items-center">
-												<Search className="pointer-events-none absolute left-3 size-3.5 text-zinc-500" />
+												<Search className="pointer-events-none absolute left-3 size-3.5 light:text-stone-500 text-zinc-400" />
 												<input
 													type="text"
 													placeholder="Search tasks & routines..."
 													value={searchInput}
 													onChange={(e) => setSearchInput(e.target.value)}
-													className="w-full rounded-lg border border-white/[0.08] bg-zinc-950/70 py-1.5 pr-8 pl-8 font-sans text-[#EDEDEF] text-xs placeholder-zinc-500 outline-none transition-all duration-150 focus:border-white/30 focus:ring-1 focus:ring-white/20"
+													className="w-full rounded-lg border border-white/[0.08] light:border-stone-300 bg-zinc-950/70 light:bg-stone-100 py-1.5 pr-8 pl-8 font-sans light:text-stone-900 text-xs text-zinc-100 light:placeholder-stone-400 placeholder-zinc-500 outline-none transition-all duration-150 focus:border-white/30 light:focus:border-stone-500 focus:ring-1 focus:ring-white/20 light:focus:ring-stone-400/40"
 												/>
 												{searchInput && (
 													<button
 														type="button"
 														onClick={() => setSearchInput("")}
-														className="absolute right-2.5 cursor-pointer text-zinc-500 transition-colors hover:text-[#EDEDEF]"
+														className="absolute right-2.5 cursor-pointer light:text-stone-500 text-zinc-400 transition-colors hover:text-zinc-100 light:hover:text-stone-900"
 														aria-label="Clear search"
 													>
 														<X className="size-3.5" />
@@ -469,8 +517,8 @@ export default function Home() {
 												className={cn(
 													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 													selectedCategory === null
-														? "border-white/25 bg-white/[0.1] font-semibold text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
-														: "border-white/[0.06] bg-zinc-900/40 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
+														? "border-white/25 light:border-stone-400 bg-white/[0.1] light:bg-stone-200 font-semibold light:text-stone-900 text-zinc-100 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+														: "border-white/[0.06] light:border-stone-300/80 bg-zinc-900/40 light:bg-stone-100 light:text-stone-600 text-zinc-400 hover:border-white/[0.14] light:hover:border-stone-400 hover:text-zinc-100 light:hover:text-stone-900",
 												)}
 											>
 												All
@@ -487,15 +535,15 @@ export default function Home() {
 													className={cn(
 														"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 														selectedCategory === cat
-															? "border-white/25 bg-white/[0.1] font-semibold text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
-															: "border-white/[0.06] bg-zinc-900/40 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
+															? "border-white/25 light:border-stone-400 bg-white/[0.1] light:bg-stone-200 font-semibold light:text-stone-900 text-zinc-100 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+															: "border-white/[0.06] light:border-stone-300/80 bg-zinc-900/40 light:bg-stone-100 light:text-stone-600 text-zinc-400 hover:border-white/[0.14] light:hover:border-stone-400 hover:text-zinc-100 light:hover:text-stone-900",
 													)}
 												>
 													{cat}
 												</button>
 											))}
 											{(searchInput || selectedCategory) && (
-												<span className="ml-2 font-mono text-xs text-zinc-500 tabular-nums">
+												<span className="ml-2 font-mono light:text-stone-500 text-xs text-zinc-400 tabular-nums">
 													Showing {sortedRoutines.length} of {routines.length}
 												</span>
 											)}
@@ -504,11 +552,11 @@ export default function Home() {
 								</div>
 
 								{sortedRoutines.length === 0 ? (
-									<div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/[0.08] border-dashed bg-zinc-950/40 px-6 py-12 text-center">
-										<div className="flex size-10 items-center justify-center rounded-full border border-white/[0.08] bg-zinc-900/60 text-zinc-500">
+									<div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-white/[0.08] light:border-stone-300 border-dashed bg-zinc-950/40 light:bg-stone-200/40 px-6 py-12 text-center">
+										<div className="flex size-10 items-center justify-center rounded-full border border-white/[0.08] light:border-stone-300 bg-zinc-900/60 light:bg-stone-200 light:text-stone-600 text-zinc-400">
 											<Inbox className="size-4 stroke-[1.5]" />
 										</div>
-										<p className="font-mono text-xs text-zinc-500">
+										<p className="font-mono light:text-stone-500 text-xs text-zinc-400">
 											{selectedCategory
 												? `No tasks for "${selectedCategory}".`
 												: searchInput
@@ -521,13 +569,13 @@ export default function Home() {
 												setSearchInput("");
 												setSelectedCategory(null);
 											}}
-											className="cursor-pointer font-mono text-[11px] text-zinc-400 underline underline-offset-4 transition-colors hover:text-[#EDEDEF] active:scale-95"
+											className="cursor-pointer font-mono light:text-stone-600 text-[11px] text-zinc-400 underline underline-offset-4 transition-colors hover:text-zinc-100 light:hover:text-stone-900 active:scale-95"
 										>
 											View all tasks
 										</button>
 									</div>
 								) : (
-									<div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-zinc-900/55 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
+									<div className="overflow-hidden rounded-2xl border border-white/[0.11] light:border-stone-300/80 bg-gradient-to-b from-zinc-800/65 light:from-[#F5F4F0] light:via-[#F5F4F0] via-zinc-900/75 light:to-[#EAE8E1] to-zinc-950/85 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8),0_4px_20px_-2px_rgba(28,25,23,0.06)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.20),0_12px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-md">
 										<AnimatePresence mode="popLayout" initial={false}>
 											{sortedRoutines.map((routine) => (
 												<motion.div
@@ -559,28 +607,28 @@ export default function Home() {
 						{activeTab === "analytics" && (
 							<div className="flex flex-col gap-5">
 								<div className="flex items-center gap-2">
-									<BarChart2 className="size-4 text-zinc-400" />
-									<h2 className="font-semibold text-[#EDEDEF] text-base tracking-tight">
+									<BarChart2 className="size-4 light:text-stone-500 text-zinc-400" />
+									<h2 className="font-semibold light:text-stone-900 text-base text-zinc-100 tracking-tight">
 										System Analytics
 									</h2>
 								</div>
 								<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-									<div className="flex flex-col gap-1 rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
-										<div className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
+									<div className="flex flex-col gap-1 rounded-2xl border border-white/[0.11] light:border-stone-300/80 bg-gradient-to-b from-zinc-800/65 light:from-[#F5F4F0] light:via-[#F5F4F0] via-zinc-900/75 light:to-[#EAE8E1] to-zinc-950/85 p-5 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8),0_4px_20px_-2px_rgba(28,25,23,0.06)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.20),0_12px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-md">
+										<div className="font-mono light:text-stone-500 text-[11px] text-zinc-400 uppercase tracking-widest">
 											Total Routines
 										</div>
-										<div className="font-semibold text-3xl text-[#EDEDEF] tabular-nums">
+										<div className="font-semibold light:text-stone-900 text-3xl text-zinc-100 tabular-nums">
 											{routines.length}
 										</div>
-										<div className="text-[11px] text-zinc-500">
+										<div className="light:text-stone-500 text-[11px] text-zinc-400">
 											Configured in your dashboard
 										</div>
 									</div>
-									<div className="flex flex-col gap-1 rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
-										<div className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
+									<div className="flex flex-col gap-1 rounded-2xl border border-white/[0.11] light:border-stone-300/80 bg-gradient-to-b from-zinc-800/65 light:from-[#F5F4F0] light:via-[#F5F4F0] via-zinc-900/75 light:to-[#EAE8E1] to-zinc-950/85 p-5 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8),0_4px_20px_-2px_rgba(28,25,23,0.06)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.20),0_12px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-md">
+										<div className="font-mono light:text-stone-500 text-[11px] text-zinc-400 uppercase tracking-widest">
 											Cycle Completion
 										</div>
-										<div className="font-semibold text-3xl text-[#EDEDEF] tabular-nums">
+										<div className="font-semibold light:text-stone-900 text-3xl text-zinc-100 tabular-nums">
 											{routines.length > 0
 												? Math.round(
 														(routines.filter(
@@ -593,30 +641,30 @@ export default function Home() {
 												: 0}
 											%
 										</div>
-										<div className="text-[11px] text-zinc-500">
+										<div className="light:text-stone-500 text-[11px] text-zinc-400">
 											Current period completion
 										</div>
 									</div>
-									<div className="flex flex-col gap-1 rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md">
-										<div className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
+									<div className="flex flex-col gap-1 rounded-2xl border border-white/[0.11] light:border-stone-300/80 bg-gradient-to-b from-zinc-800/65 light:from-[#F5F4F0] light:via-[#F5F4F0] via-zinc-900/75 light:to-[#EAE8E1] to-zinc-950/85 p-5 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8),0_4px_20px_-2px_rgba(28,25,23,0.06)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.20),0_12px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-md">
+										<div className="font-mono light:text-stone-500 text-[11px] text-zinc-400 uppercase tracking-widest">
 											Active Categories
 										</div>
-										<div className="font-semibold text-3xl text-[#EDEDEF] tabular-nums">
+										<div className="font-semibold light:text-stone-900 text-3xl text-zinc-100 tabular-nums">
 											{allCategories.length}
 										</div>
-										<div className="text-[11px] text-zinc-500">
+										<div className="light:text-stone-500 text-[11px] text-zinc-400">
 											Distinct routine categories
 										</div>
 									</div>
 								</div>
-								<div className="flex items-start gap-3 rounded-2xl border border-white/[0.08] bg-zinc-900/40 p-4 text-xs text-zinc-400">
-									<Sparkles className="mt-0.5 size-4 shrink-0 text-zinc-400" />
+								<div className="flex items-start gap-3 rounded-2xl border border-white/[0.08] light:border-stone-300/80 bg-zinc-900/40 light:bg-stone-200/50 p-4 light:text-stone-600 text-xs text-zinc-400">
+									<Sparkles className="mt-0.5 size-4 shrink-0 light:text-stone-500 text-zinc-400" />
 									<div className="leading-relaxed">
-										<strong className="text-[#EDEDEF]">
+										<strong className="light:text-stone-900 text-zinc-100">
 											Phase 0 Architecture:
 										</strong>{" "}
 										LE-REMINDER records every{" "}
-										<code className="font-mono text-[#EDEDEF]">
+										<code className="font-mono light:text-stone-900 text-zinc-100">
 											CompletionEvent
 										</code>{" "}
 										directly in your database. Historical charts, consistency

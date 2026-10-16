@@ -2,7 +2,6 @@
 
 import { Inbox } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { SpotlightCard } from "@/components/ui/spotlight-card";
 import type { DashboardRoutine } from "@/lib/dashboard-routine";
 import { sortByStatus } from "@/lib/sort-routines";
 import { RoutineCard } from "./routine-card";
@@ -54,17 +53,12 @@ export function RoutineList({
 						}}
 						className="h-full"
 					>
-						<SpotlightCard
-							className="h-full rounded-xl"
-							spotlightColor="rgba(255, 255, 255, 0.08)"
-						>
-							<RoutineCard
-								routine={routine}
-								onComplete={() => onComplete(routine)}
-								onEdit={() => onEdit(routine)}
-								onTogglePause={() => onTogglePause(routine)}
-							/>
-						</SpotlightCard>
+						<RoutineCard
+							routine={routine}
+							onComplete={() => onComplete(routine)}
+							onEdit={() => onEdit(routine)}
+							onTogglePause={() => onTogglePause(routine)}
+						/>
 					</motion.div>
 				))}
 			</AnimatePresence>

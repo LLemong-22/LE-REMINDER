@@ -147,16 +147,20 @@ function TaskTypeCard({
 			className={cn(
 				"relative flex min-w-[130px] flex-1 cursor-pointer select-none flex-col gap-2 rounded-xl border p-3.5 text-left transition-all duration-150",
 				selected
-					? "border-white/30 bg-white/[0.08] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18)]"
-					: "border-white/[0.06] bg-zinc-950/50 hover:border-white/[0.14] hover:bg-white/[0.03]",
+					? "border-white/30 light:border-stone-400 bg-white/[0.08] light:bg-stone-200 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18)]"
+					: "border-white/[0.06] light:border-stone-300/80 bg-zinc-950/50 light:bg-stone-100 hover:border-white/[0.14] light:hover:border-stone-400 hover:bg-white/[0.03]",
 			)}
 		>
 			<div className="flex items-center justify-between">
 				{glyph}
-				{selected && <span className="size-1.5 rounded-full bg-[#EDEDEF]" />}
+				{selected && (
+					<span className="size-1.5 rounded-full bg-zinc-200 light:bg-stone-800" />
+				)}
 			</div>
-			<div className="font-medium text-[#EDEDEF] text-xs">{label}</div>
-			<div className="text-[11px] text-zinc-400 leading-normal">
+			<div className="font-medium light:text-stone-900 text-xs text-zinc-100">
+				{label}
+			</div>
+			<div className="light:text-stone-600 text-[11px] text-zinc-400 leading-normal">
 				{description}
 			</div>
 		</button>
@@ -179,8 +183,8 @@ function Pill({
 			className={cn(
 				"cursor-pointer rounded-md border px-2.5 py-1 font-mono text-[11px] transition-all duration-150 active:scale-95",
 				selected
-					? "border-white/25 bg-white/[0.1] font-semibold text-[#EDEDEF] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
-					: "border-white/[0.06] bg-zinc-950/60 text-zinc-400 hover:border-white/[0.14] hover:text-[#EDEDEF]",
+					? "border-white/25 light:border-stone-400 bg-white/[0.1] light:bg-stone-200 font-semibold light:text-stone-900 text-zinc-100 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15)]"
+					: "border-white/[0.06] light:border-stone-300/80 bg-zinc-950/60 light:bg-stone-100 light:text-stone-600 text-zinc-400 hover:border-white/[0.14] light:hover:border-stone-400 hover:text-zinc-100 light:hover:text-stone-900",
 			)}
 		>
 			{children}
@@ -259,9 +263,9 @@ export function RoutineFormDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="border border-white/[0.08] bg-zinc-900/95 text-[#EDEDEF] shadow-[0_16px_48px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.12)] backdrop-blur-md sm:max-w-lg">
+			<DialogContent className="border border-white/[0.11] light:border-stone-300/80 bg-zinc-900/95 light:bg-[#F5F4F0] light:text-stone-900 text-zinc-100 light:shadow-[0_16px_48px_rgba(28,25,23,0.1)] shadow-[0_16px_48px_rgba(0,0,0,0.6),inset_0_1px_0_0_rgba(255,255,255,0.12)] backdrop-blur-md sm:max-w-lg">
 				<DialogHeader>
-					<DialogTitle className="font-semibold text-[#EDEDEF] text-base tracking-tight">
+					<DialogTitle className="font-semibold light:text-stone-900 text-base text-zinc-100 tracking-tight">
 						{routine ? "Edit Routine" : "New Routine"}
 					</DialogTitle>
 				</DialogHeader>
@@ -271,7 +275,7 @@ export function RoutineFormDialog({
 					<div className="flex flex-col gap-1.5">
 						<Label
 							htmlFor="routine-name"
-							className="font-mono text-[11px] text-zinc-400 uppercase tracking-wider"
+							className="font-mono light:text-stone-500 text-[11px] text-zinc-400 uppercase tracking-wider"
 						>
 							Name
 						</Label>
@@ -288,7 +292,7 @@ export function RoutineFormDialog({
 								}
 							}}
 							placeholder="e.g. Server Data Backup"
-							className="h-9 rounded-lg border border-white/[0.08] bg-zinc-950/70 text-[#EDEDEF] text-xs placeholder-zinc-500 transition-colors focus-visible:border-white/30 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0"
+							className="h-9 rounded-lg border border-white/[0.08] light:border-stone-300 bg-zinc-950/70 light:bg-stone-100 light:text-stone-900 text-xs text-zinc-100 light:placeholder-stone-400 placeholder-zinc-500 transition-colors focus-visible:border-white/30 light:focus-visible:border-stone-500 focus-visible:ring-1 focus-visible:ring-white/20 light:focus-visible:ring-stone-400/40 focus-visible:ring-offset-0"
 						/>
 					</div>
 
@@ -296,7 +300,7 @@ export function RoutineFormDialog({
 					<div className="flex flex-col gap-1.5">
 						<Label
 							htmlFor="routine-category"
-							className="font-mono text-[11px] text-zinc-400 uppercase tracking-wider"
+							className="font-mono light:text-stone-500 text-[11px] text-zinc-400 uppercase tracking-wider"
 						>
 							Category
 						</Label>
@@ -313,7 +317,7 @@ export function RoutineFormDialog({
 								}
 							}}
 							placeholder="e.g. Tech"
-							className="h-9 rounded-lg border border-white/[0.08] bg-zinc-950/70 text-[#EDEDEF] text-xs placeholder-zinc-500 transition-colors focus-visible:border-white/30 focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:ring-offset-0"
+							className="h-9 rounded-lg border border-white/[0.08] light:border-stone-300 bg-zinc-950/70 light:bg-stone-100 light:text-stone-900 text-xs text-zinc-100 light:placeholder-stone-400 placeholder-zinc-500 transition-colors focus-visible:border-white/30 light:focus-visible:border-stone-500 focus-visible:ring-1 focus-visible:ring-white/20 light:focus-visible:ring-stone-400/40 focus-visible:ring-offset-0"
 						/>
 						{categorySuggestions.length > 0 && (
 							<div className="flex flex-wrap gap-1.5 pt-0.5">
@@ -607,14 +611,14 @@ export function RoutineFormDialog({
 						<Button
 							variant="outline"
 							onClick={() => onOpenChange(false)}
-							className="border-white/[0.08] bg-white/[0.04] text-zinc-300 hover:bg-white/[0.08] hover:text-[#EDEDEF]"
+							className="border-white/[0.08] light:border-stone-300 bg-white/[0.04] light:bg-stone-200/60 light:text-stone-700 text-zinc-300 hover:bg-white/[0.08] light:hover:bg-stone-200 hover:text-zinc-100"
 						>
 							Cancel
 						</Button>
 						<Button
 							onClick={handleSubmit}
 							disabled={!saveEnabled}
-							className="bg-[#EDEDEF] font-medium text-zinc-950 shadow-sm transition-transform hover:bg-white active:scale-95 disabled:opacity-50"
+							className="bg-[var(--cta-bg)] font-medium text-[var(--cta-text)] shadow-sm transition-transform hover:opacity-90 active:scale-95 disabled:opacity-50"
 						>
 							Save Routine
 						</Button>

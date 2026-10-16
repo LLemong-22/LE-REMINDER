@@ -10,7 +10,7 @@ export function AuroraGlow() {
 			<div
 				className="absolute -top-24 left-1/2 size-72 -translate-x-1/2 rounded-full blur-[100px]"
 				style={{
-					background: "rgba(255, 255, 255, 0.04)",
+					background: "rgba(var(--spotlight-rgb, 255, 255, 255), 0.04)",
 				}}
 			/>
 		</div>

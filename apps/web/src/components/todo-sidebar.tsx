@@ -50,8 +50,8 @@ function TodoRowContent({
 	return (
 		<div
 			className={cn(
-				"group/todo -mx-1.5 flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-white/[0.03]",
-				todo.done && "opacity-50",
+				"-mx-1.5 flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-white/[0.04] light:hover:bg-stone-200/50",
+				todo.done && "opacity-65",
 			)}
 		>
 			{grip}
@@ -61,7 +61,7 @@ function TodoRowContent({
 				onClick={(e) => {
 					onToggle?.(e.currentTarget);
 				}}
-				className="size-3.5 cursor-pointer rounded-sm border-white/20 bg-zinc-950/60 transition-all duration-150 active:scale-90 group-hover/todo:border-white/40 data-checked:border-[#EDEDEF] data-checked:bg-[#EDEDEF] data-checked:text-zinc-950"
+				className="size-3.5 cursor-pointer rounded-sm border-white/20 light:border-stone-400/60 bg-zinc-950/60 light:bg-stone-100 transition-all duration-150 active:scale-90 group-hover/todo:border-white/40 data-checked:border-[#EDEDEF] light:data-checked:border-stone-900 data-checked:bg-[#EDEDEF] light:data-checked:bg-stone-900 data-checked:text-zinc-950 light:data-checked:text-stone-50"
 			/>
 			<button
 				type="button"
@@ -71,8 +71,8 @@ function TodoRowContent({
 				className={cn(
 					"flex-1 cursor-pointer bg-transparent text-left text-xs transition-colors duration-150 active:scale-[0.99]",
 					todo.done
-						? "text-zinc-500 line-through"
-						: "text-[#EDEDEF] hover:text-white",
+						? "light:text-stone-400 text-zinc-400 line-through decoration-zinc-500/60 light:decoration-stone-400/60"
+						: "light:text-[#1C1917] text-[#F4F4F6] hover:text-white light:hover:text-black",
 				)}
 			>
 				{todo.text}
@@ -334,9 +334,9 @@ export function TodoSidebar() {
 	const activeTodo = sortedTodos.find((todo) => todo.id === activeId) ?? null;
 
 	return (
-		<div className="sticky top-20 flex max-h-[calc(100vh-96px)] w-[280px] shrink-0 select-none flex-col gap-3.5 overflow-y-auto rounded-2xl border border-white/[0.08] bg-zinc-900/55 p-4 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.12),0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-md sm:p-5">
+		<div className="sticky top-20 flex max-h-[calc(100vh-96px)] w-[280px] shrink-0 select-none flex-col gap-3.5 overflow-y-auto rounded-2xl border border-white/[0.11] light:border-stone-300/80 bg-gradient-to-b from-zinc-800/65 light:from-[#F5F4F0] light:via-[#F5F4F0] via-zinc-900/75 light:to-[#EAE8E1] to-zinc-950/85 p-4 light:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.8),0_4px_20px_-2px_rgba(28,25,23,0.06)] shadow-[inset_0_1px_0_0_rgba(255,255,255,0.20),0_12px_32px_-8px_rgba(0,0,0,0.6)] backdrop-blur-md sm:p-5">
 			<div className="flex items-center justify-between">
-				<div className="font-semibold text-[#EDEDEF] text-sm tracking-tight">
+				<div className="font-semibold light:text-[#1C1917] text-[#F4F4F6] text-sm tracking-tight">
 					Today's To-Do
 				</div>
 				<div className="flex items-center gap-2">
@@ -348,7 +348,7 @@ export function TodoSidebar() {
 									deleteMutation.mutate({ todoId: t.id });
 								}
 							}}
-							className="cursor-pointer font-mono text-[11px] text-zinc-400 hover:text-[#EDEDEF] hover:underline active:scale-95"
+							className="cursor-pointer font-mono light:text-stone-500 text-[11px] text-zinc-400 hover:text-[#F4F4F6] light:hover:text-[#1C1917] hover:underline active:scale-95"
 						>
 							Clear Done
 						</button>
@@ -356,7 +356,7 @@ export function TodoSidebar() {
 					<button
 						type="button"
 						onClick={() => setEditMode((v) => !v)}
-						className="cursor-pointer font-mono text-[11px] text-zinc-400 transition-colors hover:text-[#EDEDEF] active:scale-95"
+						className="cursor-pointer font-mono light:text-stone-500 text-[11px] text-zinc-400 transition-colors hover:text-[#F4F4F6] light:hover:text-[#1C1917] active:scale-95"
 					>
 						{editMode ? "Done" : "Edit List"}
 					</button>
@@ -365,11 +365,11 @@ export function TodoSidebar() {
 
 			<div className="flex flex-col gap-2">
 				{!todosQuery.isLoading && sortedTodos.length === 0 && (
-					<div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/[0.06] border-dashed bg-zinc-950/40 px-4 py-8 text-center">
-						<div className="flex size-8 items-center justify-center rounded-full border border-white/[0.08] bg-zinc-900/60 text-zinc-500">
+					<div className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/[0.08] light:border-stone-300 border-dashed bg-zinc-950/40 light:bg-stone-200/40 px-4 py-8 text-center">
+						<div className="flex size-8 items-center justify-center rounded-full border border-white/[0.08] light:border-stone-300 bg-zinc-900/60 light:bg-stone-200 light:text-stone-600 text-zinc-400">
 							<Inbox className="size-3.5 stroke-[1.5]" />
 						</div>
-						<span className="font-mono text-xs text-zinc-500">
+						<span className="font-mono light:text-stone-500 text-xs text-zinc-400">
 							Scratchpad is empty.
 						</span>
 					</div>
@@ -415,7 +415,7 @@ export function TodoSidebar() {
 						createPortal(
 							<DragOverlay>
 								{activeTodo && (
-									<div className="w-[240px] scale-[1.02] rounded-lg border border-white/20 bg-zinc-900/95 px-2 py-1.5 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-md">
+									<div className="w-[240px] scale-[1.02] rounded-lg border border-white/20 light:border-stone-400 bg-zinc-900/95 light:bg-stone-100 px-2 py-1.5 shadow-[0_16px_36px_rgba(0,0,0,0.6)] backdrop-blur-md">
 										<TodoRowContent
 											todo={activeTodo}
 											editMode={editMode}
@@ -430,7 +430,7 @@ export function TodoSidebar() {
 			</div>
 
 			{/* Inline Quick Add Input */}
-			<div className="flex items-center gap-1.5 border-white/[0.06] border-t pt-2">
+			<div className="flex items-center gap-1.5 border-white/[0.07] light:border-stone-300/80 border-t pt-2">
 				<input
 					type="text"
 					value={newText}
@@ -439,13 +439,13 @@ export function TodoSidebar() {
 						if (e.key === "Enter") addTodo();
 					}}
 					placeholder="Add a task…"
-					className="min-w-0 flex-1 rounded-lg border border-white/[0.08] bg-zinc-950/70 px-2.5 py-1.5 font-sans text-[#EDEDEF] text-xs placeholder-zinc-500 outline-none transition-all duration-150 focus:border-white/30 focus:ring-1 focus:ring-white/20"
+					className="min-w-0 flex-1 rounded-lg border border-white/[0.08] light:border-stone-300 bg-zinc-950/70 light:bg-stone-100 px-2.5 py-1.5 font-sans light:text-stone-900 text-xs text-zinc-100 light:placeholder-stone-400 placeholder-zinc-500 outline-none transition-all duration-150 focus:border-white/30 light:focus:border-stone-500 focus:ring-1 focus:ring-white/20 light:focus:ring-stone-400/40"
 				/>
 				<button
 					type="button"
 					onClick={addTodo}
 					aria-label="Add task"
-					className="flex size-7 cursor-pointer items-center justify-center rounded-lg bg-[#EDEDEF] text-zinc-950 shadow-sm transition-all duration-150 hover:scale-105 hover:bg-white active:scale-95"
+					className="flex size-7 cursor-pointer items-center justify-center rounded-lg bg-[var(--cta-bg)] text-[var(--cta-text)] shadow-sm transition-all duration-150 hover:scale-105 hover:opacity-90 active:scale-95"
 				>
 					<Plus className="size-4 stroke-[2.5]" />
 				</button>
