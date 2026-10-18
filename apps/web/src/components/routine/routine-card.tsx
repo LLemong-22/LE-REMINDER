@@ -80,7 +80,7 @@ export function RoutineCard({
 			onClick={() => setRevealed((v) => !v)}
 			style={{ willChange: "transform", transform: "translateZ(0)" }}
 			className={cn(
-				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-[12px] p-4 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]",
+				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-[12px] p-4 transition-colors duration-200",
 				// Due Cards: Bright crystalline border with top frost glow & scanline
 				isDue &&
 					"border border-[#7DD3FC]/75 bg-[linear-gradient(145deg,rgba(35,68,110,0.94)_0%,rgba(18,38,64,0.97)_100%)] shadow-[0_0_25px_-5px_rgba(56,189,248,0.35),inset_0_1px_0_0_rgba(255,255,255,0.7)] hover:border-[#7DD3FC]",
@@ -241,38 +241,40 @@ export function RoutineCard({
 					Last · {formatLastCompleted(routine.lastCompletedAt)}
 				</div>
 
-				{/* Sleek Action Buttons (120fps hardware accelerated) */}
+				{/* Rock-solid Action Buttons (Always clickable, relative z-30, no position shift on click) */}
 				<div
 					className={cn(
-						"flex shrink-0 items-center gap-1 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100",
+						"pointer-events-auto relative z-30 flex shrink-0 items-center gap-1.5 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100",
 						revealed && "opacity-100",
 					)}
 				>
 					{showComplete && (
 						<button
 							type="button"
+							onPointerDown={(e) => e.stopPropagation()}
 							onClick={(e) => {
 								e.stopPropagation();
 								handleComplete(e.currentTarget);
 							}}
 							aria-label="Complete routine"
 							title="Complete routine"
-							className="inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-[#38BDF8]/60 bg-[#38BDF8]/25 px-2 font-medium text-[#BAE6FD] text-[11px] shadow-[0_0_10px_rgba(56,189,248,0.25)] transition-all hover:border-[#38BDF8] hover:bg-[#38BDF8] hover:text-[#06101E] active:scale-95"
+							className="relative z-30 inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-[#38BDF8]/60 bg-[#38BDF8]/25 px-3 py-1.5 font-semibold text-[#BAE6FD] text-xs shadow-[0_0_12px_rgba(56,189,248,0.25)] transition-all hover:border-[#38BDF8] hover:bg-[#38BDF8] hover:text-[#06101E] active:scale-95"
 						>
-							<Check className="size-3 stroke-[2.5]" />
+							<Check className="size-3.5 stroke-[2.5]" />
 							<span>Done</span>
 						</button>
 					)}
 					{showPauseResume && (
 						<button
 							type="button"
+							onPointerDown={(e) => e.stopPropagation()}
 							onClick={(e) => {
 								e.stopPropagation();
 								onTogglePause();
 							}}
 							aria-label={isPaused ? "Resume routine" : "Pause routine"}
 							title={isPaused ? "Resume routine" : "Pause routine"}
-							className="inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md border border-white/15 bg-[#102136]/90 text-[#93C5FD] transition-all hover:border-white/30 hover:bg-[#1A385C] hover:text-white active:scale-95"
+							className="relative z-30 inline-flex size-7 cursor-pointer items-center justify-center rounded-md border border-white/15 bg-[#102136]/90 text-[#93C5FD] transition-all hover:border-white/30 hover:bg-[#1A385C] hover:text-white active:scale-95"
 						>
 							{isPaused ? (
 								<Play className="size-3 text-[#38BDF8]" />
@@ -283,15 +285,16 @@ export function RoutineCard({
 					)}
 					<button
 						type="button"
+						onPointerDown={(e) => e.stopPropagation()}
 						onClick={(e) => {
 							e.stopPropagation();
 							onEdit();
 						}}
 						aria-label="Edit routine"
 						title="Edit routine"
-						className="inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md border border-white/15 bg-[#102136]/90 text-[#93C5FD] transition-all hover:border-white/30 hover:bg-[#1A385C] hover:text-white active:scale-95"
+						className="relative z-30 inline-flex size-7 cursor-pointer items-center justify-center rounded-md border border-white/15 bg-[#102136]/90 text-[#93C5FD] transition-all hover:border-white/30 hover:bg-[#1A385C] hover:text-white active:scale-95"
 					>
-						<Settings2 className="size-3" />
+						<Settings2 className="size-3.5" />
 					</button>
 				</div>
 			</div>

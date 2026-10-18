@@ -52,11 +52,7 @@ function TabButton({
 	return (
 		<button
 			type="button"
-			onClick={() => {
-				cryoSound.playTick();
-				onClick();
-			}}
-			onMouseEnter={() => cryoSound.playTick()}
+			onClick={onClick}
 			className={cn(
 				"relative cursor-pointer whitespace-nowrap rounded-sm px-1 py-1.5 font-semibold text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]/40",
 				active ? "text-[#F0F9FF]" : "text-[#93C5FD] hover:text-[#F0F9FF]",
@@ -129,10 +125,8 @@ function AudioToggle() {
 		<button
 			type="button"
 			onClick={() => {
-				const next = cryoSound.toggleMute();
-				if (!next) cryoSound.playTick();
+				cryoSound.toggleMute();
 			}}
-			onMouseEnter={() => cryoSound.playTick()}
 			title={
 				muted
 					? "Unmute Cryo-HUD Audio (SFX Off)"
@@ -360,8 +354,45 @@ export default function Home() {
 
 	const sortedRoutines = sortByStatus(filteredRoutines);
 
+	const [manualOverdrive, setManualOverdrive] = useState<boolean | null>(null);
+
+	const dailyRoutines = routines.filter(
+		(r) =>
+			r.taskType.kind === "Recurring" &&
+			r.taskType.schedule.type === "FixedCalendar" &&
+			r.taskType.schedule.recurrence.kind === "Daily",
+	);
+	const completedDailyCount = dailyRoutines.filter(
+		(r) => r.status === "Done" || r.status === "Finished",
+	).length;
+	const isDailyAllDone =
+		dailyRoutines.length > 0 && completedDailyCount === dailyRoutines.length;
+	const completedTotal = routines.filter(
+		(r) => r.status === "Done" || r.status === "Finished",
+	).length;
+	const isTotalAllDone =
+		routines.length > 0 && completedTotal === routines.length;
+	const autoOverdrive = isDailyAllDone || isTotalAllDone;
+	const isOverdrive =
+		manualOverdrive !== null ? manualOverdrive : autoOverdrive;
+
+	function handleToggleOverdrive() {
+		setManualOverdrive((prev) => (prev !== null ? !prev : !autoOverdrive));
+	}
+
 	return (
-		<div className="cryo-canvas frost-fracture-bg min-h-screen text-[#F8FAFC]">
+		<div className="cryo-canvas frost-fracture-bg relative min-h-screen overflow-x-hidden text-[#F8FAFC]">
+			{/* Top Ambient Crown Light in Overdrive Mode */}
+			<div
+				aria-hidden="true"
+				className={cn(
+					"pointer-events-none fixed inset-x-0 top-0 -z-10 h-96 transition-opacity duration-1000",
+					isOverdrive
+						? "bg-[radial-gradient(ellipse_at_50%_0%,rgba(56,189,248,0.35)_0%,rgba(14,165,233,0.15)_40%,transparent_75%)] opacity-100"
+						: "bg-[radial-gradient(ellipse_at_50%_0%,rgba(56,189,248,0.12)_0%,transparent_60%)] opacity-40",
+				)}
+			/>
+
 			<AnimatePresence>
 				{showVillainIntro && (
 					<VillainIntro onComplete={() => setShowVillainIntro(false)} />
@@ -378,7 +409,12 @@ export default function Home() {
 								setShowVillainIntro(true);
 							}}
 							title="Replay Cryo-Boot Sequence"
-							className="group flex size-7 shrink-0 items-center justify-center rounded border border-[#7DD3FC]/35 bg-[#102136] font-bold font-mono text-[#7DD3FC] text-[12px] shadow-[0_0_10px_rgba(56,189,248,0.25)] transition-all hover:scale-105 hover:border-[#38BDF8] hover:bg-[#38BDF8]/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] active:scale-95"
+							className={cn(
+								"group flex size-7 shrink-0 items-center justify-center rounded border font-bold font-mono text-[12px] transition-all hover:scale-105 active:scale-95",
+								isOverdrive
+									? "animate-pulse border-[#38BDF8] bg-[#38BDF8]/25 text-[#E0F2FE] shadow-[0_0_18px_rgba(56,189,248,0.85)]"
+									: "border-[#7DD3FC]/35 bg-[#102136] text-[#7DD3FC] shadow-[0_0_10px_rgba(56,189,248,0.25)] hover:border-[#38BDF8] hover:bg-[#38BDF8]/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.5)]",
+							)}
 						>
 							<span className="transition-transform group-hover:scale-110">
 								V
@@ -426,7 +462,6 @@ export default function Home() {
 							href="https://github.com/Lemong-22/LE-REMINDER.git"
 							target="_blank"
 							rel="noopener noreferrer"
-							onMouseEnter={() => cryoSound.playTick()}
 							className="flex items-center gap-1.5 rounded-lg border border-[#7DD3FC]/20 bg-[#102136]/60 px-2.5 py-1.5 font-semibold text-[#BAE6FD] text-xs transition-colors hover:border-[#7DD3FC]/45 hover:bg-[#102136] hover:text-[#F8FAFC]"
 						>
 							<Github className="size-4" />
@@ -438,7 +473,12 @@ export default function Home() {
 
 			<div className="mx-auto flex max-w-[1600px] flex-col gap-5 px-4 pt-5 pb-14 sm:px-6">
 				{activeTab === "home" && (
-					<HeroPanel routines={routines} onComplete={handleComplete} />
+					<HeroPanel
+						routines={routines}
+						onComplete={handleComplete}
+						isOverdrive={isOverdrive}
+						onToggleOverdrive={handleToggleOverdrive}
+					/>
 				)}
 
 				<div className="flex flex-col items-start gap-[22px] lg:flex-row">
@@ -475,7 +515,6 @@ export default function Home() {
 										<button
 											type="button"
 											onClick={handleOpenCreate}
-											onMouseEnter={() => cryoSound.playTick()}
 											className="frost-pill-btn shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 font-bold text-[13px] active:scale-95"
 										>
 											+ New Routine
@@ -487,7 +526,6 @@ export default function Home() {
 											<button
 												type="button"
 												onClick={() => setSelectedCategory(null)}
-												onMouseEnter={() => cryoSound.playTick()}
 												className={cn(
 													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 													selectedCategory === null
@@ -501,7 +539,6 @@ export default function Home() {
 												<button
 													key={cat}
 													type="button"
-													onMouseEnter={() => cryoSound.playTick()}
 													onClick={() =>
 														setSelectedCategory(
 															selectedCategory === cat ? null : cat,

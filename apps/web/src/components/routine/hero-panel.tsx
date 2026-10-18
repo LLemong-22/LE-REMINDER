@@ -36,7 +36,15 @@ function isDailyRoutine(routine: DashboardRoutine): boolean {
 	);
 }
 
-function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
+function CircularProgressIndicator({
+	progressPct,
+	isOverdrive = false,
+	onToggleOverdrive,
+}: {
+	progressPct: number;
+	isOverdrive?: boolean;
+	onToggleOverdrive?: () => void;
+}) {
 	const radius = 50;
 	const circumference = 2 * Math.PI * radius;
 	const strokeDashoffset =
@@ -92,11 +100,20 @@ function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
 					strokeLinecap="round"
 					strokeDasharray={circumference}
 					strokeDashoffset={strokeDashoffset}
-					className="drop-shadow-[0_0_14px_rgba(56,189,248,0.65)] transition-all duration-1000 ease-out"
+					className={cn(
+						"transition-all duration-1000 ease-out",
+						isOverdrive
+							? "drop-shadow-[0_0_20px_#38BDF8]"
+							: "drop-shadow-[0_0_14px_rgba(56,189,248,0.65)]",
+					)}
 				/>
 			</svg>
 			<div className="relative flex items-center justify-center">
-				<NexusAnimation progressPct={progressPct} />
+				<NexusAnimation
+					progressPct={progressPct}
+					isOverdrive={isOverdrive}
+					onToggleOverdrive={onToggleOverdrive}
+				/>
 			</div>
 		</div>
 	);
@@ -105,9 +122,13 @@ function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
 export function HeroPanel({
 	routines,
 	onComplete,
+	isOverdrive = false,
+	onToggleOverdrive,
 }: {
 	routines: DashboardRoutine[];
 	onComplete: (routine: DashboardRoutine) => void;
+	isOverdrive?: boolean;
+	onToggleOverdrive?: () => void;
 }) {
 	const dailyItems = sortByStatus(routines.filter(isDailyRoutine));
 
@@ -126,9 +147,6 @@ export function HeroPanel({
 
 	function handleCheck(routine: DashboardRoutine, target?: HTMLElement) {
 		cryoSound.playShatterComplete();
-		if (typeof window !== "undefined") {
-			window.dispatchEvent(new CustomEvent("core-overdrive"));
-		}
 		if (target) {
 			triggerCyberExplosion(target);
 		}
@@ -138,12 +156,42 @@ export function HeroPanel({
 	return (
 		<div
 			style={{ willChange: "transform", transform: "translateZ(0)" }}
-			className="frost-panel relative flex flex-col divide-y divide-[#BAE6FD]/15 overflow-hidden rounded-xl md:flex-row md:divide-x md:divide-y-0"
+			className={cn(
+				"frost-panel relative flex flex-col divide-y divide-[#BAE6FD]/15 overflow-hidden rounded-xl transition-all duration-500 md:flex-row md:divide-x md:divide-y-0",
+				isOverdrive &&
+					"border-[#7DD3FC] shadow-[0_0_35px_-5px_rgba(56,189,248,0.4),inset_0_1px_0_0_rgba(255,255,255,0.7)]",
+			)}
 		>
-			{/* Ambient glacial haze */}
+			{/* Dual-Laser Border Beam in Overdrive Mode */}
+			{isOverdrive && (
+				<div
+					aria-hidden="true"
+					className="pointer-events-none absolute -inset-px z-20 overflow-hidden rounded-xl border border-[#38BDF8]/80 shadow-[0_0_24px_rgba(56,189,248,0.5),inset_0_0_15px_rgba(224,242,254,0.2)]"
+				>
+					<div
+						className="absolute inset-[-100%] animate-[spin-cw_3.5s_linear_infinite]"
+						style={{
+							background:
+								"conic-gradient(from 0deg at 50% 50%, transparent 0deg, rgba(56,189,248,0.8) 45deg, #FFFFFF 90deg, rgba(125,211,252,0.8) 135deg, transparent 180deg, rgba(56,189,248,0.8) 225deg, #FFFFFF 270deg, transparent 360deg)",
+							WebkitMask:
+								"linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+							WebkitMaskComposite: "xor",
+							maskComposite: "exclude",
+							padding: "2px",
+						}}
+					/>
+				</div>
+			)}
+
+			{/* Ambient glacial haze (intensified in Overdrive) */}
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute -inset-10 -z-10 bg-[radial-gradient(ellipse_at_30%_50%,rgba(56,189,248,0.12),transparent_60%)]"
+				className={cn(
+					"pointer-events-none absolute -inset-10 -z-10 transition-opacity duration-700",
+					isOverdrive
+						? "bg-[radial-gradient(ellipse_at_30%_50%,rgba(56,189,248,0.32),transparent_70%)] opacity-100"
+						: "bg-[radial-gradient(ellipse_at_30%_50%,rgba(56,189,248,0.12),transparent_60%)] opacity-60",
+				)}
 			/>
 
 			{/* Column 1: Daily Task Checklist */}
@@ -214,9 +262,13 @@ export function HeroPanel({
 				</div>
 			</div>
 
-			{/* Column 2: Extravagant THE-CORE Reactor */}
+			{/* Column 2: THE-CORE Reactor */}
 			<div className="flex min-w-[170px] flex-none items-center justify-center p-4 lg:p-5">
-				<CircularProgressIndicator progressPct={progressPct} />
+				<CircularProgressIndicator
+					progressPct={progressPct}
+					isOverdrive={isOverdrive}
+					onToggleOverdrive={onToggleOverdrive}
+				/>
 			</div>
 
 			{/* Column 3: Overall Progress Metrics */}
@@ -230,8 +282,15 @@ export function HeroPanel({
 							encryptedClassName="text-[#38BDF8]"
 						/>
 					</div>
-					<span className="font-bold font-mono text-[#7DD3FC] text-[11px] tracking-[0.25em] drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]">
-						THE-CORE
+					<span
+						className={cn(
+							"font-bold font-mono text-[11px] tracking-[0.25em] transition-all",
+							isOverdrive
+								? "text-[#E0F2FE] drop-shadow-[0_0_10px_#38BDF8]"
+								: "text-[#7DD3FC] drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]",
+						)}
+					>
+						{isOverdrive ? "THE-CORE // OVERDRIVE" : "THE-CORE"}
 					</span>
 				</div>
 
@@ -239,9 +298,15 @@ export function HeroPanel({
 					<CountUp to={progressPct} duration={1.1} />
 				</div>
 
-				{/* Segmented Cryo Progress Bar */}
+				{/* Segmented Cryo Progress Bar with Overdrive Sheen */}
 				<div className="relative">
-					<div className="relative flex h-2.5 overflow-hidden rounded-full border border-[#BAE6FD]/20 bg-[#091524] shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]">
+					<div
+						className={cn(
+							"relative flex h-2.5 overflow-hidden rounded-full border border-[#BAE6FD]/20 bg-[#091524] shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)] transition-all",
+							isOverdrive &&
+								"border-[#7DD3FC]/70 shadow-[0_0_14px_rgba(56,189,248,0.45)]",
+						)}
+					>
 						{STATUS_ORDER.map((status) => (
 							<div
 								key={status}
@@ -255,7 +320,10 @@ export function HeroPanel({
 						{routines.length > 0 && (
 							<div
 								aria-hidden="true"
-								className="pointer-events-none absolute inset-y-0 w-24 animate-shimmer bg-gradient-to-r from-transparent via-[#BAE6FD]/40 to-transparent"
+								className={cn(
+									"pointer-events-none absolute inset-y-0 w-24 animate-shimmer bg-gradient-to-r from-transparent via-[#BAE6FD]/40 to-transparent",
+									isOverdrive && "w-36 via-[#FFFFFF]/70",
+								)}
 							/>
 						)}
 					</div>

@@ -12,7 +12,6 @@ import {
 	Utensils,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { cryoSound } from "@/lib/cryo-sound";
 import { MASTER_SCHEDULE, type ScheduleEventType } from "@/lib/schedule-data";
 import { smoothScrollToElement } from "@/lib/smooth-scroll";
 
@@ -120,7 +119,6 @@ export function ScheduleView() {
 
 	const triggerArrivalPulse = useCallback(() => {
 		setHighlightPulse(true);
-		cryoSound.playTick();
 		setTimeout(() => setHighlightPulse(false), 1500);
 	}, []);
 
@@ -229,7 +227,6 @@ export function ScheduleView() {
 	function handleJumpToNow() {
 		setSelectedDay(todayDayOfWeek);
 		hasAutoScrolledRef.current = false;
-		cryoSound.playTick();
 		setTimeout(() => {
 			if (activeCardRef.current) {
 				smoothScrollToElement(activeCardRef.current, 650, triggerArrivalPulse);
@@ -260,7 +257,6 @@ export function ScheduleView() {
 						<button
 							type="button"
 							onClick={handleJumpToNow}
-							onMouseEnter={() => cryoSound.playTick()}
 							className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#BAE6FD]/30 bg-[#BAE6FD]/10 px-3 py-1 font-mono font-semibold text-[#BAE6FD] text-[11px] shadow-[0_0_12px_rgba(56,189,248,0.2)] transition-all hover:border-[#BAE6FD]/60 hover:bg-[#BAE6FD]/20 active:scale-95"
 						>
 							<Target className="size-3 text-[#38BDF8]" />
@@ -285,7 +281,6 @@ export function ScheduleView() {
 							<button
 								key={schedule.dayOfWeek}
 								type="button"
-								onMouseEnter={() => cryoSound.playTick()}
 								onClick={() => {
 									setSelectedDay(schedule.dayOfWeek);
 									if (schedule.dayOfWeek !== todayDayOfWeek) {
