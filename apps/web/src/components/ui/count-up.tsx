@@ -19,8 +19,7 @@ export function CountUp({
 	const frameRef = useRef<number | null>(null);
 
 	useEffect(() => {
-		const startVal = value;
-		startValueRef.current = startVal;
+		const startVal = startValueRef.current;
 		startTimeRef.current = null;
 		const targetVal = to;
 		const durationMs = duration * 1000;
@@ -42,6 +41,7 @@ export function CountUp({
 				frameRef.current = requestAnimationFrame(step);
 			} else {
 				setValue(targetVal);
+				startValueRef.current = targetVal;
 			}
 		};
 

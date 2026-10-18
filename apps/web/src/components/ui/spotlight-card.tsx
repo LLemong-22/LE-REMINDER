@@ -37,7 +37,7 @@ export function SpotlightCard({
 		<div
 			ref={divRef}
 			onMouseMove={handleMouseMove}
-			className={`group relative ${className}`}
+			className={`group relative flex flex-col ${className}`}
 		>
 			<div
 				aria-hidden

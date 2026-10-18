@@ -57,7 +57,7 @@ function TodoRowContent({
 		<div
 			className={cn(
 				"group/todo -mx-1.5 flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-[#BAE6FD]/[0.06]",
-				todo.done ? "opacity-80" : "opacity-100",
+				todo.done ? "opacity-60" : "opacity-100",
 			)}
 		>
 			{grip}
@@ -77,7 +77,7 @@ function TodoRowContent({
 				className={cn(
 					"flex-1 cursor-pointer bg-transparent text-left font-medium text-[13.5px] transition-colors duration-150 active:scale-[0.99]",
 					todo.done
-						? "text-[#93C5FD] line-through decoration-[#7DD3FC]/50"
+						? "text-[#64748B] line-through decoration-[#38BDF8]/30 group-hover/todo:text-[#93C5FD]"
 						: "text-[#F8FAFC] group-hover/todo:text-[#38BDF8]",
 				)}
 			>

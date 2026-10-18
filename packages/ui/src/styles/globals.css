@@ -128,7 +128,8 @@
 
 /* Crystalline Frost Fracture Subtle Texture */
 .frost-fracture-bg {
-	background-image: radial-gradient(
+	background-image:
+		radial-gradient(
 			circle at 50% 50%,
 			rgba(186, 230, 253, 0.03) 0%,
 			transparent 60%

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface DecryptedTextProps {
 	text: string;
@@ -33,7 +33,7 @@ export function DecryptedText({
 	const iterationRef = useRef(0);
 	const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-	const triggerDecrypt = () => {
+	const triggerDecrypt = useCallback(() => {
 		if (intervalRef.current) clearInterval(intervalRef.current);
 		iterationRef.current = 0;
 		setIsScrambling(true);
@@ -73,7 +73,7 @@ export function DecryptedText({
 				setIsScrambling(false);
 			}
 		}, speed);
-	};
+	}, [characters, maxIterations, sequential, speed, text]);
 
 	useEffect(() => {
 		if (animateOn === "mount") {
@@ -82,7 +82,7 @@ export function DecryptedText({
 		return () => {
 			if (intervalRef.current) clearInterval(intervalRef.current);
 		};
-	}, [text]);
+	}, [animateOn, triggerDecrypt]);
 
 	return (
 		<span className={`inline-block ${parentClassName}`}>

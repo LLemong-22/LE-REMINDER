@@ -52,10 +52,10 @@ export function RoutineList({
 							opacity: { duration: 0.2 },
 							scale: { duration: 0.2 },
 						}}
-						className="h-full"
+						className="flex h-full flex-col"
 					>
 						<SpotlightCard
-							className="h-full rounded-[12px]"
+							className="flex h-full flex-col rounded-[12px]"
 							spotlightColor="rgba(186, 230, 253, 0.11)"
 						>
 							<RoutineCard

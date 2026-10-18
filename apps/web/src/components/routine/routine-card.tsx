@@ -72,21 +72,18 @@ export function RoutineCard({
 	return (
 		<motion.div
 			ref={cardRef}
-			whileHover={{ scale: 1.015, y: -2 }}
-			whileTap={{ scale: 0.985 }}
-			transition={{ type: "spring", stiffness: 450, damping: 28 }}
 			onClick={() => setRevealed((v) => !v)}
 			className={cn(
-				"group relative flex h-full min-h-[165px] flex-col justify-between rounded-[12px] p-4 backdrop-blur-md transition-all duration-200",
+				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-[12px] p-4 backdrop-blur-md transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]",
 				// Due Cards: Bright crystalline border with top frost glow
 				isDue &&
-					"border border-[#7DD3FC]/65 bg-[linear-gradient(135deg,rgba(35,68,110,0.75)_0%,rgba(18,38,64,0.85)_100%)] shadow-[0_0_25px_-5px_rgba(56,189,248,0.28),inset_0_1px_0_0_rgba(255,255,255,0.6)] hover:border-[#7DD3FC]",
+					"border border-[#7DD3FC]/75 bg-[linear-gradient(135deg,rgba(35,68,110,0.85)_0%,rgba(18,38,64,0.92)_100%)] shadow-[0_0_25px_-5px_rgba(56,189,248,0.32),inset_0_1px_0_0_rgba(255,255,255,0.7)] hover:border-[#7DD3FC]",
 				// Overdue Cards: Subtle rose border with clean rose status pill
 				isOverdue &&
-					"border border-rose-500/50 bg-[linear-gradient(135deg,rgba(45,20,30,0.75)_0%,rgba(28,14,22,0.85)_100%)] shadow-[inset_0_1px_0_0_rgba(244,63,94,0.35),0_10px_30px_-10px_rgba(2,6,23,0.8)] hover:border-rose-500/70",
-				// Done Cards: Clearly readable, opacity-80, not pitch black
+					"border border-rose-500/60 bg-[linear-gradient(135deg,rgba(48,18,28,0.85)_0%,rgba(28,14,22,0.92)_100%)] shadow-[inset_0_1px_0_0_rgba(244,63,94,0.4),0_10px_30px_-10px_rgba(2,6,23,0.8)] hover:border-rose-500/80",
+				// Done Cards: Clearly darker, settled, recessed, easily distinguishable from active tasks!
 				isCompleted &&
-					"border border-[#7DD3FC]/20 bg-[#102136]/75 opacity-80 shadow-none hover:opacity-100",
+					"border border-white/[0.06] bg-[#050C16]/90 opacity-60 shadow-none hover:border-[#7DD3FC]/20 hover:opacity-90",
 				// Default
 				!isDue &&
 					!isOverdue &&
@@ -118,12 +115,14 @@ export function RoutineCard({
 						className={cn(
 							"rounded-full px-2 py-0.5 font-mono font-semibold text-[10px] tracking-wide",
 							isOverdue
-								? "border border-rose-500/25 bg-rose-500/10 text-rose-300"
+								? "border border-rose-500/30 bg-rose-500/15 text-rose-300"
 								: isDue
-									? "border border-[#7DD3FC]/50 bg-[#7DD3FC]/15 text-[#BAE6FD]"
+									? "border border-[#7DD3FC]/60 bg-[#7DD3FC]/20 text-[#BAE6FD] shadow-[0_0_8px_rgba(56,189,248,0.25)]"
 									: isDone
-										? "border border-[#38BDF8]/30 bg-[#38BDF8]/15 text-[#7DD3FC]"
-										: "text-[#93C5FD]",
+										? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400/80"
+										: isFinished
+											? "border border-white/10 bg-white/5 text-[#64748B]"
+											: "text-[#93C5FD]",
 						)}
 					>
 						{routine.status}
@@ -135,16 +134,23 @@ export function RoutineCard({
 						variant="outline"
 						className={cn(
 							"rounded-full px-2 py-0.5 font-bold font-mono text-[9px] uppercase tracking-[0.06em] transition-all",
-							routine.isTask
-								? "border-[#38BDF8]/40 bg-[#091528]/90 text-[#7DD3FC] shadow-[0_0_10px_-2px_rgba(56,189,248,0.3)]"
-								: "border-[#BAE6FD]/30 bg-[#07111E]/90 text-[#93C5FD]",
+							isCompleted
+								? "border-white/[0.08] bg-white/[0.04] text-[#64748B]"
+								: routine.isTask
+									? "border-[#38BDF8]/40 bg-[#091528]/90 text-[#7DD3FC] shadow-[0_0_10px_-2px_rgba(56,189,248,0.3)]"
+									: "border-[#BAE6FD]/30 bg-[#07111E]/90 text-[#93C5FD]",
 						)}
 					>
 						{routine.isTask ? "Task" : "Routine"}
 					</Badge>
 					<Badge
 						variant="secondary"
-						className="rounded-full border border-[#7DD3FC]/25 bg-[#17304F] px-2.5 py-0.5 font-mono font-semibold text-[#BAE6FD] text-[9.5px] tracking-wider"
+						className={cn(
+							"rounded-full px-2.5 py-0.5 font-mono font-semibold text-[9.5px] tracking-wider",
+							isCompleted
+								? "border border-white/[0.06] bg-white/[0.03] text-[#64748B]"
+								: "border border-[#7DD3FC]/25 bg-[#17304F] text-[#BAE6FD]",
+						)}
 					>
 						{routine.category}
 					</Badge>
@@ -161,7 +167,7 @@ export function RoutineCard({
 						className={cn(
 							"line-clamp-2 font-semibold text-[15px] tracking-tight transition-colors",
 							isCompleted
-								? "text-[#93C5FD] line-through decoration-[#7DD3FC]/50"
+								? "text-[#64748B] line-through decoration-[#38BDF8]/25 group-hover:text-[#93C5FD]/80"
 								: "text-[#F8FAFC]",
 						)}
 					>
@@ -169,7 +175,12 @@ export function RoutineCard({
 					</div>
 				</div>
 
-				<div className="flex items-center gap-1.5 font-mono text-[#BAE6FD] text-xs">
+				<div
+					className={cn(
+						"flex items-center gap-1.5 font-mono text-xs",
+						isCompleted ? "text-[#64748B]/80" : "text-[#BAE6FD]",
+					)}
+				>
 					{showMandatoryDot && (
 						<span
 							aria-hidden="true"
@@ -188,15 +199,20 @@ export function RoutineCard({
 			</div>
 
 			{/* Bottom Row: Last Done + Hover Action Buttons */}
-			<div className="relative mt-2 flex min-h-[30px] items-center justify-between border-white/[0.08] border-t pt-2">
-				<div className="shrink-0 whitespace-nowrap font-medium font-mono text-[#93C5FD] text-xs">
+			<div className="relative mt-2 flex min-h-[30px] items-center justify-between gap-2 border-white/[0.08] border-t pt-2">
+				<div
+					className={cn(
+						"truncate font-medium font-mono text-xs",
+						isCompleted ? "text-[#64748B]" : "text-[#93C5FD]",
+					)}
+				>
 					Last · {formatLastCompleted(routine.lastCompletedAt)}
 				</div>
 
-				{/* Sleek Frosted Ghost Action Buttons */}
+				{/* Sleek Frosted Ghost Action Buttons - Compact pills that never overflow the card boundaries */}
 				<div
 					className={cn(
-						"flex items-center gap-1 opacity-0 transition-opacity duration-200 group-focus-within:opacity-100 group-hover:opacity-100",
+						"flex shrink-0 items-center gap-1 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100",
 						revealed && "opacity-100",
 					)}
 				>
@@ -208,10 +224,11 @@ export function RoutineCard({
 								handleComplete(e.currentTarget);
 							}}
 							aria-label="Complete routine"
-							className="inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-[#38BDF8]/40 bg-[#38BDF8]/20 px-2 font-medium text-[#BAE6FD] text-[11px] shadow-[0_0_12px_rgba(56,189,248,0.25)] backdrop-blur-xs transition-all hover:border-[#38BDF8]/70 hover:bg-[#38BDF8]/30 active:scale-95"
+							title="Complete routine"
+							className="inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-[#38BDF8]/50 bg-[#38BDF8]/20 px-2 font-medium text-[#BAE6FD] text-[11px] shadow-[0_0_10px_rgba(56,189,248,0.2)] backdrop-blur-xs transition-all hover:border-[#38BDF8] hover:bg-[#38BDF8] hover:text-[#06101E] active:scale-95"
 						>
-							<Check className="size-3" />
-							<span>Complete</span>
+							<Check className="size-3 stroke-[2.5]" />
+							<span>Done</span>
 						</button>
 					)}
 					{showPauseResume && (
@@ -222,14 +239,14 @@ export function RoutineCard({
 								onTogglePause();
 							}}
 							aria-label={isPaused ? "Resume routine" : "Pause routine"}
-							className="inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 font-medium text-[#93C5FD] text-[11px] backdrop-blur-xs transition-all hover:border-white/25 hover:bg-white/10 hover:text-white active:scale-95"
+							title={isPaused ? "Resume routine" : "Pause routine"}
+							className="inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-white/5 text-[#93C5FD] backdrop-blur-xs transition-all hover:border-white/25 hover:bg-white/10 hover:text-white active:scale-95"
 						>
 							{isPaused ? (
-								<Play className="size-3" />
+								<Play className="size-3 text-[#38BDF8]" />
 							) : (
 								<Pause className="size-3" />
 							)}
-							<span>{isPaused ? "Resume" : "Pause"}</span>
 						</button>
 					)}
 					<button
@@ -239,10 +256,10 @@ export function RoutineCard({
 							onEdit();
 						}}
 						aria-label="Edit routine"
-						className="inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 font-medium text-[#93C5FD] text-[11px] backdrop-blur-xs transition-all hover:border-white/25 hover:bg-white/10 hover:text-white active:scale-95"
+						title="Edit routine"
+						className="inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-white/5 text-[#93C5FD] backdrop-blur-xs transition-all hover:border-white/25 hover:bg-white/10 hover:text-white active:scale-95"
 					>
 						<Settings2 className="size-3" />
-						<span>Edit</span>
 					</button>
 				</div>
 			</div>

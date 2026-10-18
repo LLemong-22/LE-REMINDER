@@ -162,7 +162,7 @@ export function HeroPanel({
 								key={routine.id}
 								className={cn(
 									"group/item -mx-1 flex items-center gap-2.5 rounded-lg px-2 py-1 transition-colors duration-150 hover:bg-[#BAE6FD]/10",
-									done ? "opacity-80 hover:opacity-100" : "opacity-100",
+									done ? "opacity-60 hover:opacity-90" : "opacity-100",
 								)}
 							>
 								<Checkbox
@@ -188,7 +188,7 @@ export function HeroPanel({
 									className={cn(
 										"flex-1 cursor-pointer bg-transparent text-left font-medium text-[13.5px] transition-colors duration-150 active:scale-[0.99]",
 										done
-											? "text-[#93C5FD] line-through decoration-[#7DD3FC]/60"
+											? "text-[#64748B] line-through decoration-[#38BDF8]/30 group-hover/item:text-[#93C5FD]"
 											: "text-[#F8FAFC] hover:text-[#38BDF8]",
 									)}
 								>
