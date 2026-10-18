@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { authorizeAgentRequest } from "@/lib/agent-auth";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 // Read-only counterpart to the routines agent route: lets VIN see
 // Today's To-Do, nothing else — no create/toggle/delete here, those stay

@@ -6,79 +6,77 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Luminous Midnight Blue theme (bright, breathable dark mode with sleek blue gradients, 0% eye strain).
-   These OKLCH values mirror the hardcoded hex palette used by dashboard
-   components directly:
-     background #131722 · card #1E2433 · foreground #F1F5F9 (slate-100)
-     muted-fg #94A3B8 (slate-400) · border #2E384D · input #263044
-     primary/ring #3B82F6 (electric blue) with cyan accents #06B6D4. */
+/* Cryo-Vault & Icy Frost Color System
+   Deep Cryo-Midnight #070B12 · Frosted Ice Panel rgba(13, 22, 36, 0.65)
+   Primary Text #F0F9FF (Soft Ice White) · Secondary Text #93C5FD / #94A3B8
+   Muted Metadata #64748B · Accent Due #BAE6FD & #38BDF8 · Overdue #F43F5E */
 :root {
-	--background: oklch(0.2 0.025 255);
-	--foreground: oklch(0.96 0.01 250);
-	--card: oklch(0.25 0.03 255);
-	--card-foreground: oklch(0.96 0.01 250);
-	--popover: oklch(0.25 0.03 255);
-	--popover-foreground: oklch(0.96 0.01 250);
-	--primary: oklch(0.62 0.21 255);
-	--primary-foreground: oklch(0.98 0 0);
-	--secondary: oklch(0.28 0.03 255);
-	--secondary-foreground: oklch(0.96 0.01 250);
-	--muted: oklch(0.26 0.025 255);
-	--muted-foreground: oklch(0.7 0.025 250);
-	--accent: oklch(0.28 0.03 255);
-	--accent-foreground: oklch(0.96 0.01 250);
-	--destructive: oklch(0.65 0.22 25);
-	--border: oklch(0.32 0.025 255);
-	--input: oklch(0.3 0.025 255);
-	--ring: oklch(0.62 0.21 255);
-	--chart-1: oklch(0.62 0.21 255);
-	--chart-2: oklch(0.7 0.16 220);
+	--background: oklch(0.12 0.02 245);
+	--foreground: oklch(0.97 0.015 235);
+	--card: oklch(0.18 0.03 245);
+	--card-foreground: oklch(0.97 0.015 235);
+	--popover: oklch(0.18 0.03 245);
+	--popover-foreground: oklch(0.97 0.015 235);
+	--primary: oklch(0.9 0.06 230);
+	--primary-foreground: oklch(0.12 0.02 245);
+	--secondary: oklch(0.22 0.03 245);
+	--secondary-foreground: oklch(0.82 0.08 240);
+	--muted: oklch(0.2 0.025 245);
+	--muted-foreground: oklch(0.55 0.03 240);
+	--accent: oklch(0.76 0.14 230);
+	--accent-foreground: oklch(0.97 0.015 235);
+	--destructive: oklch(0.63 0.23 15);
+	--border: oklch(0.26 0.03 240);
+	--input: oklch(0.22 0.03 245);
+	--ring: oklch(0.9 0.06 230);
+	--chart-1: oklch(0.9 0.06 230);
+	--chart-2: oklch(0.76 0.14 230);
 	--chart-3: oklch(0.65 0.18 160);
 	--chart-4: oklch(0.6 0.2 290);
 	--chart-5: oklch(0.5 0.15 255);
 	--radius: 0.625rem;
-	--sidebar: oklch(0.25 0.03 255);
-	--sidebar-foreground: oklch(0.96 0.01 250);
-	--sidebar-primary: oklch(0.62 0.21 255);
-	--sidebar-primary-foreground: oklch(0.98 0 0);
-	--sidebar-accent: oklch(0.28 0.03 255);
-	--sidebar-accent-foreground: oklch(0.96 0.01 250);
-	--sidebar-border: oklch(0.32 0.025 255);
-	--sidebar-ring: oklch(0.62 0.21 255);
+	--sidebar: oklch(0.18 0.03 245);
+	--sidebar-foreground: oklch(0.97 0.015 235);
+	--sidebar-primary: oklch(0.9 0.06 230);
+	--sidebar-primary-foreground: oklch(0.12 0.02 245);
+	--sidebar-accent: oklch(0.22 0.03 245);
+	--sidebar-accent-foreground: oklch(0.97 0.015 235);
+	--sidebar-border: oklch(0.26 0.03 240);
+	--sidebar-ring: oklch(0.9 0.06 230);
 }
 
 .dark {
-	--background: oklch(0.2 0.025 255);
-	--foreground: oklch(0.96 0.01 250);
-	--card: oklch(0.25 0.03 255);
-	--card-foreground: oklch(0.96 0.01 250);
-	--popover: oklch(0.25 0.03 255);
-	--popover-foreground: oklch(0.96 0.01 250);
-	--primary: oklch(0.62 0.21 255);
-	--primary-foreground: oklch(0.98 0 0);
-	--secondary: oklch(0.28 0.03 255);
-	--secondary-foreground: oklch(0.96 0.01 250);
-	--muted: oklch(0.26 0.025 255);
-	--muted-foreground: oklch(0.7 0.025 250);
-	--accent: oklch(0.28 0.03 255);
-	--accent-foreground: oklch(0.96 0.01 250);
-	--destructive: oklch(0.65 0.22 25);
-	--border: oklch(0.32 0.025 255);
-	--input: oklch(0.3 0.025 255);
-	--ring: oklch(0.62 0.21 255);
-	--chart-1: oklch(0.62 0.21 255);
-	--chart-2: oklch(0.7 0.16 220);
+	--background: oklch(0.12 0.02 245);
+	--foreground: oklch(0.97 0.015 235);
+	--card: oklch(0.18 0.03 245);
+	--card-foreground: oklch(0.97 0.015 235);
+	--popover: oklch(0.18 0.03 245);
+	--popover-foreground: oklch(0.97 0.015 235);
+	--primary: oklch(0.9 0.06 230);
+	--primary-foreground: oklch(0.12 0.02 245);
+	--secondary: oklch(0.22 0.03 245);
+	--secondary-foreground: oklch(0.82 0.08 240);
+	--muted: oklch(0.2 0.025 245);
+	--muted-foreground: oklch(0.55 0.03 240);
+	--accent: oklch(0.76 0.14 230);
+	--accent-foreground: oklch(0.97 0.015 235);
+	--destructive: oklch(0.63 0.23 15);
+	--border: oklch(0.26 0.03 240);
+	--input: oklch(0.22 0.03 245);
+	--ring: oklch(0.9 0.06 230);
+	--chart-1: oklch(0.9 0.06 230);
+	--chart-2: oklch(0.76 0.14 230);
 	--chart-3: oklch(0.65 0.18 160);
 	--chart-4: oklch(0.6 0.2 290);
 	--chart-5: oklch(0.5 0.15 255);
-	--sidebar: oklch(0.25 0.03 255);
-	--sidebar-foreground: oklch(0.96 0.01 250);
-	--sidebar-primary: oklch(0.62 0.21 255);
-	--sidebar-primary-foreground: oklch(0.98 0 0);
-	--sidebar-accent: oklch(0.28 0.03 255);
-	--sidebar-accent-foreground: oklch(0.96 0.01 250);
-	--sidebar-border: oklch(0.32 0.025 255);
-	--sidebar-ring: oklch(0.62 0.21 255);
+	--sidebar: oklch(0.18 0.03 245);
+	--sidebar-foreground: oklch(0.97 0.015 235);
+	--sidebar-primary: oklch(0.9 0.06 230);
+	--sidebar-primary-foreground: oklch(0.12 0.02 245);
+	--sidebar-accent: oklch(0.22 0.03 245);
+	--sidebar-accent-foreground: oklch(0.97 0.015 235);
+	--sidebar-border: oklch(0.26 0.03 240);
+	--sidebar-ring: oklch(0.9 0.06 230);
 }
 
 @keyframes shimmer {
@@ -92,6 +90,44 @@
 
 .animate-shimmer {
 	animation: shimmer 2.5s infinite ease-in-out;
+}
+
+/* Frosted Ice Glass Panel utility */
+.frost-panel {
+	background: rgba(13, 22, 36, 0.65);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+	border: 1px solid rgba(186, 230, 253, 0.14);
+	box-shadow:
+		inset 0 1px 0 0 rgba(224, 242, 254, 0.22),
+		0 10px 30px -10px rgba(2, 6, 23, 0.7);
+}
+
+/* Deep Cryo-Midnight Canvas with static glacial studio light */
+.cryo-canvas {
+	background-color: #070b12;
+	background-image: radial-gradient(
+		ellipse 85% 45% at 50% -10%,
+		rgba(186, 230, 253, 0.14),
+		rgba(125, 211, 252, 0.04) 45%,
+		transparent 75%
+	);
+	background-attachment: fixed;
+}
+
+/* Primary CTA Button: Frosted Ice Pill */
+.frost-pill-btn {
+	background-color: #bae6fd;
+	color: #070b12;
+	font-weight: 600;
+	box-shadow: 0 0 20px rgba(186, 230, 253, 0.3);
+	transition: all 0.2s ease;
+}
+.frost-pill-btn:hover {
+	background-color: #e0f2fe;
+}
+.frost-pill-btn:active {
+	transform: scale(0.95);
 }
 
 @theme inline {

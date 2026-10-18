@@ -6,7 +6,7 @@ import { useRef } from "react";
 export function SpotlightCard({
 	children,
 	className = "",
-	spotlightColor = "rgba(255, 255, 255, 0.1)",
+	spotlightColor = "rgba(186, 230, 253, 0.11)",
 }: {
 	children: ReactNode;
 	className?: string;
@@ -29,7 +29,6 @@ export function SpotlightCard({
 			if (!el) return;
 			el.style.setProperty("--mouse-x", `${x}px`);
 			el.style.setProperty("--mouse-y", `${y}px`);
-			el.style.setProperty("--spotlight-color", spotlightColor);
 		});
 	}
 
@@ -48,8 +47,7 @@ export function SpotlightCard({
 					className="absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100"
 					style={
 						{
-							background:
-								"radial-gradient(550px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--spotlight-color, rgba(59, 130, 246, 0.15)), transparent 40%)",
+							background: `radial-gradient(280px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${spotlightColor}, transparent 80%)`,
 							zIndex: 10,
 						} as CSSProperties
 					}

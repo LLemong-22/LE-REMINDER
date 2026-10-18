@@ -30,23 +30,11 @@
 	}
 }
 
-@keyframes nexus-tumble {
-	0% {
-		transform: rotateX(-18deg) rotateY(0deg);
-	}
-	50% {
-		transform: rotateX(18deg) rotateY(180deg);
-	}
-	100% {
-		transform: rotateX(-18deg) rotateY(360deg);
-	}
-}
-
-@keyframes nexus-glow {
+@keyframes cryo-glow {
 	0%,
 	100% {
-		opacity: 0.45;
-		transform: scale(0.88);
+		opacity: 0.5;
+		transform: scale(0.95);
 	}
 	50% {
 		opacity: 1;
@@ -54,15 +42,53 @@
 	}
 }
 
+@keyframes reticle-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes reticle-spin-reverse {
+	from {
+		transform: rotate(360deg);
+	}
+	to {
+		transform: rotate(0deg);
+	}
+}
+
+@keyframes shockwave-expand {
+	0% {
+		transform: scale(0.2) rotate(0deg);
+		opacity: 0.95;
+	}
+	100% {
+		transform: scale(2.8) rotate(45deg);
+		opacity: 0;
+	}
+}
+
+@keyframes beam-rotate {
+	0% {
+		offset-distance: 0%;
+	}
+	100% {
+		offset-distance: 100%;
+	}
+}
+
 @keyframes star-twinkle {
 	0%,
 	100% {
-		opacity: 0.12;
+		opacity: 0.15;
 		transform: scale(0.7);
 	}
 	50% {
-		opacity: 0.9;
-		transform: scale(1.15);
+		opacity: 0.95;
+		transform: scale(1.2);
 	}
 }
 
@@ -72,7 +98,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.nexus-star {
+	.nexus-star,
+	.animate-reticle-spin,
+	.animate-reticle-spin-reverse {
 		animation: none;
 	}
 }

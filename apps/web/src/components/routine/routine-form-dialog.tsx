@@ -148,15 +148,17 @@ function TaskTypeCard({
 			className={cn(
 				"relative flex min-w-[140px] flex-1 cursor-pointer flex-col gap-2 rounded-xl border p-4 text-left transition-all duration-200",
 				selected
-					? "border-[#3B82F6] bg-gradient-to-b from-[#263044] to-[#1E2433] shadow-[0_2px_8px_-2px_rgba(59,130,246,0.3),inset_0_0_0_1px_rgba(59,130,246,0.4)]"
-					: "border-[#2E384D]/80 bg-[#1E2433]/90 hover:border-[#64748B] hover:bg-white/5 hover:shadow-xs",
+					? "border-[#38BDF8]/60 bg-[#38BDF8]/15 shadow-[0_0_12px_rgba(56,189,248,0.25)]"
+					: "border-[#BAE6FD]/15 bg-[#070B12]/60 hover:border-[#BAE6FD]/30",
 			)}
 		>
 			<div className="flex items-center justify-between">
 				{glyph}
-				{selected && <span className="size-1.5 rounded-full bg-[#3B82F6]" />}
+				{selected && (
+					<span className="size-1.5 rounded-full bg-[#38BDF8] shadow-[0_0_6px_#38BDF8]" />
+				)}
 			</div>
-			<div className="font-semibold text-[#F1F5F9] text-[13.5px]">{label}</div>
+			<div className="font-semibold text-[#F0F9FF] text-[13.5px]">{label}</div>
 			<div className="text-[#94A3B8] text-[11.5px] leading-[1.45]">
 				{description}
 			</div>
@@ -180,8 +182,8 @@ function Pill({
 			className={cn(
 				"cursor-pointer rounded-full border px-3 py-1 font-mono text-[11.5px] transition-all duration-150 active:scale-95",
 				selected
-					? "border-[#3B82F6] bg-[#3B82F6]/15 font-semibold text-[#60A5FA] shadow-xs"
-					: "border-[#38445C] bg-[#1E2433] font-normal text-[#94A3B8] hover:border-[#F1F5F9] hover:text-[#F1F5F9]",
+					? "border-[#38BDF8]/60 bg-[#38BDF8]/20 font-semibold text-[#BAE6FD] shadow-[0_0_10px_rgba(56,189,248,0.25)]"
+					: "border-[#BAE6FD]/15 bg-[#070B12]/60 font-normal text-[#93C5FD] hover:border-[#BAE6FD]/35 hover:text-[#F0F9FF]",
 			)}
 		>
 			{children}
@@ -267,16 +269,18 @@ export function RoutineFormDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="border-[#2E384D] bg-[#1E2433] text-[#F1F5F9] sm:max-w-lg">
+			<DialogContent className="frost-panel border-[#BAE6FD]/20 bg-[rgba(10,18,30,0.94)] text-[#F0F9FF] shadow-[0_20px_50px_rgba(2,6,23,0.9),inset_0_1px_0_0_rgba(224,242,254,0.22)] sm:max-w-lg">
 				<DialogHeader>
-					<DialogTitle>{routine ? "Edit Routine" : "New Task"}</DialogTitle>
+					<DialogTitle className="text-[#F0F9FF]">
+						{routine ? "Edit Routine" : "New Task"}
+					</DialogTitle>
 				</DialogHeader>
 
 				<div className="flex flex-col gap-4">
 					<div className="flex flex-col gap-1.5">
 						<Label
 							htmlFor="routine-name"
-							className="font-semibold text-[#94A3B8] text-[11.5px] uppercase tracking-[0.03em]"
+							className="font-semibold text-[#93C5FD] text-[11.5px] uppercase tracking-[0.03em]"
 						>
 							Name
 						</Label>
@@ -293,14 +297,14 @@ export function RoutineFormDialog({
 								}
 							}}
 							placeholder="e.g. Server Data Backup"
-							className="h-9 rounded-lg border-[#38445C] bg-[#181E2B]/80 text-[#F1F5F9] text-[13px] placeholder-[#64748B] transition-colors focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]/30 focus-visible:ring-offset-0"
+							className="h-9 rounded-lg border-[#BAE6FD]/20 bg-[#070B12]/80 text-[#F0F9FF] text-[13px] placeholder-[#64748B] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/40 focus-visible:ring-offset-0"
 						/>
 					</div>
 
 					<div className="flex flex-col gap-1.5">
 						<Label
 							htmlFor="routine-category"
-							className="font-semibold text-[#94A3B8] text-[11.5px] uppercase tracking-[0.03em]"
+							className="font-semibold text-[#93C5FD] text-[11.5px] uppercase tracking-[0.03em]"
 						>
 							Category
 						</Label>
@@ -317,7 +321,7 @@ export function RoutineFormDialog({
 								}
 							}}
 							placeholder="e.g. Tech"
-							className="h-9 rounded-lg border-[#38445C] bg-[#181E2B]/80 text-[#F1F5F9] text-[13px] placeholder-[#64748B] transition-colors focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]/30 focus-visible:ring-offset-0"
+							className="h-9 rounded-lg border-[#BAE6FD]/20 bg-[#070B12]/80 text-[#F0F9FF] text-[13px] placeholder-[#64748B] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/40 focus-visible:ring-offset-0"
 						/>
 						<div className="flex flex-wrap gap-1.5">
 							{categorySuggestions.map((chip) => (
@@ -593,7 +597,7 @@ export function RoutineFormDialog({
 									onChange={(e) =>
 										setState((prev) => ({ ...prev, dueDate: e.target.value }))
 									}
-									className="w-fit rounded-lg border-[#38445C] bg-[#1E2433] px-2.5 py-1.5 font-mono text-[#F1F5F9] text-[12.5px] transition-colors focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]/30 focus-visible:ring-offset-0"
+									className="w-fit rounded-lg border-[#BAE6FD]/20 bg-[#070B12]/80 px-2.5 py-1.5 font-mono text-[#F0F9FF] text-[12.5px] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/40 focus-visible:ring-offset-0"
 								/>
 							)}
 						</div>
@@ -605,7 +609,7 @@ export function RoutineFormDialog({
 						<Button
 							variant="ghost"
 							onClick={handleDelete}
-							className="text-red-400 hover:bg-red-950/40 hover:text-red-300"
+							className="font-mono text-rose-400 hover:bg-rose-950/40 hover:text-rose-300"
 						>
 							Delete Routine
 						</Button>
@@ -613,17 +617,22 @@ export function RoutineFormDialog({
 						<div />
 					)}
 					<div className="flex gap-2">
-						<Button variant="outline" onClick={() => onOpenChange(false)}>
+						<Button
+							variant="outline"
+							onClick={() => onOpenChange(false)}
+							className="rounded-lg border-white/10 bg-white/5 font-semibold text-[#93C5FD] hover:bg-white/10 hover:text-white"
+						>
 							Cancel
 						</Button>
 						<Button
 							onClick={handleSubmit}
 							disabled={!saveEnabled}
-							style={
+							className={cn(
+								"rounded-lg px-4 py-2 font-semibold text-xs",
 								saveEnabled
-									? { background: ACCENT, borderColor: ACCENT }
-									: undefined
-							}
+									? "frost-pill-btn"
+									: "border border-white/5 bg-white/5 text-[#64748B]",
+							)}
 						>
 							Save Routine
 						</Button>

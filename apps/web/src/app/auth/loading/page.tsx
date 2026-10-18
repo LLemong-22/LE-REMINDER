@@ -4,7 +4,6 @@ import { Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { SoftAurora } from "@/components/soft-aurora";
 import { useSession } from "@/lib/auth-client";
 
 const SHOWN_DURATION_MS = 900;
@@ -12,22 +11,12 @@ const EXIT_DURATION_MS = 350;
 
 type Phase = "waiting" | "shown" | "exiting";
 
-// GitHub's OAuth callback lands here (see login/page.tsx's callbackURL)
-// instead of routing straight to "/" — gives the glass card a beat to
-// fade in, show a welcome state, then fade out before the real dashboard
-// mounts, instead of an instant snap.
 export default function AuthLoadingPage() {
 	const router = useRouter();
 	const { data: session, isPending } = useSession();
 	const [phase, setPhase] = useState<Phase>("waiting");
 	const startedRef = useRef(false);
 
-	// Deliberately depends on `isPending` only, not `phase` — this effect
-	// itself calls setPhase("shown"), and if `phase` were a dependency too,
-	// that state update would re-run the effect, whose cleanup would clear
-	// the timer it had just scheduled a moment earlier. Net effect: phase
-	// gets stuck on "shown" forever and the page never advances past
-	// /auth/loading. startedRef guards against running twice.
 	useEffect(() => {
 		if (isPending || startedRef.current) return;
 		startedRef.current = true;
@@ -38,9 +27,6 @@ export default function AuthLoadingPage() {
 
 	useEffect(() => {
 		if (phase !== "exiting") return;
-		// The whitelist can still reject a brand-new account at this point
-		// (databaseHooks.user.create.before in packages/auth) — no session
-		// means bounce back to /login instead of dead-ending here.
 		const timer = setTimeout(() => {
 			if (session) {
 				router.replace("/");
@@ -54,10 +40,12 @@ export default function AuthLoadingPage() {
 	const exiting = phase === "exiting";
 
 	return (
-		<div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#131722]">
-			<div className="absolute inset-0">
-				<SoftAurora />
-			</div>
+		<div className="cryo-canvas relative flex min-h-screen items-center justify-center overflow-hidden">
+			{/* Hardware-accelerated CSS glacial ambient light */}
+			<div
+				aria-hidden="true"
+				className="pointer-events-none absolute -inset-20 bg-[radial-gradient(ellipse_60%_40%_at_50%_45%,rgba(56,189,248,0.12),transparent_70%)]"
+			/>
 
 			<motion.div
 				initial={{ opacity: 0, y: 12, scale: 0.97 }}
@@ -67,17 +55,17 @@ export default function AuthLoadingPage() {
 						: { opacity: 1, y: 0, scale: 1 }
 				}
 				transition={{
-					duration: exiting ? EXIT_DURATION_MS / 1000 : 0.5,
+					duration: exiting ? EXIT_DURATION_MS / 1000 : 0.45,
 					ease: "easeOut",
 				}}
-				className="relative z-10 flex flex-col items-center gap-4 rounded-2xl border border-white/10 bg-[#1E2433]/70 px-10 py-9 text-center shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-xl"
+				className="frost-panel relative z-10 flex flex-col items-center gap-4 rounded-2xl p-9 text-center shadow-[0_20px_50px_rgba(2,6,23,0.85)]"
 			>
-				<Loader2 className="size-6 animate-spin text-[#3B82F6]" />
-				<div className="font-extrabold text-[#F1F5F9] text-[17px] tracking-[-0.015em]">
-					{isPending ? "Verifying your session…" : "Welcome back"}
+				<Loader2 className="size-6 animate-spin text-[#38BDF8]" />
+				<div className="font-extrabold text-[#F0F9FF] text-[17px] tracking-tight">
+					{isPending ? "Verifying Cryo session…" : "Authorization Confirmed"}
 				</div>
-				<div className="text-[#94A3B8] text-[12px]">
-					Taking you to your dashboard…
+				<div className="text-[#93C5FD] text-[12px]">
+					Initializing dashboard subsystem…
 				</div>
 			</motion.div>
 		</div>

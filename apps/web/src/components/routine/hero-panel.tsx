@@ -3,9 +3,9 @@
 import type { RoutineStatus } from "@LE-REMINDER/core/domain/routine-status";
 import { Checkbox } from "@LE-REMINDER/ui/components/checkbox";
 import { cn } from "@LE-REMINDER/ui/lib/utils";
-import { AuroraGlow } from "@/components/aurora-glow";
 import { NexusAnimation } from "@/components/nexus-animation";
 import { CountUp } from "@/components/ui/count-up";
+import { DecryptedText } from "@/components/ui/decrypted-text";
 import { triggerCyberExplosion } from "@/lib/cyber-explosion";
 import type { DashboardRoutine } from "@/lib/dashboard-routine";
 import { sortByStatus } from "@/lib/sort-routines";
@@ -20,11 +20,11 @@ const STATUS_ORDER: RoutineStatus[] = [
 ];
 
 const STATUS_GRADIENT: Record<RoutineStatus, string> = {
-	Overdue: "linear-gradient(90deg, #DC2626, #EF4444)",
-	Due: "linear-gradient(90deg, #2563EB, #38BDF8)",
-	Done: "linear-gradient(90deg, #059669, #10B981)",
-	Paused: "linear-gradient(90deg, #7C3AED, #A855F7)",
-	Finished: "linear-gradient(90deg, #475569, #64748B)",
+	Overdue: "linear-gradient(90deg, #F43F5E, #FB7185)",
+	Due: "linear-gradient(90deg, #0284C7, #38BDF8)",
+	Done: "linear-gradient(90deg, #0EA5E9, #BAE6FD)",
+	Paused: "linear-gradient(90deg, #7C3AED, #C084FC)",
+	Finished: "linear-gradient(90deg, #334155, #64748B)",
 };
 
 function isDailyRoutine(routine: DashboardRoutine): boolean {
@@ -50,24 +50,24 @@ function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
 			>
 				<defs>
 					<linearGradient
-						id="heroProgressNeonGradient"
+						id="heroProgressCryoGradient"
 						x1="0%"
 						y1="0%"
 						x2="100%"
 						y2="100%"
 					>
-						<stop offset="0%" stopColor="#06B6D4" />
-						<stop offset="60%" stopColor="#38BDF8" />
-						<stop offset="100%" stopColor="#3B82F6" />
+						<stop offset="0%" stopColor="#38BDF8" />
+						<stop offset="60%" stopColor="#7DD3FC" />
+						<stop offset="100%" stopColor="#BAE6FD" />
 					</linearGradient>
 				</defs>
-				{/* Holographic dial outer calibration ticks */}
+				{/* Crystalline dial outer calibration ticks */}
 				<circle
 					cx="64"
 					cy="64"
 					r={58}
 					fill="none"
-					stroke="rgba(6, 182, 212, 0.15)"
+					stroke="rgba(186, 230, 253, 0.16)"
 					strokeWidth="1"
 					strokeDasharray="2 6"
 				/>
@@ -77,21 +77,21 @@ function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
 					cy="64"
 					r={radius}
 					fill="none"
-					stroke="rgba(255, 255, 255, 0.05)"
+					stroke="rgba(186, 230, 253, 0.08)"
 					strokeWidth="5"
 				/>
-				{/* Luminous cyan/blue data ring with requested holographic drop-shadow */}
+				{/* Luminous Icy Frost data ring */}
 				<circle
 					cx="64"
 					cy="64"
 					r={radius}
 					fill="none"
-					stroke="url(#heroProgressNeonGradient)"
-					strokeWidth="5.5"
+					stroke="url(#heroProgressCryoGradient)"
+					strokeWidth="5"
 					strokeLinecap="round"
 					strokeDasharray={circumference}
 					strokeDashoffset={strokeDashoffset}
-					className="drop-shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all duration-1000 ease-out"
+					className="drop-shadow-[0_0_12px_rgba(56,189,248,0.55)] transition-all duration-1000 ease-out"
 				/>
 			</svg>
 			<div className="relative flex items-center justify-center">
@@ -101,11 +101,6 @@ function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
 	);
 }
 
-// The Daily Task checklist is a direct view onto real routine state — only
-// the sidebar "Today's To-Do" scratchpad is isolated from the backend.
-// Checking a box here fires the same complete mutation as a Routine Card's
-// Complete button, so the DB, the progress bar, and the card grid below all
-// stay in sync.
 export function HeroPanel({
 	routines,
 	onComplete,
@@ -129,84 +124,110 @@ export function HeroPanel({
 	);
 
 	return (
-		<div className="relative flex flex-wrap overflow-hidden rounded-xl border border-white/5 bg-[#1A1F2C]/60 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-md">
-			<AuroraGlow />
-			<div className="flex min-w-[150px] flex-1 flex-col gap-3 border-white/5 border-r p-5">
-				<div className="font-bold text-[#FFFFFF] text-[15px] tracking-tight">
-					Daily Task
+		<div className="frost-panel relative flex flex-col divide-y divide-[#BAE6FD]/10 overflow-hidden rounded-xl md:flex-row md:divide-x md:divide-y-0">
+			{/* Static hardware-accelerated ambient glacial haze */}
+			<div
+				aria-hidden="true"
+				className="pointer-events-none absolute -inset-10 -z-10 bg-[radial-gradient(ellipse_at_30%_50%,rgba(56,189,248,0.08),transparent_60%)]"
+			/>
+
+			{/* Column 1: Daily Task Checklist */}
+			<div className="flex min-w-[170px] flex-1 flex-col gap-3 p-5">
+				<div className="flex items-center justify-between">
+					<div className="font-extrabold text-[#F0F9FF] text-[15px] tracking-tight">
+						Daily Task
+					</div>
+					<span className="font-mono text-[#93C5FD] text-[11px]">
+						{
+							dailyItems.filter(
+								(i) => i.status === "Done" || i.status === "Finished",
+							).length
+						}
+						/{dailyItems.length} Done
+					</span>
 				</div>
+
 				{dailyItems.length === 0 && (
-					<div className="text-[#94A3B8] text-xs">No daily routines yet.</div>
+					<div className="font-mono text-[#94A3B8] text-xs italic">
+						No daily routines configured.
+					</div>
 				)}
-				{dailyItems.map((routine) => {
-					const done =
-						routine.status === "Done" || routine.status === "Finished";
-					return (
-						<div
-							key={routine.id}
-							className={cn(
-								"group/item -mx-1.5 flex items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors duration-200 hover:bg-white/5",
-								done && "opacity-60 hover:opacity-100",
-							)}
-						>
-							<Checkbox
-								checked={done}
-								onCheckedChange={() => {
-									if (!done) onComplete(routine);
-								}}
-								onClick={(e) => {
-									if (!done) {
-										triggerCyberExplosion(e.currentTarget);
-									}
-								}}
-								className="size-4 cursor-pointer rounded border-[#38445C] transition-all duration-150 active:scale-90 group-hover/item:scale-105 data-checked:border-cyan-500 data-checked:bg-cyan-500"
-							/>
-							<button
-								type="button"
-								onClick={(e) => {
-									if (!done) {
-										triggerCyberExplosion(e.currentTarget);
-										onComplete(routine);
-									}
-								}}
+
+				<div className="flex flex-col gap-1">
+					{dailyItems.map((routine) => {
+						const done =
+							routine.status === "Done" || routine.status === "Finished";
+						return (
+							<div
+								key={routine.id}
 								className={cn(
-									"flex-1 cursor-pointer bg-transparent text-left text-[13.5px] transition-colors duration-200 active:scale-[0.99]",
-									done
-										? "text-[#64748B] line-through"
-										: "text-[#F1F5F9] hover:text-[#38BDF8]",
+									"group/item -mx-1.5 flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-[#BAE6FD]/[0.06]",
+									done && "opacity-55 hover:opacity-90",
 								)}
 							>
-								{routine.name}
-							</button>
-						</div>
-					);
-				})}
+								<Checkbox
+									checked={done}
+									onCheckedChange={() => {
+										if (!done) onComplete(routine);
+									}}
+									onClick={(e) => {
+										if (!done) {
+											triggerCyberExplosion(e.currentTarget);
+										}
+									}}
+									className="size-4 cursor-pointer rounded border-[#BAE6FD]/30 transition-all duration-150 active:scale-90 group-hover/item:border-[#38BDF8] data-checked:border-[#38BDF8] data-checked:bg-[#38BDF8] data-checked:text-[#070B12]"
+								/>
+								<button
+									type="button"
+									onClick={(e) => {
+										if (!done) {
+											triggerCyberExplosion(e.currentTarget);
+											onComplete(routine);
+										}
+									}}
+									className={cn(
+										"flex-1 cursor-pointer bg-transparent text-left font-medium text-[13.5px] transition-colors duration-150 active:scale-[0.99]",
+										done
+											? "text-[#64748B] line-through"
+											: "text-[#F0F9FF] hover:text-[#38BDF8]",
+									)}
+								>
+									{routine.name}
+								</button>
+							</div>
+						);
+					})}
+				</div>
 			</div>
 
-			<div className="flex min-w-[170px] flex-none items-center justify-center border-white/5 border-r p-5">
+			{/* Column 2: Gyroscope Circular Dial */}
+			<div className="flex min-w-[170px] flex-none items-center justify-center p-5">
 				<CircularProgressIndicator progressPct={progressPct} />
 			</div>
 
-			<div className="flex min-w-[170px] flex-[1.2] flex-col justify-center gap-3 p-5">
-				<div className="font-mono text-[11px] text-cyan-300/80 uppercase tracking-[0.08em] drop-shadow-[0_0_8px_rgba(6,182,212,0.25)]">
-					OVERALL PROGRESS
-				</div>
-				<CountUp
-					to={progressPct}
-					duration={1.2}
-					className="font-extrabold text-[#FFFFFF] text-[32px] tracking-tight"
-				/>
-				<div className="relative">
-					{progressPct > 0 && (
-						<div
-							aria-hidden="true"
-							className="pointer-events-none absolute -inset-x-0.5 -inset-y-0.5 rounded-full opacity-45 blur-sm transition-opacity duration-500"
-							style={{
-								background: "linear-gradient(90deg, #3B82F6, #06B6D4)",
-							}}
+			{/* Column 3: Overall Progress Metrics */}
+			<div className="flex min-w-[190px] flex-[1.2] flex-col justify-center gap-3 p-5">
+				<div className="flex items-center justify-between">
+					<div className="font-mono text-[#93C5FD] text-[11px] uppercase tracking-[0.12em]">
+						<DecryptedText
+							text="OVERALL PROGRESS"
+							speed={30}
+							maxIterations={8}
+							encryptedClassName="text-[#38BDF8]"
 						/>
-					)}
-					<div className="relative flex h-1.5 overflow-hidden rounded-full bg-[#141926] shadow-[inset_0_1px_2px_rgba(0,0,0,0.7)]">
+					</div>
+					<span className="font-mono text-[#64748B] text-[10.5px]">
+						CYTO-CORE STATUS
+					</span>
+				</div>
+
+				<div className="font-extrabold text-[#F0F9FF] text-[34px] tracking-tight">
+					<CountUp to={progressPct} duration={1.1} />
+				</div>
+
+				{/* Segmented Cryo Progress Bar */}
+				<div className="relative">
+					<div className="relative flex h-2 overflow-hidden rounded-full border border-[#BAE6FD]/15 bg-[#070B12]/80 shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]">
 						{STATUS_ORDER.map((status) => (
 							<div
 								key={status}
@@ -220,11 +241,13 @@ export function HeroPanel({
 						{routines.length > 0 && (
 							<div
 								aria-hidden="true"
-								className="pointer-events-none absolute inset-y-0 w-24 animate-shimmer bg-gradient-to-r from-transparent via-white/35 to-transparent"
+								className="pointer-events-none absolute inset-y-0 w-24 animate-shimmer bg-gradient-to-r from-transparent via-[#BAE6FD]/40 to-transparent"
 							/>
 						)}
 					</div>
 				</div>
+
+				{/* Status Breakdown Legend */}
 				<div className="flex flex-wrap gap-3 font-mono text-[#94A3B8] text-[11px]">
 					{STATUS_ORDER.map((status) => (
 						<div key={status} className="flex items-center gap-1.5">
@@ -232,7 +255,8 @@ export function HeroPanel({
 								className="inline-block size-1.5 rounded-full shadow-[0_0_6px_currentColor]"
 								style={{ background: STATUS_FILL[status] }}
 							/>
-							{counts[status]} {status}
+							<span>{counts[status]}</span>
+							<span className="text-[#64748B]">{status}</span>
 						</div>
 					))}
 				</div>

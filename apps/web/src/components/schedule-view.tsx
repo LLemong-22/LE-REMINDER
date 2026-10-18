@@ -8,9 +8,10 @@ import {
 	Dumbbell,
 	Moon,
 	Radio,
+	Target,
 	Utensils,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MASTER_SCHEDULE, type ScheduleEventType } from "@/lib/schedule-data";
 
 const TYPE_CONFIG: Record<
@@ -24,33 +25,32 @@ const TYPE_CONFIG: Record<
 > = {
 	study: {
 		label: "Study & Work",
-		nodeColor: "bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]",
-		badgeClass: "border-sky-500/30 bg-sky-950/40 text-sky-300",
+		nodeColor: "bg-[#38BDF8] shadow-[0_0_8px_rgba(56,189,248,0.6)]",
+		badgeClass: "border-[#38BDF8]/35 bg-[#38BDF8]/10 text-[#BAE6FD]",
 		icon: BookOpen,
 	},
 	physical: {
 		label: "Physical & Gym",
-		nodeColor: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]",
-		badgeClass: "border-emerald-500/30 bg-emerald-950/40 text-emerald-300",
+		nodeColor: "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.6)]",
+		badgeClass: "border-emerald-500/35 bg-emerald-500/10 text-emerald-300",
 		icon: Dumbbell,
 	},
 	meal: {
 		label: "Nutrition & Fuel",
-		nodeColor: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]",
-		badgeClass: "border-amber-500/30 bg-amber-950/40 text-amber-300",
+		nodeColor: "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.6)]",
+		badgeClass: "border-amber-500/35 bg-amber-500/10 text-amber-300",
 		icon: Utensils,
 	},
 	rest: {
 		label: "Rest & Recovery",
-		nodeColor: "bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.5)]",
-		badgeClass: "border-purple-500/30 bg-purple-950/40 text-purple-300",
+		nodeColor: "bg-purple-400 shadow-[0_0_8px_rgba(192,132,252,0.6)]",
+		badgeClass: "border-purple-500/35 bg-purple-500/10 text-purple-300",
 		icon: Moon,
 	},
 };
 
 /**
- * Parses time strings like "08:00 - 09:00", "06:30", "17:00 - dst", "18:30 ke atas"
- * into start and end Date objects on the given referenceDate (today).
+ * Parses time strings into start and end Date objects for today
  */
 function parseEventTimeRange(
 	timeStr: string,
@@ -98,7 +98,7 @@ function parseEventTimeRange(
 		}
 	}
 
-	// Fallback for standalone point in time: 45-minute active window or midnight
+	// Default fallback: 45-minute duration
 	const end = new Date(start.getTime() + 45 * 60 * 1000);
 	const endOfDay = new Date(referenceDate);
 	endOfDay.setHours(23, 59, 59, 999);
@@ -106,20 +106,20 @@ function parseEventTimeRange(
 }
 
 export function ScheduleView() {
-	// Initialize with today's day of week (0 = Sunday, 1 = Monday, etc.)
+	// Auto-select today's day of week (0 = Minggu, 1 = Senin, ... 6 = Sabtu)
 	const [selectedDay, setSelectedDay] = useState<number>(() =>
 		new Date().getDay(),
 	);
 	const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
 
-	const liveEventRef = useRef<HTMLDivElement | null>(null);
+	const activeCardRef = useRef<HTMLDivElement | null>(null);
 	const hasAutoScrolledRef = useRef(false);
 
-	// Low-overhead 60-second ticker (0% battery drain, no requestAnimationFrame)
+	// Low-overhead 30s ticker for accurate time block updates with 0% battery drain
 	useEffect(() => {
 		const interval = setInterval(() => {
 			setCurrentTime(new Date());
-		}, 60000);
+		}, 30000);
 		return () => clearInterval(interval);
 	}, []);
 
@@ -130,23 +130,100 @@ export function ScheduleView() {
 		MASTER_SCHEDULE.find((d) => d.dayOfWeek === selectedDay) ??
 		MASTER_SCHEDULE[0];
 
-	// Auto-scroll to active live event on mount or when switching to today
+	// Compute time ranges and status for all events on the active day
+	const eventMetrics = useMemo(() => {
+		const curMs = currentTime.getTime();
+		let foundLiveIndex = -1;
+		let upcomingIndex = -1;
+
+		const ranges = currentDaySchedule.events.map((event, index) => {
+			if (!isSelectedDayToday) {
+				return {
+					range: null,
+					isPast: false,
+					isLive: false,
+					minutesRemaining: 0,
+					progressPct: 0,
+				};
+			}
+
+			const range = parseEventTimeRange(
+				event.time,
+				currentDaySchedule.events[index + 1]?.time,
+				currentTime,
+			);
+
+			if (!range) {
+				return {
+					range: null,
+					isPast: false,
+					isLive: false,
+					minutesRemaining: 0,
+					progressPct: 0,
+				};
+			}
+
+			const isPast = curMs >= range.end.getTime();
+			const isLive =
+				curMs >= range.start.getTime() && curMs < range.end.getTime();
+
+			if (isLive && foundLiveIndex === -1) {
+				foundLiveIndex = index;
+			}
+			if (upcomingIndex === -1 && curMs < range.start.getTime()) {
+				upcomingIndex = index;
+			}
+
+			const totalMs = range.end.getTime() - range.start.getTime();
+			const elapsedMs = curMs - range.start.getTime();
+			const progressPct = isLive
+				? Math.min(100, Math.max(0, Math.round((elapsedMs / totalMs) * 100)))
+				: isPast
+					? 100
+					: 0;
+			const minutesRemaining = isLive
+				? Math.max(1, Math.round((range.end.getTime() - curMs) / 60000))
+				: 0;
+
+			return { range, isPast, isLive, minutesRemaining, progressPct };
+		});
+
+		// Priority for active target: live event, or next upcoming block
+		const activeTargetIndex =
+			foundLiveIndex !== -1 ? foundLiveIndex : upcomingIndex;
+
+		return { ranges, activeTargetIndex, hasLiveEvent: foundLiveIndex !== -1 };
+	}, [currentDaySchedule, isSelectedDayToday, currentTime]);
+
+	// Auto-scroll on mount or when switching to today
 	useEffect(() => {
 		if (
 			isSelectedDayToday &&
-			liveEventRef.current &&
+			activeCardRef.current &&
 			!hasAutoScrolledRef.current
 		) {
 			hasAutoScrolledRef.current = true;
 			const timer = setTimeout(() => {
-				liveEventRef.current?.scrollIntoView({
+				activeCardRef.current?.scrollIntoView({
 					behavior: "smooth",
 					block: "center",
 				});
-			}, 150);
+			}, 200);
 			return () => clearTimeout(timer);
 		}
 	}, [isSelectedDayToday]);
+
+	// Jump to Now button handler: selects today and re-centers active task
+	function handleJumpToNow() {
+		setSelectedDay(todayDayOfWeek);
+		hasAutoScrolledRef.current = false;
+		setTimeout(() => {
+			activeCardRef.current?.scrollIntoView({
+				behavior: "smooth",
+				block: "center",
+			});
+		}, 100);
+	}
 
 	const eventCountByType = currentDaySchedule.events.reduce(
 		(acc, event) => {
@@ -158,21 +235,28 @@ export function ScheduleView() {
 
 	return (
 		<div className="flex flex-col gap-6">
-			{/* Day Selector Header */}
+			{/* Day Selector & Jump-to-Now Header */}
 			<div className="flex flex-col gap-3">
 				<div className="flex items-center justify-between">
 					<div className="flex items-center gap-2">
-						<Calendar className="size-5 text-[#3B82F6]" />
-						<h2 className="font-extrabold text-[#FFFFFF] text-[18px] tracking-tight">
+						<Calendar className="size-5 text-[#38BDF8]" />
+						<h2 className="font-extrabold text-[#F0F9FF] text-[18px] tracking-tight">
 							Master Schedule
 						</h2>
 					</div>
-					<div className="flex items-center gap-2 font-mono text-[#7888A0] text-xs">
-						<span>Daily Rundown</span>
+					<div className="flex items-center gap-2.5">
+						<button
+							type="button"
+							onClick={handleJumpToNow}
+							className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#BAE6FD]/30 bg-[#BAE6FD]/10 px-3 py-1 font-mono font-semibold text-[#BAE6FD] text-[11px] shadow-[0_0_12px_rgba(56,189,248,0.2)] backdrop-blur-xs transition-all hover:border-[#BAE6FD]/60 hover:bg-[#BAE6FD]/20 active:scale-95"
+						>
+							<Target className="size-3 text-[#38BDF8]" />
+							<span>Jump to Now</span>
+						</button>
 						{isSelectedDayToday && (
-							<span className="flex items-center gap-1 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2 py-0.5 text-[10px] text-emerald-400">
-								<span className="size-1.5 animate-pulse rounded-full bg-emerald-400" />
-								LIVE
+							<span className="flex items-center gap-1.5 rounded-full border border-[#38BDF8]/40 bg-[#38BDF8]/10 px-2.5 py-0.5 font-mono text-[#BAE6FD] text-[10.5px]">
+								<span className="size-1.5 animate-pulse rounded-full bg-[#38BDF8]" />
+								LIVE TODAY
 							</span>
 						)}
 					</div>
@@ -195,10 +279,10 @@ export function ScheduleView() {
 									}
 								}}
 								className={cn(
-									"relative flex min-h-[44px] shrink-0 cursor-pointer flex-col items-center justify-center rounded-xl px-4 py-2 text-xs transition-all duration-200 active:scale-95",
+									"relative flex min-h-[44px] shrink-0 cursor-pointer flex-col items-center justify-center rounded-xl px-4 py-2 text-xs transition-all duration-150 active:scale-95",
 									isSelected
-										? "border border-cyan-400/50 bg-[#0E1A2D] text-white shadow-[0_0_14px_-2px_rgba(6,182,212,0.35)]"
-										: "border border-white/5 bg-[#1A1F2C]/60 text-[#94A3B8] hover:border-white/20 hover:text-[#F1F5F9]",
+										? "border border-[#BAE6FD]/45 bg-[rgba(13,22,36,0.85)] text-[#F0F9FF] shadow-[0_0_16px_-2px_rgba(56,189,248,0.35),inset_0_1px_0_0_rgba(224,242,254,0.3)]"
+										: "frost-panel text-[#93C5FD] hover:border-[#BAE6FD]/30 hover:text-[#F0F9FF]",
 								)}
 							>
 								<div className="flex items-center gap-1.5 font-semibold text-[13px]">
@@ -208,16 +292,16 @@ export function ScheduleView() {
 											className={cn(
 												"rounded-full px-1.5 py-0.2 font-mono text-[9px] uppercase tracking-wider",
 												isSelected
-													? "bg-cyan-500/20 text-cyan-300"
-													: "bg-white/10 text-[#94A3B8]",
+													? "bg-[#38BDF8]/25 text-[#BAE6FD]"
+													: "bg-white/10 text-[#93C5FD]",
 											)}
 										>
 											Today
 										</span>
 									)}
 								</div>
-								<span className="font-mono text-[#7888A0] text-[10px] opacity-90">
-									{schedule.events.length} events
+								<span className="font-mono text-[#64748B] text-[10px]">
+									{schedule.events.length} blocks
 								</span>
 							</button>
 						);
@@ -226,21 +310,21 @@ export function ScheduleView() {
 			</div>
 
 			{/* Day Theme Banner */}
-			<div className="relative overflow-hidden rounded-xl border border-white/5 bg-[#1A1F2C]/60 p-4 shadow-[0_8px_32px_0_rgba(0,0,0,0.37),inset_0_1px_1px_rgba(255,255,255,0.05)] backdrop-blur-md sm:p-5">
+			<div className="frost-panel relative overflow-hidden rounded-xl p-4 sm:p-5">
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center gap-2">
-							<span className="font-mono text-cyan-400 text-xs uppercase tracking-wider">
+							<span className="font-mono text-[#38BDF8] text-xs uppercase tracking-wider">
 								{currentDaySchedule.dayName}
 							</span>
 							{isSelectedDayToday && (
-								<span className="flex items-center gap-1 rounded-full border border-cyan-400/40 bg-cyan-950/50 px-2 py-0.5 font-mono text-[10px] text-cyan-300 shadow-[0_0_8px_rgba(6,182,212,0.3)]">
-									<Radio className="size-2.5 animate-pulse text-cyan-400" />
+								<span className="flex items-center gap-1 rounded-full border border-[#38BDF8]/40 bg-[#38BDF8]/10 px-2 py-0.5 font-mono text-[#BAE6FD] text-[10px] shadow-[0_0_8px_rgba(56,189,248,0.25)]">
+									<Radio className="size-2.5 animate-pulse text-[#38BDF8]" />
 									Active Day
 								</span>
 							)}
 						</div>
-						<h3 className="font-bold text-[#F1F5F9] text-base sm:text-lg">
+						<h3 className="font-bold text-[#F0F9FF] text-base sm:text-lg">
 							{currentDaySchedule.theme}
 						</h3>
 					</div>
@@ -257,7 +341,7 @@ export function ScheduleView() {
 								<div
 									key={type}
 									className={cn(
-										"flex items-center gap-1 rounded-full border px-2 py-0.5 font-mono text-[10.5px]",
+										"flex items-center gap-1 rounded-full border px-2.5 py-0.5 font-mono text-[10.5px]",
 										config.badgeClass,
 									)}
 								>
@@ -273,62 +357,53 @@ export function ScheduleView() {
 			</div>
 
 			{/* Vertical Timeline */}
-			<div className="relative ml-3 space-y-4 border-white/10 border-l pl-5 sm:ml-4 sm:pl-7">
+			<div className="relative ml-3 space-y-4 border-[#BAE6FD]/15 border-l pl-5 sm:ml-4 sm:pl-7">
 				{currentDaySchedule.events.map((event, index) => {
 					const config = TYPE_CONFIG[event.type];
 					const Icon = config.icon;
-
-					let isPast = false;
-					let isLive = false;
-
-					if (isSelectedDayToday) {
-						const range = parseEventTimeRange(
-							event.time,
-							currentDaySchedule.events[index + 1]?.time,
-							currentTime,
-						);
-						if (range) {
-							const curMs = currentTime.getTime();
-							isPast = curMs >= range.end.getTime();
-							isLive =
-								curMs >= range.start.getTime() && curMs < range.end.getTime();
-						}
-					}
+					const metrics = eventMetrics.ranges[index];
+					const isLive = metrics?.isLive ?? false;
+					const isPast = metrics?.isPast ?? false;
+					const minutesRemaining = metrics?.minutesRemaining ?? 0;
+					const progressPct = metrics?.progressPct ?? 0;
+					const isTarget =
+						isSelectedDayToday && index === eventMetrics.activeTargetIndex;
 
 					return (
 						<div
 							key={`${event.time}-${index}`}
-							ref={isLive ? liveEventRef : null}
+							ref={isTarget ? activeCardRef : null}
 							className={cn(
-								"group relative transition-all duration-300",
-								isPast && "opacity-45 grayscale-[25%] hover:opacity-75",
+								"group relative transition-all duration-200",
+								isPast && "opacity-45 hover:opacity-80",
 							)}
 						>
 							{/* Node on the timeline track */}
 							<div
 								className={cn(
-									"absolute top-4.5 -left-[25px] size-2.5 rounded-full ring-4 ring-[#131722] transition-all duration-300 sm:-left-[33px]",
+									"absolute top-4.5 -left-[25px] size-2.5 rounded-full ring-4 ring-[#070B12] transition-all duration-300 sm:-left-[33px]",
 									isLive
-										? "animate-pulse bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)] ring-cyan-500/20"
+										? "animate-pulse bg-[#BAE6FD] shadow-[0_0_12px_rgba(56,189,248,0.9)] ring-[#38BDF8]/40"
 										: isPast
-											? "bg-slate-600 ring-[#131722]"
+											? "bg-[#334155] ring-[#070B12]"
 											: config.nodeColor,
 								)}
 							/>
 
-							{/* Event Card: Neon Edge wrapper if Live, standard frosted glass if normal/past */}
+							{/* Active Event Hero Card with glowing icy border, LIVE NOW badge & progress bar */}
 							{isLive ? (
-								<div className="relative rounded-xl bg-gradient-to-r from-cyan-400 via-sky-400 to-blue-500 p-[1px] shadow-[0_0_15px_rgba(6,182,212,0.4)]">
-									<div className="flex flex-col gap-2 rounded-[11px] bg-[#1A1F2C]/90 p-3.5 backdrop-blur-md transition-all duration-200 sm:p-4">
+								<div className="frost-panel relative rounded-xl border border-[#BAE6FD]/50 p-4 shadow-[0_0_24px_rgba(56,189,248,0.3),inset_0_1px_0_0_rgba(224,242,254,0.35)] sm:p-5">
+									<div className="flex flex-col gap-2.5">
 										<div className="flex items-center justify-between gap-3">
-											<div className="flex items-center gap-2 font-mono font-semibold text-cyan-300 text-xs sm:text-[13px]">
-												<Clock className="size-3.5 animate-pulse text-cyan-400" />
+											<div className="flex items-center gap-2 font-mono font-semibold text-[#BAE6FD] text-xs sm:text-[13px]">
+												<Clock className="size-3.5 animate-pulse text-[#38BDF8]" />
 												<span>{event.time}</span>
 											</div>
-											<div className="flex items-center gap-1.5">
-												<span className="flex items-center gap-1 rounded-full border border-cyan-400/50 bg-cyan-950/60 px-2 py-0.5 font-bold font-mono text-[9.5px] text-cyan-300 tracking-wider shadow-[0_0_8px_rgba(6,182,212,0.5)]">
-													<span className="size-1.5 animate-ping rounded-full bg-cyan-400" />
-													LIVE NOW
+											<div className="flex items-center gap-2">
+												{/* ● LIVE NOW · [X]m remaining badge */}
+												<span className="flex items-center gap-1.5 rounded-full border border-[#BAE6FD]/40 bg-[#38BDF8]/15 px-2.5 py-0.5 font-bold font-mono text-[#BAE6FD] text-[10px] shadow-[0_0_10px_rgba(56,189,248,0.35)]">
+													<span className="size-1.5 animate-ping rounded-full bg-[#38BDF8]" />
+													LIVE NOW · {minutesRemaining}m remaining
 												</span>
 												<span
 													className={cn(
@@ -342,16 +417,31 @@ export function ScheduleView() {
 											</div>
 										</div>
 
-										<div className="font-semibold text-[14px] text-white leading-relaxed sm:text-[15px]">
+										<div className="font-bold text-[#F0F9FF] text-[15px] leading-relaxed sm:text-[16px]">
 											{event.activity}
+										</div>
+
+										{/* Sleek Bottom Progress Bar */}
+										<div className="mt-1 flex flex-col gap-1">
+											<div className="relative h-1.5 w-full overflow-hidden rounded-full border border-[#BAE6FD]/20 bg-[#070B12]/80">
+												<div
+													className="h-full bg-gradient-to-r from-[#38BDF8] to-[#BAE6FD] shadow-[0_0_8px_#38BDF8] transition-all duration-500 ease-out"
+													style={{ width: `${progressPct}%` }}
+												/>
+											</div>
+											<div className="flex justify-between font-mono text-[#64748B] text-[9.5px]">
+												<span>{progressPct}% elapsed</span>
+												<span>{minutesRemaining}m left</span>
+											</div>
 										</div>
 									</div>
 								</div>
 							) : (
-								<div className="flex flex-col gap-2 rounded-xl border border-white/5 bg-[#1A1F2C]/60 p-3.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md transition-all duration-200 hover:border-white/15 sm:p-4">
+								/* Standard Card for Normal / Upcoming / Past Events */
+								<div className="frost-panel flex flex-col gap-2 rounded-xl p-3.5 transition-all duration-150 hover:border-[#BAE6FD]/30 sm:p-4">
 									<div className="flex items-center justify-between gap-3">
-										<div className="flex items-center gap-2 font-mono text-sky-400/90 text-xs sm:text-[13px]">
-											<Clock className="size-3.5 text-sky-400/70" />
+										<div className="flex items-center gap-2 font-mono text-[#93C5FD] text-xs sm:text-[13px]">
+											<Clock className="size-3.5 text-[#93C5FD]/70" />
 											<span>{event.time}</span>
 										</div>
 										<span
@@ -365,7 +455,7 @@ export function ScheduleView() {
 										</span>
 									</div>
 
-									<div className="font-medium text-[13.5px] text-white leading-relaxed sm:text-[14.5px]">
+									<div className="font-medium text-[#F0F9FF] text-[13.5px] leading-relaxed sm:text-[14.5px]">
 										{event.activity}
 									</div>
 								</div>

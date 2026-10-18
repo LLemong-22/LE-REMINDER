@@ -1,27 +1,6 @@
-import { cn } from "@LE-REMINDER/ui/lib/utils";
+"use client";
 
-const ACCENT = "#3B82F6";
-
-const MERIDIAN_ANGLES = [0, 60, 120];
-
-const COMET_TRAIL = [
-	{
-		size: 5.5,
-		opacity: 1,
-		delay: "0s",
-		glow: "0 0 8px 2px rgba(59,130,246,0.7)",
-	},
-	{
-		size: 4,
-		opacity: 0.55,
-		delay: "-0.24s",
-		glow: "0 0 4px 1px rgba(59,130,246,0.4)",
-	},
-	{ size: 2.6, opacity: 0.28, delay: "-0.48s", glow: "none" },
-];
-
-// Deterministic PRNG so the starfield is identical between server render and
-// hydration — Math.random() here would cause a hydration mismatch.
+// Deterministic PRNG so the frost dust particles match server render and hydration
 function mulberry32(seed: number): () => number {
 	let a = seed;
 	return () => {
@@ -33,148 +12,186 @@ function mulberry32(seed: number): () => number {
 	};
 }
 
-const rand = mulberry32(20260718);
-const STARS = Array.from({ length: 18 }, (_, i) => ({
-	left: rand() * 100,
-	top: rand() * 100,
+const rand = mulberry32(20261018);
+const FROST_SPARKS = Array.from({ length: 14 }, (_, i) => ({
+	left: 10 + rand() * 80,
+	top: 10 + rand() * 80,
 	size: 1 + rand() * 1.5,
-	duration: 2.0 + rand() * 2.5,
-	delay: rand() * 3,
-	accent: i % 4 === 0,
+	duration: 2.2 + rand() * 2.0,
+	delay: rand() * 2.5,
+	accent: i % 3 === 0,
 }));
 
-// 10 core stars render on mobile; the remaining 8 render on desktop.
-const CORE_STAR_COUNT = 10;
-
-function Star({
-	s,
-	className,
-}: {
-	s: (typeof STARS)[number];
-	className?: string;
-}) {
-	return (
-		<div
-			className={cn("nexus-star absolute rounded-full", className)}
-			style={
-				{
-					left: `${s.left}%`,
-					top: `${s.top}%`,
-					width: s.size,
-					height: s.size,
-					background: s.accent ? ACCENT : "#64748B",
-					boxShadow: s.accent ? "0 0 4px 1px rgba(59,130,246,0.5)" : "none",
-					"--star-duration": `${s.duration}s`,
-					"--star-delay": `${s.delay}s`,
-				} as React.CSSProperties
-			}
-		/>
-	);
-}
-
-// A spark orbiting inside one ring plane of the sphere. The trail is the
-// same spinner several times with a negative animation-delay, which reads
-// as an angular offset behind the head — a comet tail for free.
-function Comet({
-	planeTransform,
-	animation,
-	className,
-}: {
-	planeTransform: string;
-	animation: string;
-	className?: string;
-}) {
-	return (
-		<div
-			className={cn("absolute inset-1", className)}
-			style={{ transform: planeTransform, transformStyle: "preserve-3d" }}
-		>
-			{COMET_TRAIL.map((t) => (
-				<div
-					key={t.delay}
-					className={`absolute inset-0 motion-reduce:animate-none ${animation}`}
-					style={{ animationDelay: t.delay }}
-				>
-					<div
-						className="absolute left-1/2 -translate-x-1/2 rounded-full"
-						style={{
-							width: t.size,
-							height: t.size,
-							top: -t.size / 2,
-							opacity: t.opacity,
-							background: ACCENT,
-							boxShadow: t.glow,
-						}}
-					/>
-				</div>
-			))}
-		</div>
-	);
-}
-
-// Purely decorative "system is alive" motion for the dashboard hero — a
-// tumbling 3D wireframe sphere (three meridians + a dashed equator) with
-// three comet-trailed sparks orbiting a glowing core, set against a slowly
-// drifting field of twinkling stars. Pure CSS transforms; depicts no real
-// data, echoing the deterministic-clock feel of computeRoutineStatus.
 export function NexusAnimation() {
 	return (
 		<div
-			aria-hidden
-			className="relative size-28"
+			aria-hidden="true"
+			className="relative size-28 select-none"
 			style={{ perspective: "600px" }}
 		>
-			<div className="absolute -inset-6 animate-[spin-cw_150s_linear_infinite] motion-reduce:animate-none">
-				{STARS.slice(0, CORE_STAR_COUNT).map((s) => (
-					<Star key={`${s.left}-${s.top}`} s={s} />
-				))}
-				{STARS.slice(CORE_STAR_COUNT).map((s) => (
-					<Star key={`${s.left}-${s.top}`} s={s} className="hidden sm:block" />
-				))}
-			</div>
-			<div
-				className="absolute inset-2 animate-[nexus-glow_3.4s_ease-in-out_infinite] rounded-full motion-reduce:animate-none"
-				style={{
-					background:
-						"radial-gradient(circle, rgba(59,130,246,0.2), transparent 65%)",
-				}}
-			/>
-			<div
-				className="absolute inset-0 animate-[nexus-tumble_16s_linear_infinite] motion-reduce:animate-none"
-				style={{ transformStyle: "preserve-3d", willChange: "transform" }}
-			>
-				{MERIDIAN_ANGLES.map((angle) => (
+			{/* Drifting crystalline frost sparks */}
+			<div className="pointer-events-none absolute inset-0">
+				{FROST_SPARKS.map((s, idx) => (
 					<div
-						key={angle}
-						className="absolute inset-1 rounded-full border-[#38445C] border-[1.5px]"
-						style={{ transform: `rotateY(${angle}deg)` }}
+						key={idx}
+						className="nexus-star absolute rounded-full"
+						style={
+							{
+								left: `${s.left}%`,
+								top: `${s.top}%`,
+								width: s.size,
+								height: s.size,
+								background: s.accent ? "#BAE6FD" : "#64748B",
+								boxShadow: s.accent
+									? "0 0 4px 1px rgba(186,230,253,0.6)"
+									: "none",
+								"--star-duration": `${s.duration}s`,
+								"--star-delay": `${s.delay}s`,
+							} as React.CSSProperties
+						}
 					/>
 				))}
-				<div
-					className="absolute inset-1 rounded-full border-[#64748B] border-[1.5px] border-dashed"
-					style={{ transform: "rotateX(78deg)" }}
-				/>
-				<Comet
-					planeTransform="rotateY(60deg)"
-					animation="animate-[spin-cw_5s_linear_infinite]"
-				/>
-				<Comet
-					planeTransform="rotateX(78deg)"
-					animation="animate-[spin-ccw_7s_linear_infinite]"
-				/>
-				<Comet
-					planeTransform="rotateY(120deg)"
-					animation="animate-[spin-cw_8.5s_linear_infinite]"
-					className="hidden sm:block"
-				/>
 			</div>
+
+			{/* Static Soft Glacial Ambient Core Glow */}
 			<div
-				className="absolute top-1/2 left-1/2 -m-[5px] size-2.5 animate-[core-pulse_2.6s_ease-in-out_infinite] rounded-full motion-reduce:animate-none"
+				className="absolute inset-4 animate-[cryo-glow_3s_ease-in-out_infinite] rounded-full motion-reduce:animate-none"
 				style={{
-					background: ACCENT,
-					boxShadow: "0 0 12px 3px rgba(59,130,246,0.5)",
+					background:
+						"radial-gradient(circle, rgba(186,230,253,0.22), rgba(56,189,248,0.08) 45%, transparent 70%)",
 				}}
 			/>
+
+			{/* Pure SVG Cryo-Crystalline Gyroscope */}
+			<svg
+				viewBox="0 0 120 120"
+				className="absolute inset-0 size-full"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+				role="img"
+				aria-label="Cryo-Crystalline Gyroscope"
+			>
+				<title>Cryo-Crystalline Gyroscope</title>
+				<defs>
+					<filter id="cryoGlow" x="-20%" y="-20%" width="140%" height="140%">
+						<feDropShadow
+							dx="0"
+							dy="0"
+							stdDeviation="3"
+							floodColor="#38BDF8"
+							floodOpacity="0.75"
+						/>
+					</filter>
+				</defs>
+
+				{/* 1. Outer Calibration Frost Ring (Clockwise) */}
+				<g className="origin-center animate-[spin-cw_32s_linear_infinite] motion-reduce:animate-none">
+					<circle
+						cx="60"
+						cy="60"
+						r="50"
+						stroke="#BAE6FD"
+						strokeWidth="0.8"
+						strokeOpacity="0.3"
+						strokeDasharray="4 6"
+					/>
+					<circle cx="60" cy="10" r="1.8" fill="#BAE6FD" />
+					<circle cx="60" cy="110" r="1.8" fill="#38BDF8" />
+					<circle cx="10" cy="60" r="1.8" fill="#38BDF8" />
+					<circle cx="110" cy="60" r="1.8" fill="#BAE6FD" />
+				</g>
+
+				{/* 2. Concentric Intermediate Gyro Ring (Counter-Clockwise) */}
+				<g className="origin-center animate-[spin-ccw_18s_linear_infinite] motion-reduce:animate-none">
+					<circle
+						cx="60"
+						cy="60"
+						r="41"
+						stroke="#38BDF8"
+						strokeWidth="1.2"
+						strokeOpacity="0.45"
+						strokeDasharray="14 8 2 8"
+					/>
+					<circle cx="31" cy="31" r="1.4" fill="#BAE6FD" />
+					<circle cx="89" cy="89" r="1.4" fill="#BAE6FD" />
+				</g>
+
+				{/* 3. Inner Precision Ring with Hexagonal Reticle (Clockwise) */}
+				<g className="origin-center animate-[reticle-spin_12s_linear_infinite] motion-reduce:animate-none">
+					{/* Concentric Circle */}
+					<circle
+						cx="60"
+						cy="60"
+						r="30"
+						stroke="#BAE6FD"
+						strokeWidth="1"
+						strokeOpacity="0.5"
+						strokeDasharray="2 4"
+					/>
+					{/* Hexagonal Inner Reticle */}
+					<polygon
+						points="60,35 81.65,47.5 81.65,72.5 60,85 38.35,72.5 38.35,47.5"
+						stroke="#BAE6FD"
+						strokeWidth="1.2"
+						strokeOpacity="0.75"
+						filter="url(#cryoGlow)"
+					/>
+				</g>
+
+				{/* 4. Counter-rotating Micro Reticle (Counter-Clockwise) */}
+				<g className="origin-center animate-[reticle-spin-reverse_8s_linear_infinite] motion-reduce:animate-none">
+					<polygon
+						points="60,44 73.85,52 73.85,68 60,76 46.15,68 46.15,52"
+						stroke="#38BDF8"
+						strokeWidth="0.9"
+						strokeOpacity="0.8"
+					/>
+					{/* Crosshair Cardinal Ticks */}
+					<line
+						x1="60"
+						y1="40"
+						x2="60"
+						y2="46"
+						stroke="#BAE6FD"
+						strokeWidth="1.2"
+					/>
+					<line
+						x1="60"
+						y1="74"
+						x2="60"
+						y2="80"
+						stroke="#BAE6FD"
+						strokeWidth="1.2"
+					/>
+					<line
+						x1="40"
+						y1="60"
+						x2="46"
+						y2="60"
+						stroke="#BAE6FD"
+						strokeWidth="1.2"
+					/>
+					<line
+						x1="74"
+						y1="60"
+						x2="80"
+						y2="60"
+						stroke="#BAE6FD"
+						strokeWidth="1.2"
+					/>
+				</g>
+
+				{/* 5. Center Core Node */}
+				<circle
+					cx="60"
+					cy="60"
+					r="5.5"
+					fill="#BAE6FD"
+					className="animate-[core-pulse_2.2s_ease-in-out_infinite]"
+					filter="url(#cryoGlow)"
+				/>
+				<circle cx="60" cy="60" r="2.5" fill="#FFFFFF" />
+			</svg>
 		</div>
 	);
 }

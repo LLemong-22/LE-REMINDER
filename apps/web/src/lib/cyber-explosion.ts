@@ -1,13 +1,13 @@
 // Zero-dependency Cyber/Game-Style Particle Explosion Engine
 // Renders to a lightweight, temporary full-viewport canvas with hardware-accelerated RAF.
-// Strictly themed to the LE-REMINDER Luminous Midnight Blue palette.
+// Strictly themed to the LE-REMINDER Cryo-Vault & Icy Frost palette.
 
-const MIDNIGHT_CYBER_PALETTE = [
-	"#3B82F6", // Electric Blue accent
-	"#60A5FA", // Bright Sky Blue
-	"#06B6D4", // Luminous Cyan
-	"#10B981", // Emerald spark
-	"#F1F5F9", // Radiant Light Slate
+const ICY_FROST_PALETTE = [
+	"#E0F2FE", // Crystalline White
+	"#BAE6FD", // Icy Frost Blue
+	"#38BDF8", // Cryo Cyan
+	"#7DD3FC", // Glacial Spark
+	"#F0F9FF", // Snow White
 ];
 
 interface Particle {
@@ -192,9 +192,7 @@ export function triggerCyberExplosion(
 			(i / coreParticleCount) * (Math.PI * 2) + (Math.random() * 0.2 - 0.1);
 		const speed = 7 + Math.random() * 8;
 		const color =
-			MIDNIGHT_CYBER_PALETTE[
-				Math.floor(Math.random() * MIDNIGHT_CYBER_PALETTE.length)
-			];
+			ICY_FROST_PALETTE[Math.floor(Math.random() * ICY_FROST_PALETTE.length)];
 		const shapes: Particle["shape"][] = ["shard", "diamond", "square"];
 
 		particles.push({
@@ -220,7 +218,7 @@ export function triggerCyberExplosion(
 	for (let i = 0; i < sparkCount; i++) {
 		const angle = Math.random() * Math.PI * 2;
 		const speed = 4 + Math.random() * 7;
-		const color = Math.random() > 0.4 ? "#3B82F6" : "#06B6D4";
+		const color = Math.random() > 0.4 ? "#38BDF8" : "#BAE6FD";
 
 		particles.push({
 			x: originX,

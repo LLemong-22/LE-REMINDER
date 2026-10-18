@@ -3,6 +3,7 @@ import { defineConfig } from "drizzle-kit";
 
 dotenv.config({
 	path: "../../apps/web/.env",
+	override: true,
 });
 
 export default defineConfig({

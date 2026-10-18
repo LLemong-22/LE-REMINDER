@@ -11,6 +11,7 @@ import { z } from "zod";
 import { authorizeAgentRequest } from "@/lib/agent-auth";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 // Machine-to-machine intake for VIN (the owner's automation agent) to
 // create and list routines directly, without a browser session.

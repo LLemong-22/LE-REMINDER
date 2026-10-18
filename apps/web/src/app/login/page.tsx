@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { SoftAurora } from "@/components/soft-aurora";
 import { authClient, useSession } from "@/lib/auth-client";
 
 export default function LoginPage() {
@@ -22,10 +21,6 @@ export default function LoginPage() {
 	async function handleGithubSignIn() {
 		setSigningIn(true);
 		try {
-			// On success this redirects the whole page to GitHub, so
-			// setSigningIn(false) never runs — the disabled state persists
-			// naturally through the navigation. It only needs resetting if
-			// the redirect itself fails to happen.
 			await authClient.signIn.social({
 				provider: "github",
 				callbackURL: "/auth/loading",
@@ -39,23 +34,25 @@ export default function LoginPage() {
 	}
 
 	return (
-		<div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#131722]">
-			<div className="absolute inset-0">
-				<SoftAurora />
-			</div>
+		<div className="cryo-canvas relative flex min-h-screen items-center justify-center overflow-hidden">
+			{/* Hardware-accelerated CSS glacial ambient light (0 WebGL / 0% GPU drain) */}
+			<div
+				aria-hidden="true"
+				className="pointer-events-none absolute -inset-20 bg-[radial-gradient(ellipse_60%_40%_at_50%_45%,rgba(56,189,248,0.12),transparent_70%)]"
+			/>
 
 			<motion.div
-				initial={{ opacity: 0, y: 12 }}
+				initial={{ opacity: 0, y: 14 }}
 				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.6, ease: "easeOut" }}
-				className="relative z-10 flex w-[340px] flex-col items-center gap-6 rounded-2xl border border-white/10 bg-[#1E2433]/70 px-8 py-10 text-center shadow-[0_8px_32px_rgba(0,0,0,0.5),inset_0_0_0_1px_rgba(255,255,255,0.06)] backdrop-blur-xl"
+				transition={{ duration: 0.5, ease: "easeOut" }}
+				className="frost-panel relative z-10 flex w-[340px] flex-col items-center gap-6 rounded-2xl p-8 text-center shadow-[0_20px_50px_rgba(2,6,23,0.85)]"
 			>
 				<div className="flex flex-col gap-1.5">
-					<div className="font-extrabold text-[#F1F5F9] text-[22px] tracking-[-0.02em]">
+					<div className="font-extrabold text-[#F0F9FF] text-[22px] tracking-tight drop-shadow-[0_0_12px_rgba(56,189,248,0.3)]">
 						LE-REMINDER
 					</div>
-					<div className="text-[#94A3B8] text-[13px]">
-						Private dashboard. Sign in to continue.
+					<div className="text-[#93C5FD] text-[13px]">
+						Cryo-Vault Command. Sign in to proceed.
 					</div>
 				</div>
 
@@ -63,13 +60,13 @@ export default function LoginPage() {
 					type="button"
 					onClick={handleGithubSignIn}
 					disabled={signingIn}
-					className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl border border-[#3B82F6] bg-[#3B82F6] px-4 py-2.5 font-semibold text-[13.5px] text-white shadow-[0_0_20px_-4px_rgba(59,130,246,0.5)] transition-all hover:bg-[#2563EB] hover:shadow-[0_0_24px_-2px_rgba(59,130,246,0.65)] disabled:cursor-not-allowed disabled:opacity-60"
+					className="frost-pill-btn flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl px-4 py-2.5 font-semibold text-[13.5px] disabled:cursor-not-allowed disabled:opacity-60"
 				>
 					<Github className="size-4" />
 					{signingIn ? "Redirecting to GitHub…" : "Continue with GitHub"}
 				</button>
 
-				<div className="text-[#64748B] text-[11px]">
+				<div className="font-mono text-[#64748B] text-[11px]">
 					Access is restricted to one authorized account.
 				</div>
 			</motion.div>

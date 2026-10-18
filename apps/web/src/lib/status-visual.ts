@@ -1,19 +1,23 @@
 import type { RoutineStatus } from "@LE-REMINDER/core/domain/routine-status";
 
-// Fill = the saturated color used for status glyphs/legend dots.
-// Text = a bright, high-contrast shade of the same hue for labels on midnight blue surfaces (#131722 / #1E2433).
+// Cryo-Vault & Icy Frost status tokens:
+// Overdue = Villain Crimson (#F43F5E)
+// Due = Icy Frost Blue (#BAE6FD) & Cryo Cyan (#38BDF8)
+// Done = Glacial Cyan (#38BDF8)
+// Paused = Cryo Violet (#A855F7)
+// Finished = Cryo Slate (#64748B)
 export const STATUS_FILL: Record<RoutineStatus, string> = {
-	Overdue: "#EF4444",
+	Overdue: "#F43F5E",
 	Due: "#38BDF8",
-	Done: "#10B981",
-	Paused: "#C084FC",
+	Done: "#7DD3FC",
+	Paused: "#A855F7",
 	Finished: "#64748B",
 };
 
 export const STATUS_TEXT: Record<RoutineStatus, string> = {
-	Overdue: "#FCA5A5",
+	Overdue: "#FDA4AF",
 	Due: "#BAE6FD",
-	Done: "#6EE7B7",
+	Done: "#BAE6FD",
 	Paused: "#E9D5FF",
 	Finished: "#94A3B8",
 };

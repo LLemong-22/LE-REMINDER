@@ -1,4 +1,7 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+
+dotenv.config({ override: true });
+
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
