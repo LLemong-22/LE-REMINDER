@@ -77,21 +77,21 @@ export function RoutineCard({
 			transition={{ type: "spring", stiffness: 450, damping: 28 }}
 			onClick={() => setRevealed((v) => !v)}
 			className={cn(
-				"group relative flex h-full min-h-[178px] flex-col justify-between rounded-[12px] p-[16px] backdrop-blur-md transition-all duration-200",
-				// Due Cards: Crisp icy border with subtle top-edge frost highlight
+				"group relative flex h-full min-h-[165px] flex-col justify-between rounded-[12px] p-4 backdrop-blur-md transition-all duration-200",
+				// Due Cards: Bright crystalline border with top frost glow
 				isDue &&
-					"border border-[#BAE6FD]/35 bg-[rgba(13,22,36,0.78)] shadow-[inset_0_1px_0_0_rgba(186,230,253,0.35),0_10px_30px_-10px_rgba(2,6,23,0.8)] hover:border-[#BAE6FD]/55",
+					"border border-[#7DD3FC]/65 bg-[linear-gradient(135deg,rgba(35,68,110,0.75)_0%,rgba(18,38,64,0.85)_100%)] shadow-[0_0_25px_-5px_rgba(56,189,248,0.28),inset_0_1px_0_0_rgba(255,255,255,0.6)] hover:border-[#7DD3FC]",
 				// Overdue Cards: Subtle rose border with clean rose status pill
 				isOverdue &&
-					"border border-rose-500/35 bg-[rgba(24,13,20,0.72)] shadow-[inset_0_1px_0_0_rgba(244,63,94,0.22),0_10px_30px_-10px_rgba(2,6,23,0.8)] hover:border-rose-500/55",
-				// Done Cards: Recessed
+					"border border-rose-500/50 bg-[linear-gradient(135deg,rgba(45,20,30,0.75)_0%,rgba(28,14,22,0.85)_100%)] shadow-[inset_0_1px_0_0_rgba(244,63,94,0.35),0_10px_30px_-10px_rgba(2,6,23,0.8)] hover:border-rose-500/70",
+				// Done Cards: Clearly readable, opacity-80, not pitch black
 				isCompleted &&
-					"border border-white/[0.05] bg-[#070B12]/60 opacity-60 shadow-none hover:border-white/10 hover:opacity-95",
+					"border border-[#7DD3FC]/20 bg-[#102136]/75 opacity-80 shadow-none hover:opacity-100",
 				// Default
 				!isDue &&
 					!isOverdue &&
 					!isCompleted &&
-					"frost-panel hover:border-[#BAE6FD]/30",
+					"frost-panel hover:border-[#7DD3FC]/40",
 			)}
 		>
 			{flipping && (
@@ -120,10 +120,10 @@ export function RoutineCard({
 							isOverdue
 								? "border border-rose-500/25 bg-rose-500/10 text-rose-300"
 								: isDue
-									? "border border-[#BAE6FD]/30 bg-[#BAE6FD]/10 text-[#BAE6FD]"
+									? "border border-[#7DD3FC]/50 bg-[#7DD3FC]/15 text-[#BAE6FD]"
 									: isDone
-										? "border border-[#38BDF8]/25 bg-[#38BDF8]/10 text-[#7DD3FC]"
-										: "text-[#94A3B8]",
+										? "border border-[#38BDF8]/30 bg-[#38BDF8]/15 text-[#7DD3FC]"
+										: "text-[#93C5FD]",
 						)}
 					>
 						{routine.status}
@@ -144,7 +144,7 @@ export function RoutineCard({
 					</Badge>
 					<Badge
 						variant="secondary"
-						className="rounded-full border border-[#BAE6FD]/20 bg-[#091526]/85 px-2.5 py-0.5 font-mono font-semibold text-[#BAE6FD] text-[9.5px] tracking-wider"
+						className="rounded-full border border-[#7DD3FC]/25 bg-[#17304F] px-2.5 py-0.5 font-mono font-semibold text-[#BAE6FD] text-[9.5px] tracking-wider"
 					>
 						{routine.category}
 					</Badge>
@@ -159,22 +159,24 @@ export function RoutineCard({
 					)}
 					<div
 						className={cn(
-							"line-clamp-2 font-bold text-[15px] tracking-tight transition-colors",
-							isCompleted ? "text-[#64748B] line-through" : "text-[#F0F9FF]",
+							"line-clamp-2 font-semibold text-[15px] tracking-tight transition-colors",
+							isCompleted
+								? "text-[#93C5FD] line-through decoration-[#7DD3FC]/50"
+								: "text-[#F8FAFC]",
 						)}
 					>
 						{routine.name}
 					</div>
 				</div>
 
-				<div className="flex items-center gap-1.5 font-mono text-[#93C5FD] text-[11.5px]">
+				<div className="flex items-center gap-1.5 font-mono text-[#BAE6FD] text-xs">
 					{showMandatoryDot && (
 						<span
 							aria-hidden="true"
 							className={cn(
 								"size-1.5 shrink-0 rounded-full",
 								isMandatory(routine)
-									? "bg-[#F0F9FF] shadow-[0_0_6px_rgba(240,249,255,0.7)]"
+									? "bg-[#F8FAFC] shadow-[0_0_6px_rgba(240,249,255,0.7)]"
 									: "border border-[#64748B] bg-transparent",
 							)}
 						/>
@@ -186,8 +188,8 @@ export function RoutineCard({
 			</div>
 
 			{/* Bottom Row: Last Done + Hover Action Buttons */}
-			<div className="relative mt-2 flex min-h-[30px] items-center justify-between border-white/[0.06] border-t pt-2">
-				<div className="truncate pr-2 font-mono text-[#64748B] text-[10.5px]">
+			<div className="relative mt-2 flex min-h-[30px] items-center justify-between border-white/[0.08] border-t pt-2">
+				<div className="shrink-0 whitespace-nowrap font-medium font-mono text-[#93C5FD] text-xs">
 					Last · {formatLastCompleted(routine.lastCompletedAt)}
 				</div>
 
@@ -206,7 +208,7 @@ export function RoutineCard({
 								handleComplete(e.currentTarget);
 							}}
 							aria-label="Complete routine"
-							className="inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-[#38BDF8]/40 bg-[#38BDF8]/15 px-2 font-medium text-[#BAE6FD] text-[11px] shadow-[0_0_12px_rgba(56,189,248,0.25)] backdrop-blur-xs transition-all hover:border-[#38BDF8]/70 hover:bg-[#38BDF8]/25 active:scale-95"
+							className="inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-[#38BDF8]/40 bg-[#38BDF8]/20 px-2 font-medium text-[#BAE6FD] text-[11px] shadow-[0_0_12px_rgba(56,189,248,0.25)] backdrop-blur-xs transition-all hover:border-[#38BDF8]/70 hover:bg-[#38BDF8]/30 active:scale-95"
 						>
 							<Check className="size-3" />
 							<span>Complete</span>

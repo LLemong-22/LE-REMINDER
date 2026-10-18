@@ -6,77 +6,77 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Cryo-Vault & Icy Frost Color System
-   Deep Cryo-Midnight #070B12 · Frosted Ice Panel rgba(13, 22, 36, 0.65)
-   Primary Text #F0F9FF (Soft Ice White) · Secondary Text #93C5FD / #94A3B8
-   Muted Metadata #64748B · Accent Due #BAE6FD & #38BDF8 · Overdue #F43F5E */
+/* Luminous Arctic Glacier Blue Color System
+   Deep Glacier Blue #0D1B2A · Frosted Glacier Panel linear-gradient(135deg, rgba(30, 58, 95, 0.65), rgba(17, 34, 56, 0.78))
+   Primary Text #F8FAFC (Pure Snow White) · Secondary Text #BAE6FD (Bright Ice Blue)
+   Completed Readable #93C5FD · Accent #7DD3FC & #38BDF8 · Overdue #F43F5E */
 :root {
-	--background: oklch(0.12 0.02 245);
-	--foreground: oklch(0.97 0.015 235);
-	--card: oklch(0.18 0.03 245);
-	--card-foreground: oklch(0.97 0.015 235);
-	--popover: oklch(0.18 0.03 245);
-	--popover-foreground: oklch(0.97 0.015 235);
-	--primary: oklch(0.9 0.06 230);
-	--primary-foreground: oklch(0.12 0.02 245);
-	--secondary: oklch(0.22 0.03 245);
-	--secondary-foreground: oklch(0.82 0.08 240);
-	--muted: oklch(0.2 0.025 245);
-	--muted-foreground: oklch(0.55 0.03 240);
-	--accent: oklch(0.76 0.14 230);
-	--accent-foreground: oklch(0.97 0.015 235);
+	--background: oklch(0.2 0.04 240);
+	--foreground: oklch(0.98 0.01 235);
+	--card: oklch(0.24 0.05 240);
+	--card-foreground: oklch(0.98 0.01 235);
+	--popover: oklch(0.22 0.05 240);
+	--popover-foreground: oklch(0.98 0.01 235);
+	--primary: oklch(0.85 0.1 225);
+	--primary-foreground: oklch(0.12 0.03 245);
+	--secondary: oklch(0.3 0.06 240);
+	--secondary-foreground: oklch(0.9 0.05 230);
+	--muted: oklch(0.25 0.04 240);
+	--muted-foreground: oklch(0.7 0.04 235);
+	--accent: oklch(0.78 0.14 225);
+	--accent-foreground: oklch(0.98 0.01 235);
 	--destructive: oklch(0.63 0.23 15);
-	--border: oklch(0.26 0.03 240);
-	--input: oklch(0.22 0.03 245);
-	--ring: oklch(0.9 0.06 230);
-	--chart-1: oklch(0.9 0.06 230);
-	--chart-2: oklch(0.76 0.14 230);
+	--border: oklch(0.35 0.05 235);
+	--input: oklch(0.18 0.03 245);
+	--ring: oklch(0.85 0.1 225);
+	--chart-1: oklch(0.85 0.1 225);
+	--chart-2: oklch(0.78 0.14 225);
 	--chart-3: oklch(0.65 0.18 160);
 	--chart-4: oklch(0.6 0.2 290);
 	--chart-5: oklch(0.5 0.15 255);
 	--radius: 0.625rem;
-	--sidebar: oklch(0.18 0.03 245);
-	--sidebar-foreground: oklch(0.97 0.015 235);
-	--sidebar-primary: oklch(0.9 0.06 230);
-	--sidebar-primary-foreground: oklch(0.12 0.02 245);
-	--sidebar-accent: oklch(0.22 0.03 245);
-	--sidebar-accent-foreground: oklch(0.97 0.015 235);
-	--sidebar-border: oklch(0.26 0.03 240);
-	--sidebar-ring: oklch(0.9 0.06 230);
+	--sidebar: oklch(0.24 0.05 240);
+	--sidebar-foreground: oklch(0.98 0.01 235);
+	--sidebar-primary: oklch(0.85 0.1 225);
+	--sidebar-primary-foreground: oklch(0.12 0.03 245);
+	--sidebar-accent: oklch(0.3 0.06 240);
+	--sidebar-accent-foreground: oklch(0.98 0.01 235);
+	--sidebar-border: oklch(0.35 0.05 235);
+	--sidebar-ring: oklch(0.85 0.1 225);
 }
 
 .dark {
-	--background: oklch(0.12 0.02 245);
-	--foreground: oklch(0.97 0.015 235);
-	--card: oklch(0.18 0.03 245);
-	--card-foreground: oklch(0.97 0.015 235);
-	--popover: oklch(0.18 0.03 245);
-	--popover-foreground: oklch(0.97 0.015 235);
-	--primary: oklch(0.9 0.06 230);
-	--primary-foreground: oklch(0.12 0.02 245);
-	--secondary: oklch(0.22 0.03 245);
-	--secondary-foreground: oklch(0.82 0.08 240);
-	--muted: oklch(0.2 0.025 245);
-	--muted-foreground: oklch(0.55 0.03 240);
-	--accent: oklch(0.76 0.14 230);
-	--accent-foreground: oklch(0.97 0.015 235);
+	--background: oklch(0.2 0.04 240);
+	--foreground: oklch(0.98 0.01 235);
+	--card: oklch(0.24 0.05 240);
+	--card-foreground: oklch(0.98 0.01 235);
+	--popover: oklch(0.22 0.05 240);
+	--popover-foreground: oklch(0.98 0.01 235);
+	--primary: oklch(0.85 0.1 225);
+	--primary-foreground: oklch(0.12 0.03 245);
+	--secondary: oklch(0.3 0.06 240);
+	--secondary-foreground: oklch(0.9 0.05 230);
+	--muted: oklch(0.25 0.04 240);
+	--muted-foreground: oklch(0.7 0.04 235);
+	--accent: oklch(0.78 0.14 225);
+	--accent-foreground: oklch(0.98 0.01 235);
 	--destructive: oklch(0.63 0.23 15);
-	--border: oklch(0.26 0.03 240);
-	--input: oklch(0.22 0.03 245);
-	--ring: oklch(0.9 0.06 230);
-	--chart-1: oklch(0.9 0.06 230);
-	--chart-2: oklch(0.76 0.14 230);
+	--border: oklch(0.35 0.05 235);
+	--input: oklch(0.18 0.03 245);
+	--ring: oklch(0.85 0.1 225);
+	--chart-1: oklch(0.85 0.1 225);
+	--chart-2: oklch(0.78 0.14 225);
 	--chart-3: oklch(0.65 0.18 160);
 	--chart-4: oklch(0.6 0.2 290);
 	--chart-5: oklch(0.5 0.15 255);
-	--sidebar: oklch(0.18 0.03 245);
-	--sidebar-foreground: oklch(0.97 0.015 235);
-	--sidebar-primary: oklch(0.9 0.06 230);
-	--sidebar-primary-foreground: oklch(0.12 0.02 245);
-	--sidebar-accent: oklch(0.22 0.03 245);
-	--sidebar-accent-foreground: oklch(0.97 0.015 235);
-	--sidebar-border: oklch(0.26 0.03 240);
-	--sidebar-ring: oklch(0.9 0.06 230);
+	--sidebar: oklch(0.24 0.05 240);
+	--sidebar-foreground: oklch(0.98 0.01 235);
+	--sidebar-primary: oklch(0.85 0.1 225);
+	--sidebar-primary-foreground: oklch(0.12 0.03 245);
+	--sidebar-accent: oklch(0.3 0.06 240);
+	--sidebar-accent-foreground: oklch(0.98 0.01 235);
+	--sidebar-border: oklch(0.35 0.05 235);
+	--sidebar-ring: oklch(0.85 0.1 225);
 }
 
 @keyframes shimmer {
@@ -92,39 +92,76 @@
 	animation: shimmer 2.5s infinite ease-in-out;
 }
 
-/* Frosted Ice Glass Panel utility */
+/* Luminous Frosted Glacier Glass Panel */
 .frost-panel {
-	background: rgba(13, 22, 36, 0.65);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-	border: 1px solid rgba(186, 230, 253, 0.14);
+	background: linear-gradient(
+		135deg,
+		rgba(30, 58, 95, 0.65) 0%,
+		rgba(17, 34, 56, 0.78) 100%
+	);
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	border: 1px solid rgba(186, 230, 253, 0.3);
 	box-shadow:
-		inset 0 1px 0 0 rgba(224, 242, 254, 0.22),
-		0 10px 30px -10px rgba(2, 6, 23, 0.7);
+		inset 0 1px 0 0 rgba(224, 242, 254, 0.45),
+		inset 0 0 24px rgba(125, 211, 252, 0.08),
+		0 12px 32px -8px rgba(4, 10, 20, 0.55);
 }
 
-/* Deep Cryo-Midnight Canvas with static glacial studio light */
+/* Luminous Arctic Glacier Canvas */
 .cryo-canvas {
-	background-color: #070b12;
-	background-image: radial-gradient(
-		ellipse 85% 45% at 50% -10%,
-		rgba(186, 230, 253, 0.14),
-		rgba(125, 211, 252, 0.04) 45%,
-		transparent 75%
-	);
+	background-color: #0d1b2a;
+	background-image:
+		radial-gradient(
+			circle at 20% 15%,
+			rgba(147, 197, 253, 0.28),
+			transparent 50%
+		),
+		radial-gradient(
+			circle at 80% 10%,
+			rgba(186, 230, 253, 0.25),
+			transparent 55%
+		),
+		linear-gradient(180deg, #132840 0%, #0d1b2a 55%, #09131e 100%);
 	background-attachment: fixed;
 }
 
-/* Primary CTA Button: Frosted Ice Pill */
+/* Crystalline Frost Fracture Subtle Texture */
+.frost-fracture-bg {
+	background-image: radial-gradient(
+			circle at 50% 50%,
+			rgba(186, 230, 253, 0.03) 0%,
+			transparent 60%
+		),
+		linear-gradient(
+			45deg,
+			transparent 48%,
+			rgba(186, 230, 253, 0.04) 50%,
+			transparent 52%
+		),
+		linear-gradient(
+			-45deg,
+			transparent 48%,
+			rgba(186, 230, 253, 0.04) 50%,
+			transparent 52%
+		);
+	background-size:
+		100% 100%,
+		80px 80px,
+		80px 80px;
+}
+
+/* Primary CTA Button: Luminous Ice Pill */
 .frost-pill-btn {
-	background-color: #bae6fd;
-	color: #070b12;
-	font-weight: 600;
-	box-shadow: 0 0 20px rgba(186, 230, 253, 0.3);
+	background-color: #7dd3fc;
+	color: #06101e;
+	font-weight: 700;
+	box-shadow: 0 0 20px rgba(125, 211, 252, 0.4);
 	transition: all 0.2s ease;
 }
 .frost-pill-btn:hover {
-	background-color: #e0f2fe;
+	background-color: #bae6fd;
+	box-shadow: 0 0 25px rgba(186, 230, 253, 0.55);
 }
 .frost-pill-btn:active {
 	transform: scale(0.95);

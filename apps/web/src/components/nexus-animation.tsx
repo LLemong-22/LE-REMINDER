@@ -1,6 +1,12 @@
 "use client";
 
-// Deterministic PRNG so the frost dust particles match server render and hydration
+import { triggerCyberExplosion } from "@/lib/cyber-explosion";
+
+interface NexusAnimationProps {
+	progressPct?: number;
+}
+
+// Deterministic PRNG for crystalline polygon ice sparks
 function mulberry32(seed: number): () => number {
 	let a = seed;
 	return () => {
@@ -13,185 +19,186 @@ function mulberry32(seed: number): () => number {
 }
 
 const rand = mulberry32(20261018);
-const FROST_SPARKS = Array.from({ length: 14 }, (_, i) => ({
-	left: 10 + rand() * 80,
-	top: 10 + rand() * 80,
-	size: 1 + rand() * 1.5,
-	duration: 2.2 + rand() * 2.0,
+const CRYSTAL_PARTICLES = Array.from({ length: 12 }, (_, i) => ({
+	x: 20 + rand() * 60,
+	y: 20 + rand() * 60,
+	size: 2 + rand() * 2.5,
+	duration: 2.2 + rand() * 1.8,
 	delay: rand() * 2.5,
-	accent: i % 3 === 0,
+	isCyan: i % 2 === 0,
 }));
 
-export function NexusAnimation() {
+export function NexusAnimation({ progressPct = 0 }: NexusAnimationProps) {
+	// Leading comet head angle calculation
+	const clampedPct = Math.min(100, Math.max(0, progressPct));
+	const angleRad = (clampedPct / 100) * 2 * Math.PI - Math.PI / 2;
+	const cometRadius = 50;
+	const cometX = 60 + cometRadius * Math.cos(angleRad);
+	const cometY = 60 + cometRadius * Math.sin(angleRad);
+
 	return (
-		<div
-			aria-hidden="true"
-			className="relative size-28 select-none"
-			style={{ perspective: "600px" }}
+		<button
+			type="button"
+			onClick={(e) => triggerCyberExplosion(e.currentTarget)}
+			title="THE-CORE Cryo-Energy Reactor · Click to discharge"
+			className="group relative flex size-32 cursor-pointer select-none items-center justify-center border-0 bg-transparent p-0 transition-transform active:scale-95"
+			style={{ perspective: "800px" }}
 		>
-			{/* Drifting crystalline frost sparks */}
+			{/* Drifting crystalline polygon ice sparks */}
 			<div className="pointer-events-none absolute inset-0">
-				{FROST_SPARKS.map((s, idx) => (
+				{CRYSTAL_PARTICLES.map((c, idx) => (
 					<div
 						key={idx}
-						className="nexus-star absolute rounded-full"
+						className="nexus-star absolute rotate-45"
 						style={
 							{
-								left: `${s.left}%`,
-								top: `${s.top}%`,
-								width: s.size,
-								height: s.size,
-								background: s.accent ? "#BAE6FD" : "#64748B",
-								boxShadow: s.accent
-									? "0 0 4px 1px rgba(186,230,253,0.6)"
-									: "none",
-								"--star-duration": `${s.duration}s`,
-								"--star-delay": `${s.delay}s`,
+								left: `${c.x}%`,
+								top: `${c.y}%`,
+								width: `${c.size}px`,
+								height: `${c.size}px`,
+								background: c.isCyan ? "#7DD3FC" : "#FFFFFF",
+								boxShadow: c.isCyan
+									? "0 0 6px 1px rgba(125,211,252,0.8)"
+									: "0 0 4px 1px rgba(255,255,255,0.7)",
+								"--star-duration": `${c.duration}s`,
+								"--star-delay": `${c.delay}s`,
 							} as React.CSSProperties
 						}
 					/>
 				))}
 			</div>
 
-			{/* Static Soft Glacial Ambient Core Glow */}
+			{/* Soft Breathing Ambient Plasma Halo */}
 			<div
-				className="absolute inset-4 animate-[cryo-glow_3s_ease-in-out_infinite] rounded-full motion-reduce:animate-none"
+				className="pointer-events-none absolute inset-3 animate-[plasma-breathe_3s_ease-in-out_infinite] rounded-full opacity-60"
 				style={{
 					background:
-						"radial-gradient(circle, rgba(186,230,253,0.22), rgba(56,189,248,0.08) 45%, transparent 70%)",
+						"radial-gradient(circle, rgba(125,211,252,0.45) 0%, rgba(56,189,248,0.18) 45%, transparent 70%)",
 				}}
 			/>
 
-			{/* Pure SVG Cryo-Crystalline Gyroscope */}
+			{/* 3D Tilted Counter-Rotating Geometric Crystalline Rings */}
+			<div className="pointer-events-none absolute inset-2 flex items-center justify-center [transform-style:preserve-3d]">
+				{/* 3D Ring 1: Pitch X-tilted clockwise crystalline ring */}
+				<div
+					className="absolute size-24 animate-[core-3d-orbit-1_9s_linear_infinite] rounded-full border border-[#7DD3FC]/50 shadow-[0_0_12px_rgba(125,211,252,0.4)]"
+					style={{
+						borderStyle: "dashed",
+					}}
+				/>
+
+				{/* 3D Ring 2: Yaw Y-tilted counter-clockwise ring */}
+				<div
+					className="absolute size-20 animate-[core-3d-orbit-2_7s_linear_infinite] rounded-full border border-[#BAE6FD]/60 shadow-[0_0_10px_rgba(186,230,253,0.35)]"
+					style={{
+						borderStyle: "dotted",
+					}}
+				/>
+
+				{/* 3D Ring 3: Diagonal 45-deg tilted inner diamond frame */}
+				<div className="absolute size-16 animate-[core-3d-orbit-3_11s_linear_infinite] border border-[#38BDF8]/75 shadow-[0_0_14px_rgba(56,189,248,0.5)]" />
+			</div>
+
+			{/* 2D High-Precision SVG Reticle Overlay */}
 			<svg
 				viewBox="0 0 120 120"
-				className="absolute inset-0 size-full"
+				className="pointer-events-none absolute inset-0 size-full"
 				fill="none"
 				xmlns="http://www.w3.org/2000/svg"
 				role="img"
-				aria-label="Cryo-Crystalline Gyroscope"
+				aria-label="THE-CORE Reactor"
 			>
-				<title>Cryo-Crystalline Gyroscope</title>
+				<title>THE-CORE Reactor</title>
 				<defs>
-					<filter id="cryoGlow" x="-20%" y="-20%" width="140%" height="140%">
+					<filter id="coreGlow" x="-30%" y="-30%" width="160%" height="160%">
 						<feDropShadow
 							dx="0"
 							dy="0"
-							stdDeviation="3"
+							stdDeviation="4"
 							floodColor="#38BDF8"
-							floodOpacity="0.75"
+							floodOpacity="0.85"
+						/>
+						<feDropShadow
+							dx="0"
+							dy="0"
+							stdDeviation="8"
+							floodColor="#7DD3FC"
+							floodOpacity="0.6"
 						/>
 					</filter>
+					<radialGradient id="plasmaOrbGrad" cx="50%" cy="50%" r="50%">
+						<stop offset="0%" stopColor="#FFFFFF" />
+						<stop offset="45%" stopColor="#7DD3FC" />
+						<stop offset="85%" stopColor="#0284C7" />
+						<stop offset="100%" stopColor="#082F49" />
+					</radialGradient>
 				</defs>
 
-				{/* 1. Outer Calibration Frost Ring (Clockwise) */}
-				<g className="origin-center animate-[spin-cw_32s_linear_infinite] motion-reduce:animate-none">
-					<circle
-						cx="60"
-						cy="60"
-						r="50"
-						stroke="#BAE6FD"
-						strokeWidth="0.8"
-						strokeOpacity="0.3"
-						strokeDasharray="4 6"
-					/>
-					<circle cx="60" cy="10" r="1.8" fill="#BAE6FD" />
-					<circle cx="60" cy="110" r="1.8" fill="#38BDF8" />
-					<circle cx="10" cy="60" r="1.8" fill="#38BDF8" />
-					<circle cx="110" cy="60" r="1.8" fill="#BAE6FD" />
-				</g>
-
-				{/* 2. Concentric Intermediate Gyro Ring (Counter-Clockwise) */}
-				<g className="origin-center animate-[spin-ccw_18s_linear_infinite] motion-reduce:animate-none">
-					<circle
-						cx="60"
-						cy="60"
-						r="41"
-						stroke="#38BDF8"
-						strokeWidth="1.2"
-						strokeOpacity="0.45"
-						strokeDasharray="14 8 2 8"
-					/>
-					<circle cx="31" cy="31" r="1.4" fill="#BAE6FD" />
-					<circle cx="89" cy="89" r="1.4" fill="#BAE6FD" />
-				</g>
-
-				{/* 3. Inner Precision Ring with Hexagonal Reticle (Clockwise) */}
-				<g className="origin-center animate-[reticle-spin_12s_linear_infinite] motion-reduce:animate-none">
-					{/* Concentric Circle */}
-					<circle
-						cx="60"
-						cy="60"
-						r="30"
-						stroke="#BAE6FD"
-						strokeWidth="1"
-						strokeOpacity="0.5"
-						strokeDasharray="2 4"
-					/>
-					{/* Hexagonal Inner Reticle */}
+				{/* Hexagonal Inner Reticle Vertex Ring */}
+				<g className="origin-center animate-[reticle-spin_16s_linear_infinite] motion-reduce:animate-none">
 					<polygon
-						points="60,35 81.65,47.5 81.65,72.5 60,85 38.35,72.5 38.35,47.5"
+						points="60,34 82.5,47 82.5,73 60,86 37.5,73 37.5,47"
 						stroke="#BAE6FD"
 						strokeWidth="1.2"
-						strokeOpacity="0.75"
-						filter="url(#cryoGlow)"
+						strokeOpacity="0.65"
+						filter="url(#coreGlow)"
 					/>
+					<circle cx="60" cy="34" r="1.8" fill="#FFFFFF" />
+					<circle cx="82.5" cy="47" r="1.8" fill="#7DD3FC" />
+					<circle cx="82.5" cy="73" r="1.8" fill="#7DD3FC" />
+					<circle cx="60" cy="86" r="1.8" fill="#FFFFFF" />
+					<circle cx="37.5" cy="73" r="1.8" fill="#7DD3FC" />
+					<circle cx="37.5" cy="47" r="1.8" fill="#7DD3FC" />
 				</g>
 
-				{/* 4. Counter-rotating Micro Reticle (Counter-Clockwise) */}
-				<g className="origin-center animate-[reticle-spin-reverse_8s_linear_infinite] motion-reduce:animate-none">
+				{/* Counter-rotating Micro Diamond Core */}
+				<g className="origin-center animate-[reticle-spin-reverse_9s_linear_infinite] motion-reduce:animate-none">
 					<polygon
-						points="60,44 73.85,52 73.85,68 60,76 46.15,68 46.15,52"
+						points="60,45 75,60 60,75 45,60"
 						stroke="#38BDF8"
-						strokeWidth="0.9"
+						strokeWidth="1.2"
 						strokeOpacity="0.8"
 					/>
-					{/* Crosshair Cardinal Ticks */}
-					<line
-						x1="60"
-						y1="40"
-						x2="60"
-						y2="46"
-						stroke="#BAE6FD"
-						strokeWidth="1.2"
-					/>
-					<line
-						x1="60"
-						y1="74"
-						x2="60"
-						y2="80"
-						stroke="#BAE6FD"
-						strokeWidth="1.2"
-					/>
-					<line
-						x1="40"
-						y1="60"
-						x2="46"
-						y2="60"
-						stroke="#BAE6FD"
-						strokeWidth="1.2"
-					/>
-					<line
-						x1="74"
-						y1="60"
-						x2="80"
-						y2="60"
-						stroke="#BAE6FD"
-						strokeWidth="1.2"
-					/>
 				</g>
 
-				{/* 5. Center Core Node */}
+				{/* Glowing Leading Ice Comet Head on the Progress Perimeter */}
+				{clampedPct > 0 && (
+					<g filter="url(#coreGlow)">
+						<circle
+							cx={cometX}
+							cy={cometY}
+							r="3.2"
+							fill="#FFFFFF"
+							className="animate-pulse"
+						/>
+						<circle
+							cx={cometX}
+							cy={cometY}
+							r="6"
+							fill="#38BDF8"
+							opacity="0.4"
+						/>
+					</g>
+				)}
+
+				{/* Breathing Center Plasma Orb */}
 				<circle
 					cx="60"
 					cy="60"
-					r="5.5"
-					fill="#BAE6FD"
-					className="animate-[core-pulse_2.2s_ease-in-out_infinite]"
-					filter="url(#cryoGlow)"
+					r="7"
+					fill="url(#plasmaOrbGrad)"
+					filter="url(#coreGlow)"
+					className="animate-[plasma-breathe_2.4s_ease-in-out_infinite]"
 				/>
-				<circle cx="60" cy="60" r="2.5" fill="#FFFFFF" />
+				<circle cx="60" cy="60" r="2.8" fill="#FFFFFF" />
 			</svg>
-		</div>
+
+			{/* Telemetry Readout Below */}
+			<div className="pointer-events-none absolute -bottom-1.5 flex items-center gap-1 font-bold font-mono text-[#7DD3FC] text-[9.5px] tracking-[0.2em] drop-shadow-[0_0_6px_rgba(56,189,248,0.7)]">
+				<span>THE-CORE</span>
+				<span className="text-[#BAE6FD]">·</span>
+				<span>{progressPct}%</span>
+			</div>
+		</button>
 	);
 }

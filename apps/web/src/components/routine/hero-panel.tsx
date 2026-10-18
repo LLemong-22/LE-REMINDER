@@ -36,7 +36,7 @@ function isDailyRoutine(routine: DashboardRoutine): boolean {
 }
 
 function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
-	const radius = 52;
+	const radius = 50;
 	const circumference = 2 * Math.PI * radius;
 	const strokeDashoffset =
 		circumference * (1 - Math.min(100, Math.max(0, progressPct)) / 100);
@@ -56,8 +56,8 @@ function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
 						x2="100%"
 						y2="100%"
 					>
-						<stop offset="0%" stopColor="#38BDF8" />
-						<stop offset="60%" stopColor="#7DD3FC" />
+						<stop offset="0%" stopColor="#0284C7" />
+						<stop offset="40%" stopColor="#38BDF8" />
 						<stop offset="100%" stopColor="#BAE6FD" />
 					</linearGradient>
 				</defs>
@@ -67,7 +67,7 @@ function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
 					cy="64"
 					r={58}
 					fill="none"
-					stroke="rgba(186, 230, 253, 0.16)"
+					stroke="rgba(186, 230, 253, 0.22)"
 					strokeWidth="1"
 					strokeDasharray="2 6"
 				/>
@@ -77,7 +77,7 @@ function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
 					cy="64"
 					r={radius}
 					fill="none"
-					stroke="rgba(186, 230, 253, 0.08)"
+					stroke="rgba(186, 230, 253, 0.12)"
 					strokeWidth="5"
 				/>
 				{/* Luminous Icy Frost data ring */}
@@ -91,11 +91,11 @@ function CircularProgressIndicator({ progressPct }: { progressPct: number }) {
 					strokeLinecap="round"
 					strokeDasharray={circumference}
 					strokeDashoffset={strokeDashoffset}
-					className="drop-shadow-[0_0_12px_rgba(56,189,248,0.55)] transition-all duration-1000 ease-out"
+					className="drop-shadow-[0_0_14px_rgba(56,189,248,0.65)] transition-all duration-1000 ease-out"
 				/>
 			</svg>
 			<div className="relative flex items-center justify-center">
-				<NexusAnimation />
+				<NexusAnimation progressPct={progressPct} />
 			</div>
 		</div>
 	);
@@ -124,20 +124,20 @@ export function HeroPanel({
 	);
 
 	return (
-		<div className="frost-panel relative flex flex-col divide-y divide-[#BAE6FD]/10 overflow-hidden rounded-xl md:flex-row md:divide-x md:divide-y-0">
-			{/* Static hardware-accelerated ambient glacial haze */}
+		<div className="frost-panel relative flex flex-col divide-y divide-[#BAE6FD]/15 overflow-hidden rounded-xl md:flex-row md:divide-x md:divide-y-0">
+			{/* Ambient glacial haze */}
 			<div
 				aria-hidden="true"
-				className="pointer-events-none absolute -inset-10 -z-10 bg-[radial-gradient(ellipse_at_30%_50%,rgba(56,189,248,0.08),transparent_60%)]"
+				className="pointer-events-none absolute -inset-10 -z-10 bg-[radial-gradient(ellipse_at_30%_50%,rgba(56,189,248,0.12),transparent_60%)]"
 			/>
 
 			{/* Column 1: Daily Task Checklist */}
-			<div className="flex min-w-[170px] flex-1 flex-col gap-3 p-5">
+			<div className="flex min-w-[170px] flex-1 flex-col gap-2.5 p-4 lg:p-5">
 				<div className="flex items-center justify-between">
-					<div className="font-extrabold text-[#F0F9FF] text-[15px] tracking-tight">
+					<div className="font-extrabold text-[#F8FAFC] text-[15px] tracking-tight">
 						Daily Task
 					</div>
-					<span className="font-mono text-[#93C5FD] text-[11px]">
+					<span className="font-medium font-mono text-[#BAE6FD] text-[11.5px]">
 						{
 							dailyItems.filter(
 								(i) => i.status === "Done" || i.status === "Finished",
@@ -161,8 +161,8 @@ export function HeroPanel({
 							<div
 								key={routine.id}
 								className={cn(
-									"group/item -mx-1.5 flex items-center gap-2.5 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-[#BAE6FD]/[0.06]",
-									done && "opacity-55 hover:opacity-90",
+									"group/item -mx-1 flex items-center gap-2.5 rounded-lg px-2 py-1 transition-colors duration-150 hover:bg-[#BAE6FD]/10",
+									done ? "opacity-80 hover:opacity-100" : "opacity-100",
 								)}
 							>
 								<Checkbox
@@ -175,7 +175,7 @@ export function HeroPanel({
 											triggerCyberExplosion(e.currentTarget);
 										}
 									}}
-									className="size-4 cursor-pointer rounded border-[#BAE6FD]/30 transition-all duration-150 active:scale-90 group-hover/item:border-[#38BDF8] data-checked:border-[#38BDF8] data-checked:bg-[#38BDF8] data-checked:text-[#070B12]"
+									className="size-4 cursor-pointer rounded border-[#7DD3FC]/50 transition-all duration-150 active:scale-90 group-hover/item:border-[#38BDF8] data-checked:border-[#7DD3FC] data-checked:bg-[#38BDF8] data-checked:text-[#06101E]"
 								/>
 								<button
 									type="button"
@@ -188,8 +188,8 @@ export function HeroPanel({
 									className={cn(
 										"flex-1 cursor-pointer bg-transparent text-left font-medium text-[13.5px] transition-colors duration-150 active:scale-[0.99]",
 										done
-											? "text-[#64748B] line-through"
-											: "text-[#F0F9FF] hover:text-[#38BDF8]",
+											? "text-[#93C5FD] line-through decoration-[#7DD3FC]/60"
+											: "text-[#F8FAFC] hover:text-[#38BDF8]",
 									)}
 								>
 									{routine.name}
@@ -200,13 +200,13 @@ export function HeroPanel({
 				</div>
 			</div>
 
-			{/* Column 2: Gyroscope Circular Dial */}
-			<div className="flex min-w-[170px] flex-none items-center justify-center p-5">
+			{/* Column 2: Extravagant THE-CORE Reactor */}
+			<div className="flex min-w-[170px] flex-none items-center justify-center p-4 lg:p-5">
 				<CircularProgressIndicator progressPct={progressPct} />
 			</div>
 
 			{/* Column 3: Overall Progress Metrics */}
-			<div className="flex min-w-[190px] flex-[1.2] flex-col justify-center gap-3 p-5">
+			<div className="flex min-w-[190px] flex-[1.2] flex-col justify-center gap-2.5 p-4 lg:p-5">
 				<div className="flex items-center justify-between">
 					<div className="font-mono text-[#93C5FD] text-[11px] uppercase tracking-[0.12em]">
 						<DecryptedText
@@ -216,18 +216,18 @@ export function HeroPanel({
 							encryptedClassName="text-[#38BDF8]"
 						/>
 					</div>
-					<span className="font-mono text-[#64748B] text-[10.5px]">
-						CYTO-CORE STATUS
+					<span className="font-bold font-mono text-[#7DD3FC] text-[11px] tracking-[0.25em] drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]">
+						THE-CORE
 					</span>
 				</div>
 
-				<div className="font-extrabold text-[#F0F9FF] text-[34px] tracking-tight">
+				<div className="font-extrabold text-[#F8FAFC] text-[32px] tracking-tight">
 					<CountUp to={progressPct} duration={1.1} />
 				</div>
 
 				{/* Segmented Cryo Progress Bar */}
 				<div className="relative">
-					<div className="relative flex h-2 overflow-hidden rounded-full border border-[#BAE6FD]/15 bg-[#070B12]/80 shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]">
+					<div className="relative flex h-2.5 overflow-hidden rounded-full border border-[#BAE6FD]/20 bg-[#091524] shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)]">
 						{STATUS_ORDER.map((status) => (
 							<div
 								key={status}
@@ -248,15 +248,17 @@ export function HeroPanel({
 				</div>
 
 				{/* Status Breakdown Legend */}
-				<div className="flex flex-wrap gap-3 font-mono text-[#94A3B8] text-[11px]">
+				<div className="flex flex-wrap gap-3 font-mono text-[#BAE6FD] text-[11px]">
 					{STATUS_ORDER.map((status) => (
 						<div key={status} className="flex items-center gap-1.5">
 							<span
 								className="inline-block size-1.5 rounded-full shadow-[0_0_6px_currentColor]"
 								style={{ background: STATUS_FILL[status] }}
 							/>
-							<span>{counts[status]}</span>
-							<span className="text-[#64748B]">{status}</span>
+							<span className="font-semibold text-[#F8FAFC]">
+								{counts[status]}
+							</span>
+							<span className="text-[#93C5FD]">{status}</span>
 						</div>
 					))}
 				</div>

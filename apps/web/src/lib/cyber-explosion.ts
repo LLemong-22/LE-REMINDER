@@ -20,7 +20,7 @@ interface Particle {
 	alpha: number;
 	rotation: number;
 	rotationSpeed: number;
-	shape: "square" | "shard" | "diamond" | "spark";
+	shape: "square" | "shard" | "diamond" | "spark" | "triangle";
 	drag: number;
 	gravity: number;
 	life: number;
@@ -101,26 +101,44 @@ function renderFrame() {
 		switch (p.shape) {
 			case "diamond": {
 				activeCtx.beginPath();
-				activeCtx.moveTo(0, -p.size * 1.5);
+				activeCtx.moveTo(0, -p.size * 1.6);
 				activeCtx.lineTo(p.size, 0);
-				activeCtx.lineTo(0, p.size * 1.5);
+				activeCtx.lineTo(0, p.size * 1.6);
 				activeCtx.lineTo(-p.size, 0);
 				activeCtx.closePath();
 				activeCtx.fill();
+				activeCtx.strokeStyle = "#FFFFFF";
+				activeCtx.lineWidth = 0.5;
+				activeCtx.stroke();
 				break;
 			}
 			case "shard": {
 				activeCtx.beginPath();
-				activeCtx.moveTo(-p.size * 0.4, -p.size * 1.8);
-				activeCtx.lineTo(p.size * 0.6, -p.size * 0.4);
-				activeCtx.lineTo(p.size * 0.2, p.size * 1.8);
-				activeCtx.lineTo(-p.size * 0.8, p.size * 0.2);
+				activeCtx.moveTo(-p.size * 0.4, -p.size * 2);
+				activeCtx.lineTo(p.size * 0.7, -p.size * 0.3);
+				activeCtx.lineTo(p.size * 0.2, p.size * 1.9);
+				activeCtx.lineTo(-p.size * 0.9, p.size * 0.3);
 				activeCtx.closePath();
 				activeCtx.fill();
+				// Specular ice facet reflection line
+				activeCtx.strokeStyle = "#FFFFFF";
+				activeCtx.lineWidth = 0.6;
+				activeCtx.beginPath();
+				activeCtx.moveTo(-p.size * 0.4, -p.size * 2);
+				activeCtx.lineTo(p.size * 0.2, p.size * 1.9);
+				activeCtx.stroke();
 				break;
 			}
-			case "spark": {
-				activeCtx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+			case "triangle": {
+				activeCtx.beginPath();
+				activeCtx.moveTo(0, -p.size * 1.6);
+				activeCtx.lineTo(p.size * 1.1, p.size * 1.2);
+				activeCtx.lineTo(-p.size * 1.1, p.size * 1.2);
+				activeCtx.closePath();
+				activeCtx.fill();
+				activeCtx.strokeStyle = "#FFFFFF";
+				activeCtx.lineWidth = 0.5;
+				activeCtx.stroke();
 				break;
 			}
 			default: {
@@ -193,7 +211,7 @@ export function triggerCyberExplosion(
 		const speed = 7 + Math.random() * 8;
 		const color =
 			ICY_FROST_PALETTE[Math.floor(Math.random() * ICY_FROST_PALETTE.length)];
-		const shapes: Particle["shape"][] = ["shard", "diamond", "square"];
+		const shapes: Particle["shape"][] = ["shard", "diamond", "triangle"];
 
 		particles.push({
 			x: originX,

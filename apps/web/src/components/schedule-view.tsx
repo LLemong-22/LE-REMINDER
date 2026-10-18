@@ -381,11 +381,11 @@ export function ScheduleView() {
 							{/* Node on the timeline track */}
 							<div
 								className={cn(
-									"absolute top-4.5 -left-[25px] size-2.5 rounded-full ring-4 ring-[#070B12] transition-all duration-300 sm:-left-[33px]",
+									"absolute top-4.5 -left-[25px] size-2.5 rounded-full ring-4 ring-[#0D1B2A] transition-all duration-300 sm:-left-[33px]",
 									isLive
 										? "animate-pulse bg-[#BAE6FD] shadow-[0_0_12px_rgba(56,189,248,0.9)] ring-[#38BDF8]/40"
 										: isPast
-											? "bg-[#334155] ring-[#070B12]"
+											? "bg-[#334155] ring-[#0D1B2A]"
 											: config.nodeColor,
 								)}
 							/>
@@ -423,7 +423,7 @@ export function ScheduleView() {
 
 										{/* Sleek Bottom Progress Bar */}
 										<div className="mt-1 flex flex-col gap-1">
-											<div className="relative h-1.5 w-full overflow-hidden rounded-full border border-[#BAE6FD]/20 bg-[#070B12]/80">
+											<div className="relative h-1.5 w-full overflow-hidden rounded-full border border-[#BAE6FD]/20 bg-[#0D1B2A]/80">
 												<div
 													className="h-full bg-gradient-to-r from-[#38BDF8] to-[#BAE6FD] shadow-[0_0_8px_#38BDF8] transition-all duration-500 ease-out"
 													style={{ width: `${progressPct}%` }}

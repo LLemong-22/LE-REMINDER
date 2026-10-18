@@ -104,18 +104,10 @@ function RoutinesErrorState({ onRetry }: { onRetry: () => void }) {
 // scratchpad by design — see hero-panel.tsx.
 export default function Home() {
 	const router = useRouter();
-	const [showVillainIntro, setShowVillainIntro] = useState(false);
+	// Always trigger the 0.65s razor slash-shatter reveal on every reload
+	const [showVillainIntro, setShowVillainIntro] = useState(true);
 	const [searchInput, setSearchInput] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
-
-	useEffect(() => {
-		if (typeof window !== "undefined") {
-			const hasSeenIntro = sessionStorage.getItem("le_reminder_v_intro");
-			if (!hasSeenIntro) {
-				setShowVillainIntro(true);
-			}
-		}
-	}, []);
 
 	useEffect(() => {
 		const timer = setTimeout(() => {
@@ -275,74 +267,76 @@ export default function Home() {
 	const sortedRoutines = sortByStatus(filteredRoutines);
 
 	return (
-		<div className="min-h-screen text-[#F0F9FF]">
+		<div className="cryo-canvas frost-fracture-bg min-h-screen text-[#F8FAFC]">
 			<AnimatePresence>
 				{showVillainIntro && (
 					<VillainIntro onComplete={() => setShowVillainIntro(false)} />
 				)}
 			</AnimatePresence>
 
-			<div className="sticky top-0 z-20 flex items-center justify-between border-[#BAE6FD]/10 border-b bg-[#070B12]/85 px-4 py-3.5 backdrop-blur-md sm:px-10">
-				<div className="flex items-center gap-2.5 sm:w-[220px]">
-					<button
-						type="button"
-						onClick={() => setShowVillainIntro(true)}
-						title="Replay Cryo-Boot Sequence"
-						className="group flex size-7 shrink-0 items-center justify-center rounded border border-[#BAE6FD]/25 bg-[#0D1624]/80 font-bold font-mono text-[#BAE6FD] text-[12px] shadow-[0_0_10px_rgba(56,189,248,0.2)] transition-all hover:scale-105 hover:border-[#38BDF8] hover:bg-[#38BDF8]/15 hover:shadow-[0_0_15px_rgba(56,189,248,0.4)] active:scale-95"
-					>
-						<span className="transition-transform group-hover:scale-110">
-							V
-						</span>
-					</button>
-					<div className="shrink-0 font-extrabold text-[#F0F9FF] text-[17px] tracking-tight drop-shadow-[0_0_12px_rgba(56,189,248,0.3)] sm:text-[19px]">
-						<DecryptedText
-							text="LE-REMINDER"
-							speed={35}
-							maxIterations={10}
-							encryptedClassName="text-[#38BDF8]"
-						/>
+			<div className="sticky top-0 z-20 border-[#BAE6FD]/15 border-b bg-[#0D1B2A]/90 backdrop-blur-md">
+				<div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6">
+					<div className="flex items-center gap-2.5 sm:w-[220px]">
+						<button
+							type="button"
+							onClick={() => setShowVillainIntro(true)}
+							title="Replay Cryo-Boot Sequence"
+							className="group flex size-7 shrink-0 items-center justify-center rounded border border-[#7DD3FC]/35 bg-[#102136] font-bold font-mono text-[#7DD3FC] text-[12px] shadow-[0_0_10px_rgba(56,189,248,0.25)] transition-all hover:scale-105 hover:border-[#38BDF8] hover:bg-[#38BDF8]/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] active:scale-95"
+						>
+							<span className="transition-transform group-hover:scale-110">
+								V
+							</span>
+						</button>
+						<div className="shrink-0 font-extrabold text-[#F8FAFC] text-[17px] tracking-tight drop-shadow-[0_0_12px_rgba(56,189,248,0.35)] sm:text-[19px]">
+							<DecryptedText
+								text="LE-REMINDER"
+								speed={35}
+								maxIterations={10}
+								encryptedClassName="text-[#38BDF8]"
+							/>
+						</div>
 					</div>
-				</div>
-				<div className="flex items-center gap-5 overflow-x-auto [scrollbar-width:none] sm:gap-8">
-					<TabButton
-						active={activeTab === "home"}
-						onClick={() => setActiveTab("home")}
-					>
-						Home
-					</TabButton>
-					<TabButton
-						active={activeTab === "schedule"}
-						onClick={() => setActiveTab("schedule")}
-					>
-						Schedule
-					</TabButton>
-					<TabButton
-						active={activeTab === "all"}
-						onClick={() => setActiveTab("all")}
-					>
-						All Tasks
-					</TabButton>
-					<TabButton
-						active={activeTab === "analytics"}
-						onClick={() => setActiveTab("analytics")}
-					>
-						Analytics
-					</TabButton>
-				</div>
-				<div className="flex w-auto shrink-0 justify-end sm:w-[220px]">
-					<a
-						href="https://github.com/Lemong-22/LE-REMINDER.git"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="flex items-center gap-1.5 rounded-lg border border-[#BAE6FD]/10 bg-[#0D1624]/40 px-2.5 py-1.5 font-semibold text-[#93C5FD] text-xs transition-colors hover:border-[#BAE6FD]/30 hover:bg-[#0D1624]/80 hover:text-[#F0F9FF]"
-					>
-						<Github className="size-4" />
-						<span className="hidden sm:inline">Lemong-22</span>
-					</a>
+					<div className="flex items-center gap-5 overflow-x-auto [scrollbar-width:none] sm:gap-8">
+						<TabButton
+							active={activeTab === "home"}
+							onClick={() => setActiveTab("home")}
+						>
+							Home
+						</TabButton>
+						<TabButton
+							active={activeTab === "schedule"}
+							onClick={() => setActiveTab("schedule")}
+						>
+							Schedule
+						</TabButton>
+						<TabButton
+							active={activeTab === "all"}
+							onClick={() => setActiveTab("all")}
+						>
+							All Tasks
+						</TabButton>
+						<TabButton
+							active={activeTab === "analytics"}
+							onClick={() => setActiveTab("analytics")}
+						>
+							Analytics
+						</TabButton>
+					</div>
+					<div className="flex w-auto shrink-0 justify-end sm:w-[220px]">
+						<a
+							href="https://github.com/Lemong-22/LE-REMINDER.git"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="flex items-center gap-1.5 rounded-lg border border-[#7DD3FC]/20 bg-[#102136]/60 px-2.5 py-1.5 font-semibold text-[#BAE6FD] text-xs transition-colors hover:border-[#7DD3FC]/45 hover:bg-[#102136] hover:text-[#F8FAFC]"
+						>
+							<Github className="size-4" />
+							<span className="hidden sm:inline">Lemong-22</span>
+						</a>
+					</div>
 				</div>
 			</div>
 
-			<div className="flex flex-col gap-6 px-4 pt-[26px] pb-14 sm:px-10">
+			<div className="mx-auto flex max-w-[1600px] flex-col gap-5 px-4 pt-5 pb-14 sm:px-6">
 				{activeTab === "home" && (
 					<HeroPanel routines={routines} onComplete={handleComplete} />
 				)}
@@ -354,7 +348,7 @@ export default function Home() {
 								<div className="flex flex-col gap-2.5">
 									<div className="flex items-center justify-between gap-4">
 										<div className="flex flex-1 items-center gap-4">
-											<div className="shrink-0 font-extrabold text-[#F0F9FF] text-[18px] tracking-tight">
+											<div className="shrink-0 font-extrabold text-[#F8FAFC] text-[18px] tracking-tight">
 												Routines
 											</div>
 											<div className="relative flex w-full max-w-xs items-center">
@@ -364,13 +358,13 @@ export default function Home() {
 													placeholder="Search tasks & routines..."
 													value={searchInput}
 													onChange={(e) => setSearchInput(e.target.value)}
-													className="w-full rounded-lg border border-[#BAE6FD]/15 bg-[#0D1624]/80 py-1.5 pr-8 pl-8.5 font-sans text-[#F0F9FF] text-[12.5px] placeholder-[#64748B] outline-none transition-all duration-200 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/20"
+													className="w-full rounded-lg border border-[#93C5FD]/35 bg-[#091524] py-1.5 pr-8 pl-8.5 font-medium font-sans text-[#F8FAFC] text-[13px] placeholder-[#64748B] outline-none transition-all duration-200 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/25"
 												/>
 												{searchInput && (
 													<button
 														type="button"
 														onClick={() => setSearchInput("")}
-														className="absolute right-2.5 cursor-pointer text-[#64748B] transition-colors hover:text-[#F0F9FF]"
+														className="absolute right-2.5 cursor-pointer text-[#64748B] transition-colors hover:text-[#F8FAFC]"
 														aria-label="Clear search"
 													>
 														<X className="size-3.5" />
@@ -381,7 +375,7 @@ export default function Home() {
 										<button
 											type="button"
 											onClick={handleOpenCreate}
-											className="frost-pill-btn shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 font-semibold text-[13px] active:scale-95"
+											className="frost-pill-btn shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 font-bold text-[13px] active:scale-95"
 										>
 											+ New Routine
 										</button>
@@ -395,8 +389,8 @@ export default function Home() {
 												className={cn(
 													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 													selectedCategory === null
-														? "border-[#38BDF8]/50 bg-[#0E1A2D] font-semibold text-[#BAE6FD] shadow-[0_0_10px_-2px_rgba(56,189,248,0.35)]"
-														: "border-[#BAE6FD]/15 bg-[#0D1624]/60 text-[#93C5FD] hover:border-[#BAE6FD]/30 hover:text-[#F0F9FF]",
+														? "border-[#7DD3FC] bg-[#1A385C] font-semibold text-[#F8FAFC] shadow-[0_0_12px_rgba(56,189,248,0.35)]"
+														: "border-[#7DD3FC]/25 bg-[#102136] text-[#BAE6FD] hover:border-[#7DD3FC]/50 hover:text-[#F8FAFC]",
 												)}
 											>
 												All
@@ -413,15 +407,15 @@ export default function Home() {
 													className={cn(
 														"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 														selectedCategory === cat
-															? "border-[#38BDF8]/50 bg-[#0E1A2D] font-semibold text-[#BAE6FD] shadow-[0_0_10px_-2px_rgba(56,189,248,0.35)]"
-															: "border-[#BAE6FD]/15 bg-[#0D1624]/60 text-[#93C5FD] hover:border-[#BAE6FD]/30 hover:text-[#F0F9FF]",
+															? "border-[#7DD3FC] bg-[#1A385C] font-semibold text-[#F8FAFC] shadow-[0_0_12px_rgba(56,189,248,0.35)]"
+															: "border-[#7DD3FC]/25 bg-[#102136] text-[#BAE6FD] hover:border-[#7DD3FC]/50 hover:text-[#F8FAFC]",
 													)}
 												>
 													{cat}
 												</button>
 											))}
 											{(searchInput || selectedCategory) && (
-												<span className="ml-2 font-mono text-[#64748B] text-[11px]">
+												<span className="ml-2 font-mono text-[#93C5FD] text-[11px]">
 													Showing {sortedRoutines.length} of {routines.length}
 												</span>
 											)}
@@ -474,7 +468,7 @@ export default function Home() {
 								<div className="flex flex-col gap-2.5">
 									<div className="flex items-center justify-between gap-4">
 										<div className="flex flex-1 items-center gap-4">
-											<div className="shrink-0 font-extrabold text-[#F0F9FF] text-[18px] tracking-tight">
+											<div className="shrink-0 font-extrabold text-[#F8FAFC] text-[18px] tracking-tight">
 												All Tasks
 											</div>
 											<div className="relative flex w-full max-w-xs items-center">
@@ -484,13 +478,13 @@ export default function Home() {
 													placeholder="Search tasks & routines..."
 													value={searchInput}
 													onChange={(e) => setSearchInput(e.target.value)}
-													className="w-full rounded-lg border border-[#BAE6FD]/15 bg-[#0D1624]/80 py-1.5 pr-8 pl-8.5 font-sans text-[#F0F9FF] text-[12.5px] placeholder-[#64748B] outline-none transition-all duration-200 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/20"
+													className="w-full rounded-lg border border-[#93C5FD]/35 bg-[#091524] py-1.5 pr-8 pl-8.5 font-medium font-sans text-[#F8FAFC] text-[13px] placeholder-[#64748B] outline-none transition-all duration-200 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/25"
 												/>
 												{searchInput && (
 													<button
 														type="button"
 														onClick={() => setSearchInput("")}
-														className="absolute right-2.5 cursor-pointer text-[#64748B] transition-colors hover:text-[#F0F9FF]"
+														className="absolute right-2.5 cursor-pointer text-[#64748B] transition-colors hover:text-[#F8FAFC]"
 														aria-label="Clear search"
 													>
 														<X className="size-3.5" />
@@ -508,8 +502,8 @@ export default function Home() {
 												className={cn(
 													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 													selectedCategory === null
-														? "border-[#38BDF8]/50 bg-[#0E1A2D] font-semibold text-[#BAE6FD] shadow-[0_0_10px_-2px_rgba(56,189,248,0.35)]"
-														: "border-[#BAE6FD]/15 bg-[#0D1624]/60 text-[#93C5FD] hover:border-[#BAE6FD]/30 hover:text-[#F0F9FF]",
+														? "border-[#7DD3FC] bg-[#1A385C] font-semibold text-[#F8FAFC] shadow-[0_0_12px_rgba(56,189,248,0.35)]"
+														: "border-[#7DD3FC]/25 bg-[#102136] text-[#BAE6FD] hover:border-[#7DD3FC]/50 hover:text-[#F8FAFC]",
 												)}
 											>
 												All
@@ -526,15 +520,15 @@ export default function Home() {
 													className={cn(
 														"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 														selectedCategory === cat
-															? "border-[#38BDF8]/50 bg-[#0E1A2D] font-semibold text-[#BAE6FD] shadow-[0_0_10px_-2px_rgba(56,189,248,0.35)]"
-															: "border-[#BAE6FD]/15 bg-[#0D1624]/60 text-[#93C5FD] hover:border-[#BAE6FD]/30 hover:text-[#F0F9FF]",
+															? "border-[#7DD3FC] bg-[#1A385C] font-semibold text-[#F8FAFC] shadow-[0_0_12px_rgba(56,189,248,0.35)]"
+															: "border-[#7DD3FC]/25 bg-[#102136] text-[#BAE6FD] hover:border-[#7DD3FC]/50 hover:text-[#F8FAFC]",
 													)}
 												>
 													{cat}
 												</button>
 											))}
 											{(searchInput || selectedCategory) && (
-												<span className="ml-2 font-mono text-[#64748B] text-[11px]">
+												<span className="ml-2 font-mono text-[#93C5FD] text-[11px]">
 													Showing {sortedRoutines.length} of {routines.length}
 												</span>
 											)}

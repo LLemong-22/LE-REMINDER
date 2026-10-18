@@ -146,20 +146,20 @@ function TaskTypeCard({
 			type="button"
 			onClick={onClick}
 			className={cn(
-				"relative flex min-w-[140px] flex-1 cursor-pointer flex-col gap-2 rounded-xl border p-4 text-left transition-all duration-200",
+				"relative flex min-w-[140px] flex-1 cursor-pointer flex-col gap-2 rounded-xl p-4 text-left transition-all duration-200",
 				selected
-					? "border-[#38BDF8]/60 bg-[#38BDF8]/15 shadow-[0_0_12px_rgba(56,189,248,0.25)]"
-					: "border-[#BAE6FD]/15 bg-[#070B12]/60 hover:border-[#BAE6FD]/30",
+					? "border-2 border-[#7DD3FC] bg-[#1A385C] text-white shadow-[0_0_20px_rgba(56,189,248,0.25)]"
+					: "border border-[#93C5FD]/20 bg-[#0C1A2B] text-[#E0F2FE] hover:border-[#7DD3FC]/40",
 			)}
 		>
 			<div className="flex items-center justify-between">
 				{glyph}
 				{selected && (
-					<span className="size-1.5 rounded-full bg-[#38BDF8] shadow-[0_0_6px_#38BDF8]" />
+					<span className="size-1.5 rounded-full bg-[#7DD3FC] shadow-[0_0_8px_#38BDF8]" />
 				)}
 			</div>
-			<div className="font-semibold text-[#F0F9FF] text-[13.5px]">{label}</div>
-			<div className="text-[#94A3B8] text-[11.5px] leading-[1.45]">
+			<div className="font-semibold text-[#F8FAFC] text-[13.5px]">{label}</div>
+			<div className="text-[#93C5FD] text-[11.5px] leading-[1.45]">
 				{description}
 			</div>
 		</button>
@@ -182,8 +182,8 @@ function Pill({
 			className={cn(
 				"cursor-pointer rounded-full border px-3 py-1 font-mono text-[11.5px] transition-all duration-150 active:scale-95",
 				selected
-					? "border-[#38BDF8]/60 bg-[#38BDF8]/20 font-semibold text-[#BAE6FD] shadow-[0_0_10px_rgba(56,189,248,0.25)]"
-					: "border-[#BAE6FD]/15 bg-[#070B12]/60 font-normal text-[#93C5FD] hover:border-[#BAE6FD]/35 hover:text-[#F0F9FF]",
+					? "border-[#7DD3FC] bg-[#38BDF8] font-bold text-[#06101E] shadow-[0_0_12px_rgba(56,189,248,0.35)]"
+					: "border border-[#7DD3FC]/30 bg-[#17304F] font-medium text-[#E0F2FE] hover:bg-[#38BDF8] hover:text-[#06101E]",
 			)}
 		>
 			{children}
@@ -269,9 +269,9 @@ export function RoutineFormDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="frost-panel border-[#BAE6FD]/20 bg-[rgba(10,18,30,0.94)] text-[#F0F9FF] shadow-[0_20px_50px_rgba(2,6,23,0.9),inset_0_1px_0_0_rgba(224,242,254,0.22)] sm:max-w-lg">
+			<DialogContent className="border border-[#7DD3FC]/40 bg-[#102136]/98 text-[#F8FAFC] shadow-[0_24px_64px_rgba(0,0,0,0.85),inset_0_1px_0_0_rgba(224,242,254,0.4)] backdrop-blur-2xl sm:max-w-lg">
 				<DialogHeader>
-					<DialogTitle className="text-[#F0F9FF]">
+					<DialogTitle className="text-[#F8FAFC]">
 						{routine ? "Edit Routine" : "New Task"}
 					</DialogTitle>
 				</DialogHeader>
@@ -280,7 +280,7 @@ export function RoutineFormDialog({
 					<div className="flex flex-col gap-1.5">
 						<Label
 							htmlFor="routine-name"
-							className="font-semibold text-[#93C5FD] text-[11.5px] uppercase tracking-[0.03em]"
+							className="font-semibold text-[#BAE6FD] text-[11.5px] uppercase tracking-[0.03em]"
 						>
 							Name
 						</Label>
@@ -297,14 +297,14 @@ export function RoutineFormDialog({
 								}
 							}}
 							placeholder="e.g. Server Data Backup"
-							className="h-9 rounded-lg border-[#BAE6FD]/20 bg-[#070B12]/80 text-[#F0F9FF] text-[13px] placeholder-[#64748B] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/40 focus-visible:ring-offset-0"
+							className="h-9 rounded-lg border border-[#93C5FD]/35 bg-[#091524] font-medium text-[#F8FAFC] text-[13px] placeholder-[#64748B] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-2 focus-visible:ring-[#38BDF8]/25 focus-visible:ring-offset-0"
 						/>
 					</div>
 
 					<div className="flex flex-col gap-1.5">
 						<Label
 							htmlFor="routine-category"
-							className="font-semibold text-[#93C5FD] text-[11.5px] uppercase tracking-[0.03em]"
+							className="font-semibold text-[#BAE6FD] text-[11.5px] uppercase tracking-[0.03em]"
 						>
 							Category
 						</Label>
@@ -321,7 +321,7 @@ export function RoutineFormDialog({
 								}
 							}}
 							placeholder="e.g. Tech"
-							className="h-9 rounded-lg border-[#BAE6FD]/20 bg-[#070B12]/80 text-[#F0F9FF] text-[13px] placeholder-[#64748B] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/40 focus-visible:ring-offset-0"
+							className="h-9 rounded-lg border border-[#93C5FD]/35 bg-[#091524] font-medium text-[#F8FAFC] text-[13px] placeholder-[#64748B] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-2 focus-visible:ring-[#38BDF8]/25 focus-visible:ring-offset-0"
 						/>
 						<div className="flex flex-wrap gap-1.5">
 							{categorySuggestions.map((chip) => (
@@ -338,16 +338,16 @@ export function RoutineFormDialog({
 						</div>
 					</div>
 
-					<div className="flex flex-col gap-3 rounded-xl border border-[#2E384D]/75 bg-[#181E2B]/60 p-3 sm:flex-row sm:items-center sm:gap-0 sm:divide-x sm:divide-[#2E384D]/60">
+					<div className="flex flex-col gap-3 rounded-xl border border-[#7DD3FC]/25 bg-[#091524] p-3 sm:flex-row sm:items-center sm:gap-0 sm:divide-x sm:divide-[#7DD3FC]/20">
 						<label
 							htmlFor="is-task-switch"
 							className="flex flex-1 cursor-pointer items-center justify-between gap-3 pr-0 sm:pr-4"
 						>
 							<div className="flex flex-col gap-0.5">
-								<span className="font-semibold text-[#F1F5F9] text-[13px]">
+								<span className="font-semibold text-[#F8FAFC] text-[13px]">
 									Is Task
 								</span>
-								<span className="text-[#94A3B8] text-[11.5px]">
+								<span className="text-[#93C5FD] text-[11.5px]">
 									Differentiate assignment from habit routine.
 								</span>
 							</div>
@@ -357,7 +357,7 @@ export function RoutineFormDialog({
 								onCheckedChange={(checked) =>
 									setState((prev) => ({ ...prev, isTask: checked }))
 								}
-								className="shrink-0 data-checked:bg-[#3B82F6]"
+								className="shrink-0 data-checked:bg-[#38BDF8]"
 							/>
 						</label>
 						<label
@@ -365,10 +365,10 @@ export function RoutineFormDialog({
 							className="flex flex-1 cursor-pointer items-center justify-between gap-3 pt-2 sm:pt-0 sm:pl-4"
 						>
 							<div className="flex flex-col gap-0.5">
-								<span className="font-semibold text-[#F1F5F9] text-[13px]">
+								<span className="font-semibold text-[#F8FAFC] text-[13px]">
 									Important
 								</span>
-								<span className="text-[#94A3B8] text-[11.5px]">
+								<span className="text-[#93C5FD] text-[11.5px]">
 									Flag as high priority for top ranking.
 								</span>
 							</div>
@@ -378,7 +378,7 @@ export function RoutineFormDialog({
 								onCheckedChange={(checked) =>
 									setState((prev) => ({ ...prev, isImportant: checked }))
 								}
-								className="shrink-0 data-checked:bg-[#3B82F6]"
+								className="shrink-0 data-checked:bg-[#38BDF8]"
 							/>
 						</label>
 					</div>
@@ -449,7 +449,7 @@ export function RoutineFormDialog({
 
 					{state.kind === "Recurring" &&
 						state.scheduleType === "FixedCalendar" && (
-							<div className="flex flex-col gap-3 rounded-[10px] bg-[#181E2B] p-[15px]">
+							<div className="flex flex-col gap-3 rounded-[10px] border border-[#7DD3FC]/20 bg-[#091524] p-[15px]">
 								<div className="flex gap-2">
 									<Pill
 										selected={state.recurrenceKind === "Daily"}
@@ -499,7 +499,7 @@ export function RoutineFormDialog({
 
 								{state.recurrenceKind === "Monthly" && (
 									<div className="flex items-center gap-2.5">
-										<span className="text-[#94A3B8] text-[12.5px]">
+										<span className="text-[#BAE6FD] text-[12.5px]">
 											Day of month
 										</span>
 										<Input
@@ -513,17 +513,17 @@ export function RoutineFormDialog({
 													dayOfMonth: Number(e.target.value) || 1,
 												}))
 											}
-											className="w-16 rounded-lg border-[#38445C] bg-[#1E2433] text-center font-mono text-[#F1F5F9] text-[13px] transition-colors focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]/30 focus-visible:ring-offset-0"
+											className="w-16 rounded-lg border border-[#93C5FD]/35 bg-[#0C1A2B] text-center font-mono text-[#F8FAFC] text-[13px] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/30 focus-visible:ring-offset-0"
 										/>
 									</div>
 								)}
 
-								<div className="flex items-center justify-between border-[#2E384D] border-t pt-2.5">
+								<div className="flex items-center justify-between border-[#7DD3FC]/20 border-t pt-2.5">
 									<div className="flex flex-col gap-0.5">
-										<span className="font-semibold text-[#F1F5F9] text-[13px]">
+										<span className="font-semibold text-[#F8FAFC] text-[13px]">
 											Mandatory
 										</span>
-										<span className="text-[#94A3B8] text-[11.5px]">
+										<span className="text-[#93C5FD] text-[11.5px]">
 											Missed occurrences stay Overdue until completed.
 										</span>
 									</div>
@@ -532,7 +532,7 @@ export function RoutineFormDialog({
 										onCheckedChange={(checked) =>
 											setState((prev) => ({ ...prev, isMandatory: checked }))
 										}
-										className="data-checked:bg-[#3B82F6]"
+										className="data-checked:bg-[#38BDF8]"
 									/>
 								</div>
 							</div>
@@ -540,8 +540,8 @@ export function RoutineFormDialog({
 
 					{state.kind === "Recurring" &&
 						state.scheduleType === "RollingInterval" && (
-							<div className="flex items-center gap-2.5 rounded-[10px] bg-[#181E2B] p-[15px]">
-								<span className="text-[#CBD5E1] text-[13px]">Every</span>
+							<div className="flex items-center gap-2.5 rounded-[10px] border border-[#7DD3FC]/20 bg-[#091524] p-[15px]">
+								<span className="text-[#E0F2FE] text-[13px]">Every</span>
 								<Input
 									type="number"
 									min={1}
@@ -552,7 +552,7 @@ export function RoutineFormDialog({
 											intervalValue: Number(e.target.value) || 1,
 										}))
 									}
-									className="w-16 rounded-lg border-[#38445C] bg-[#1E2433] text-center font-mono text-[#F1F5F9] text-[13px] transition-colors focus-visible:border-[#3B82F6] focus-visible:ring-1 focus-visible:ring-[#3B82F6]/30 focus-visible:ring-offset-0"
+									className="w-16 rounded-lg border border-[#93C5FD]/35 bg-[#0C1A2B] text-center font-mono text-[#F8FAFC] text-[13px] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/30 focus-visible:ring-offset-0"
 								/>
 								<select
 									value={state.intervalUnit}
@@ -562,7 +562,7 @@ export function RoutineFormDialog({
 											intervalUnit: e.target.value as FormState["intervalUnit"],
 										}))
 									}
-									className="rounded-lg border border-[#38445C] bg-[#1E2433] px-2.5 py-1.5 text-[#F1F5F9] text-[13px] transition-colors focus:border-[#3B82F6] focus:outline-none focus:ring-1 focus:ring-[#3B82F6]/30"
+									className="rounded-lg border border-[#93C5FD]/35 bg-[#0C1A2B] px-2.5 py-1.5 text-[#F8FAFC] text-[13px] transition-colors focus:border-[#38BDF8] focus:outline-none focus:ring-1 focus:ring-[#38BDF8]/30"
 								>
 									<option value="days">days</option>
 									<option value="weeks">weeks</option>
@@ -572,9 +572,9 @@ export function RoutineFormDialog({
 						)}
 
 					{state.kind === "OneOff" && (
-						<div className="flex flex-col gap-3 rounded-[10px] bg-[#181E2B] p-[15px]">
+						<div className="flex flex-col gap-3 rounded-[10px] border border-[#7DD3FC]/20 bg-[#091524] p-[15px]">
 							<div className="flex items-center justify-between">
-								<span className="text-[#CBD5E1] text-[13px]">
+								<span className="text-[#E0F2FE] text-[13px]">
 									Has a deadline
 								</span>
 								<Switch
@@ -587,7 +587,7 @@ export function RoutineFormDialog({
 												: "",
 										}))
 									}
-									className="data-checked:bg-[#3B82F6]"
+									className="data-checked:bg-[#38BDF8]"
 								/>
 							</div>
 							{hasDeadline && (
@@ -597,7 +597,7 @@ export function RoutineFormDialog({
 									onChange={(e) =>
 										setState((prev) => ({ ...prev, dueDate: e.target.value }))
 									}
-									className="w-fit rounded-lg border-[#BAE6FD]/20 bg-[#070B12]/80 px-2.5 py-1.5 font-mono text-[#F0F9FF] text-[12.5px] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/40 focus-visible:ring-offset-0"
+									className="w-fit rounded-lg border border-[#93C5FD]/35 bg-[#0C1A2B] px-2.5 py-1.5 font-mono text-[#F8FAFC] text-[12.5px] transition-colors focus-visible:border-[#38BDF8] focus-visible:ring-1 focus-visible:ring-[#38BDF8]/40 focus-visible:ring-offset-0"
 								/>
 							)}
 						</div>
@@ -628,10 +628,10 @@ export function RoutineFormDialog({
 							onClick={handleSubmit}
 							disabled={!saveEnabled}
 							className={cn(
-								"rounded-lg px-4 py-2 font-semibold text-xs",
+								"rounded-lg px-4 py-2 font-bold text-xs transition-all",
 								saveEnabled
 									? "frost-pill-btn"
-									: "border border-white/5 bg-white/5 text-[#64748B]",
+									: "cursor-not-allowed border border-[#7DD3FC]/20 bg-[#1E3A5F] text-[#93C5FD]/60",
 							)}
 						>
 							Save Routine

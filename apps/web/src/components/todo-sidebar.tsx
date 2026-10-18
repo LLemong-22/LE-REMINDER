@@ -57,7 +57,7 @@ function TodoRowContent({
 		<div
 			className={cn(
 				"group/todo -mx-1.5 flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-[#BAE6FD]/[0.06]",
-				todo.done && "opacity-55",
+				todo.done ? "opacity-80" : "opacity-100",
 			)}
 		>
 			{grip}
@@ -67,7 +67,7 @@ function TodoRowContent({
 				onClick={(e) => {
 					onToggle?.(e.currentTarget);
 				}}
-				className="size-4 cursor-pointer rounded border-[#BAE6FD]/30 transition-all duration-150 active:scale-90 group-hover/todo:border-[#38BDF8] data-checked:border-[#38BDF8] data-checked:bg-[#38BDF8] data-checked:text-[#070B12]"
+				className="size-4 cursor-pointer rounded border-[#BAE6FD]/40 transition-all duration-150 active:scale-90 group-hover/todo:border-[#38BDF8] data-checked:border-[#38BDF8] data-checked:bg-[#38BDF8] data-checked:text-[#091524]"
 			/>
 			<button
 				type="button"
@@ -77,8 +77,8 @@ function TodoRowContent({
 				className={cn(
 					"flex-1 cursor-pointer bg-transparent text-left font-medium text-[13.5px] transition-colors duration-150 active:scale-[0.99]",
 					todo.done
-						? "text-[#64748B] line-through"
-						: "text-[#F0F9FF] group-hover/todo:text-[#38BDF8]",
+						? "text-[#93C5FD] line-through decoration-[#7DD3FC]/50"
+						: "text-[#F8FAFC] group-hover/todo:text-[#38BDF8]",
 				)}
 			>
 				{todo.text}
@@ -88,7 +88,7 @@ function TodoRowContent({
 					type="button"
 					onClick={onDelete}
 					aria-label={`Remove ${todo.text}`}
-					className="cursor-pointer bg-transparent px-1 font-mono text-[#64748B] text-sm transition-all hover:scale-110 hover:text-rose-400 active:scale-90"
+					className="cursor-pointer bg-transparent px-1 font-mono text-[#93C5FD] text-sm transition-all hover:scale-110 hover:text-rose-400 active:scale-90"
 				>
 					×
 				</button>
@@ -353,11 +353,11 @@ export function TodoSidebar() {
 
 			<div className="flex flex-col gap-2.5">
 				{!todosQuery.isLoading && sortedTodos.length === 0 && (
-					<div className="frost-panel flex flex-col items-center justify-center gap-2 rounded-xl border-dashed bg-[#070B12]/40 px-4 py-7 text-center">
-						<div className="flex size-9 items-center justify-center rounded-full border border-[#BAE6FD]/20 bg-[#070B12] text-[#93C5FD]">
+					<div className="frost-panel flex flex-col items-center justify-center gap-2 rounded-xl border-dashed bg-[#091524]/60 px-4 py-7 text-center">
+						<div className="flex size-9 items-center justify-center rounded-full border border-[#BAE6FD]/30 bg-[#0C1A2B] text-[#93C5FD]">
 							<Inbox className="size-4 stroke-[1.5]" />
 						</div>
-						<span className="font-mono text-[#64748B] text-xs">
+						<span className="font-mono text-[#93C5FD]/80 text-xs">
 							Nothing on your scratchpad.
 						</span>
 					</div>
@@ -416,7 +416,7 @@ export function TodoSidebar() {
 				</DndContext>
 			</div>
 
-			<div className="flex gap-1.5 border-[#BAE6FD]/15 border-t pt-2">
+			<div className="flex gap-1.5 border-[#BAE6FD]/20 border-t pt-2">
 				<input
 					type="text"
 					value={newText}
@@ -425,7 +425,7 @@ export function TodoSidebar() {
 						if (e.key === "Enter") addTodo();
 					}}
 					placeholder="Add a task…"
-					className="min-w-0 flex-1 rounded-lg border border-[#BAE6FD]/20 bg-[#070B12]/80 px-2.5 py-1.5 font-sans text-[#F0F9FF] text-[12.5px] placeholder-[#64748B] outline-none transition-all duration-150 focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/40"
+					className="min-w-0 flex-1 rounded-lg border border-[#93C5FD]/35 bg-[#091524] px-2.5 py-1.5 font-medium font-sans text-[#F8FAFC] text-[12.5px] placeholder-[#64748B] outline-none transition-all duration-150 focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/40"
 				/>
 				<button
 					type="button"
