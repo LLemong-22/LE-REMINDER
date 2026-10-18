@@ -11,8 +11,10 @@ import {
 	Target,
 	Utensils,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { cryoSound } from "@/lib/cryo-sound";
 import { MASTER_SCHEDULE, type ScheduleEventType } from "@/lib/schedule-data";
+import { smoothScrollToElement } from "@/lib/smooth-scroll";
 
 const TYPE_CONFIG: Record<
 	ScheduleEventType,
@@ -114,6 +116,13 @@ export function ScheduleView() {
 
 	const activeCardRef = useRef<HTMLDivElement | null>(null);
 	const hasAutoScrolledRef = useRef(false);
+	const [highlightPulse, setHighlightPulse] = useState(false);
+
+	const triggerArrivalPulse = useCallback(() => {
+		setHighlightPulse(true);
+		cryoSound.playTick();
+		setTimeout(() => setHighlightPulse(false), 1500);
+	}, []);
 
 	// Low-overhead 30s ticker for accurate time block updates with 0% battery drain
 	useEffect(() => {
@@ -195,7 +204,7 @@ export function ScheduleView() {
 		return { ranges, activeTargetIndex, hasLiveEvent: foundLiveIndex !== -1 };
 	}, [currentDaySchedule, isSelectedDayToday, currentTime]);
 
-	// Auto-scroll on mount or when switching to today
+	// Butter-smooth auto-scroll on mount or when switching to today
 	useEffect(() => {
 		if (
 			isSelectedDayToday &&
@@ -204,25 +213,28 @@ export function ScheduleView() {
 		) {
 			hasAutoScrolledRef.current = true;
 			const timer = setTimeout(() => {
-				activeCardRef.current?.scrollIntoView({
-					behavior: "smooth",
-					block: "center",
-				});
-			}, 200);
+				if (activeCardRef.current) {
+					smoothScrollToElement(
+						activeCardRef.current,
+						650,
+						triggerArrivalPulse,
+					);
+				}
+			}, 180);
 			return () => clearTimeout(timer);
 		}
-	}, [isSelectedDayToday]);
+	}, [isSelectedDayToday, triggerArrivalPulse]);
 
-	// Jump to Now button handler: selects today and re-centers active task
+	// Jump to Now button handler: glides with easeOutQuint and triggers arrival pulse
 	function handleJumpToNow() {
 		setSelectedDay(todayDayOfWeek);
 		hasAutoScrolledRef.current = false;
+		cryoSound.playTick();
 		setTimeout(() => {
-			activeCardRef.current?.scrollIntoView({
-				behavior: "smooth",
-				block: "center",
-			});
-		}, 100);
+			if (activeCardRef.current) {
+				smoothScrollToElement(activeCardRef.current, 650, triggerArrivalPulse);
+			}
+		}, 60);
 	}
 
 	const eventCountByType = currentDaySchedule.events.reduce(
@@ -248,7 +260,8 @@ export function ScheduleView() {
 						<button
 							type="button"
 							onClick={handleJumpToNow}
-							className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#BAE6FD]/30 bg-[#BAE6FD]/10 px-3 py-1 font-mono font-semibold text-[#BAE6FD] text-[11px] shadow-[0_0_12px_rgba(56,189,248,0.2)] backdrop-blur-xs transition-all hover:border-[#BAE6FD]/60 hover:bg-[#BAE6FD]/20 active:scale-95"
+							onMouseEnter={() => cryoSound.playTick()}
+							className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[#BAE6FD]/30 bg-[#BAE6FD]/10 px-3 py-1 font-mono font-semibold text-[#BAE6FD] text-[11px] shadow-[0_0_12px_rgba(56,189,248,0.2)] transition-all hover:border-[#BAE6FD]/60 hover:bg-[#BAE6FD]/20 active:scale-95"
 						>
 							<Target className="size-3 text-[#38BDF8]" />
 							<span>Jump to Now</span>
@@ -272,6 +285,7 @@ export function ScheduleView() {
 							<button
 								key={schedule.dayOfWeek}
 								type="button"
+								onMouseEnter={() => cryoSound.playTick()}
 								onClick={() => {
 									setSelectedDay(schedule.dayOfWeek);
 									if (schedule.dayOfWeek !== todayDayOfWeek) {
@@ -392,7 +406,12 @@ export function ScheduleView() {
 
 							{/* Active Event Hero Card with glowing icy border, LIVE NOW badge & progress bar */}
 							{isLive ? (
-								<div className="frost-panel relative rounded-xl border border-[#BAE6FD]/50 p-4 shadow-[0_0_24px_rgba(56,189,248,0.3),inset_0_1px_0_0_rgba(224,242,254,0.35)] sm:p-5">
+								<div
+									className={cn(
+										"frost-panel relative rounded-xl border border-[#BAE6FD]/50 p-4 shadow-[0_0_24px_rgba(56,189,248,0.3),inset_0_1px_0_0_rgba(224,242,254,0.35)] sm:p-5",
+										highlightPulse && "arrival-glow-pulse",
+									)}
+								>
 									<div className="flex flex-col gap-2.5">
 										<div className="flex items-center justify-between gap-3">
 											<div className="flex items-center gap-2 font-mono font-semibold text-[#BAE6FD] text-xs sm:text-[13px]">

@@ -29,6 +29,7 @@ import { GripVertical, Inbox } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { cryoSound } from "@/lib/cryo-sound";
 import { triggerCyberExplosion } from "@/lib/cyber-explosion";
 import { queryClient, trpc } from "@/utils/trpc";
 
@@ -322,7 +323,10 @@ export function TodoSidebar() {
 	const activeTodo = sortedTodos.find((todo) => todo.id === activeId) ?? null;
 
 	return (
-		<div className="frost-panel sticky top-[76px] flex max-h-[calc(100vh-96px)] w-[280px] shrink-0 flex-col gap-3.5 overflow-y-auto rounded-xl p-5">
+		<div
+			style={{ willChange: "transform", transform: "translateZ(0)" }}
+			className="frost-panel sticky top-[76px] flex max-h-[calc(100vh-96px)] w-[280px] shrink-0 flex-col gap-3.5 overflow-y-auto rounded-xl p-5"
+		>
 			<div className="flex items-center justify-between">
 				<div className="font-extrabold text-[#F0F9FF] text-[18px] tracking-tight">
 					Today's To-Do
@@ -384,8 +388,16 @@ export function TodoSidebar() {
 											editMode={editMode}
 											indicator={indicatorFor(todo.id)}
 											onToggle={(target) => {
-												if (!todo.done && target) {
-													triggerCyberExplosion(target);
+												if (!todo.done) {
+													cryoSound.playShatterComplete();
+													if (typeof window !== "undefined") {
+														window.dispatchEvent(
+															new CustomEvent("core-overdrive"),
+														);
+													}
+													if (target) {
+														triggerCyberExplosion(target);
+													}
 												}
 												toggleMutation.mutate({ todoId: todo.id });
 											}}

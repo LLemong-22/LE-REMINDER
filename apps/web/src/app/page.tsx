@@ -5,7 +5,16 @@ import type { RoutineId } from "@LE-REMINDER/core/domain/identity";
 import { cn } from "@LE-REMINDER/ui/lib/utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { TRPCClientError } from "@trpc/client";
-import { BarChart2, Github, Inbox, Search, Sparkles, X } from "lucide-react";
+import {
+	BarChart2,
+	Github,
+	Inbox,
+	Search,
+	Sparkles,
+	Volume2,
+	VolumeX,
+	X,
+} from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -18,6 +27,7 @@ import { TodoSidebar } from "@/components/todo-sidebar";
 import { DecryptedText } from "@/components/ui/decrypted-text";
 import { VillainIntro } from "@/components/villain-intro";
 import { buildCategorySuggestions } from "@/lib/category-suggestions";
+import { cryoSound } from "@/lib/cryo-sound";
 import type { DashboardRoutine } from "@/lib/dashboard-routine";
 import {
 	withCompleted,
@@ -42,7 +52,11 @@ function TabButton({
 	return (
 		<button
 			type="button"
-			onClick={onClick}
+			onClick={() => {
+				cryoSound.playTick();
+				onClick();
+			}}
+			onMouseEnter={() => cryoSound.playTick()}
 			className={cn(
 				"relative cursor-pointer whitespace-nowrap rounded-sm px-1 py-1.5 font-semibold text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]/40",
 				active ? "text-[#F0F9FF]" : "text-[#93C5FD] hover:text-[#F0F9FF]",
@@ -55,6 +69,82 @@ function TabButton({
 					transition={{ type: "spring", stiffness: 450, damping: 35 }}
 					className="absolute inset-x-0 -bottom-[17px] h-[2px] rounded-full bg-[#38BDF8] shadow-[0_0_8px_#38BDF8]"
 				/>
+			)}
+		</button>
+	);
+}
+
+function TacticalClock() {
+	const [timeStr, setTimeStr] = useState<string | null>(null);
+
+	useEffect(() => {
+		function updateClock() {
+			const now = new Date();
+			const h = String(now.getHours()).padStart(2, "0");
+			const m = String(now.getMinutes()).padStart(2, "0");
+			const s = String(now.getSeconds()).padStart(2, "0");
+			setTimeStr(`${h}:${m}:${s}`);
+		}
+		updateClock();
+		const timer = setInterval(updateClock, 1000);
+		return () => clearInterval(timer);
+	}, []);
+
+	if (!timeStr) {
+		return (
+			<div
+				className="hidden items-center gap-0.5 rounded-lg border border-[#7DD3FC]/20 bg-[#102136]/50 px-2.5 py-1 font-medium font-mono text-[#93C5FD]/60 text-[11px] md:flex"
+				aria-hidden="true"
+			>
+				<span>00:00:00</span>
+			</div>
+		);
+	}
+
+	const [hh, mm, ss] = timeStr.split(":");
+
+	return (
+		<div
+			title="Tactical System Time (Local)"
+			className="hidden items-center gap-0.5 rounded-lg border border-[#7DD3FC]/25 bg-[#091524]/85 px-2.5 py-1 font-mono font-semibold text-[#BAE6FD] text-[11px] tabular-nums shadow-[0_0_8px_rgba(56,189,248,0.15)] md:flex"
+		>
+			<span>{hh}</span>
+			<span className="animate-pulse text-[#7DD3FC]">:</span>
+			<span>{mm}</span>
+			<span className="animate-pulse text-[#7DD3FC]">:</span>
+			<span>{ss}</span>
+		</div>
+	);
+}
+
+function AudioToggle() {
+	const [muted, setMuted] = useState(false);
+
+	useEffect(() => {
+		setMuted(cryoSound.isMuted());
+		return cryoSound.subscribe((next) => setMuted(next));
+	}, []);
+
+	return (
+		<button
+			type="button"
+			onClick={() => {
+				const next = cryoSound.toggleMute();
+				if (!next) cryoSound.playTick();
+			}}
+			onMouseEnter={() => cryoSound.playTick()}
+			title={
+				muted
+					? "Unmute Cryo-HUD Audio (SFX Off)"
+					: "Mute Cryo-HUD Audio (SFX On)"
+			}
+			aria-label={muted ? "Unmute Audio" : "Mute Audio"}
+			className="flex size-7.5 cursor-pointer items-center justify-center rounded-lg border border-[#7DD3FC]/20 bg-[#102136]/60 text-[#BAE6FD] shadow-[0_0_8px_rgba(56,189,248,0.12)] transition-all hover:scale-105 hover:border-[#7DD3FC]/45 hover:bg-[#102136] hover:text-[#F8FAFC] active:scale-95"
+		>
+			{muted ? (
+				<VolumeX className="size-3.5 text-[#64748B]" />
+			) : (
+				<Volume2 className="size-3.5 text-[#38BDF8]" />
 			)}
 		</button>
 	);
@@ -219,6 +309,10 @@ export default function Home() {
 	);
 
 	function handleComplete(routine: DashboardRoutine) {
+		cryoSound.playShatterComplete();
+		if (typeof window !== "undefined") {
+			window.dispatchEvent(new CustomEvent("core-overdrive"));
+		}
 		completeMutation.mutate({ routineId: routine.id });
 	}
 
@@ -279,7 +373,10 @@ export default function Home() {
 					<div className="flex items-center gap-2.5 sm:w-[220px]">
 						<button
 							type="button"
-							onClick={() => setShowVillainIntro(true)}
+							onClick={() => {
+								cryoSound.playReactorPulse();
+								setShowVillainIntro(true);
+							}}
 							title="Replay Cryo-Boot Sequence"
 							className="group flex size-7 shrink-0 items-center justify-center rounded border border-[#7DD3FC]/35 bg-[#102136] font-bold font-mono text-[#7DD3FC] text-[12px] shadow-[0_0_10px_rgba(56,189,248,0.25)] transition-all hover:scale-105 hover:border-[#38BDF8] hover:bg-[#38BDF8]/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.5)] active:scale-95"
 						>
@@ -322,11 +419,14 @@ export default function Home() {
 							Analytics
 						</TabButton>
 					</div>
-					<div className="flex w-auto shrink-0 justify-end sm:w-[220px]">
+					<div className="flex w-auto shrink-0 items-center justify-end gap-2 sm:w-[320px]">
+						<TacticalClock />
+						<AudioToggle />
 						<a
 							href="https://github.com/Lemong-22/LE-REMINDER.git"
 							target="_blank"
 							rel="noopener noreferrer"
+							onMouseEnter={() => cryoSound.playTick()}
 							className="flex items-center gap-1.5 rounded-lg border border-[#7DD3FC]/20 bg-[#102136]/60 px-2.5 py-1.5 font-semibold text-[#BAE6FD] text-xs transition-colors hover:border-[#7DD3FC]/45 hover:bg-[#102136] hover:text-[#F8FAFC]"
 						>
 							<Github className="size-4" />
@@ -375,6 +475,7 @@ export default function Home() {
 										<button
 											type="button"
 											onClick={handleOpenCreate}
+											onMouseEnter={() => cryoSound.playTick()}
 											className="frost-pill-btn shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 font-bold text-[13px] active:scale-95"
 										>
 											+ New Routine
@@ -386,6 +487,7 @@ export default function Home() {
 											<button
 												type="button"
 												onClick={() => setSelectedCategory(null)}
+												onMouseEnter={() => cryoSound.playTick()}
 												className={cn(
 													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
 													selectedCategory === null
@@ -399,6 +501,7 @@ export default function Home() {
 												<button
 													key={cat}
 													type="button"
+													onMouseEnter={() => cryoSound.playTick()}
 													onClick={() =>
 														setSelectedCategory(
 															selectedCategory === cat ? null : cat,

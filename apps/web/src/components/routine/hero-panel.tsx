@@ -6,6 +6,7 @@ import { cn } from "@LE-REMINDER/ui/lib/utils";
 import { NexusAnimation } from "@/components/nexus-animation";
 import { CountUp } from "@/components/ui/count-up";
 import { DecryptedText } from "@/components/ui/decrypted-text";
+import { cryoSound } from "@/lib/cryo-sound";
 import { triggerCyberExplosion } from "@/lib/cyber-explosion";
 import type { DashboardRoutine } from "@/lib/dashboard-routine";
 import { sortByStatus } from "@/lib/sort-routines";
@@ -123,8 +124,22 @@ export function HeroPanel({
 		((counts.Done + counts.Finished) / total) * 100,
 	);
 
+	function handleCheck(routine: DashboardRoutine, target?: HTMLElement) {
+		cryoSound.playShatterComplete();
+		if (typeof window !== "undefined") {
+			window.dispatchEvent(new CustomEvent("core-overdrive"));
+		}
+		if (target) {
+			triggerCyberExplosion(target);
+		}
+		onComplete(routine);
+	}
+
 	return (
-		<div className="frost-panel relative flex flex-col divide-y divide-[#BAE6FD]/15 overflow-hidden rounded-xl md:flex-row md:divide-x md:divide-y-0">
+		<div
+			style={{ willChange: "transform", transform: "translateZ(0)" }}
+			className="frost-panel relative flex flex-col divide-y divide-[#BAE6FD]/15 overflow-hidden rounded-xl md:flex-row md:divide-x md:divide-y-0"
+		>
 			{/* Ambient glacial haze */}
 			<div
 				aria-hidden="true"
@@ -168,11 +183,11 @@ export function HeroPanel({
 								<Checkbox
 									checked={done}
 									onCheckedChange={() => {
-										if (!done) onComplete(routine);
+										if (!done) handleCheck(routine);
 									}}
 									onClick={(e) => {
 										if (!done) {
-											triggerCyberExplosion(e.currentTarget);
+											handleCheck(routine, e.currentTarget);
 										}
 									}}
 									className="size-4 cursor-pointer rounded border-[#7DD3FC]/50 transition-all duration-150 active:scale-90 group-hover/item:border-[#38BDF8] data-checked:border-[#7DD3FC] data-checked:bg-[#38BDF8] data-checked:text-[#06101E]"
@@ -181,8 +196,7 @@ export function HeroPanel({
 									type="button"
 									onClick={(e) => {
 										if (!done) {
-											triggerCyberExplosion(e.currentTarget);
-											onComplete(routine);
+											handleCheck(routine, e.currentTarget);
 										}
 									}}
 									className={cn(

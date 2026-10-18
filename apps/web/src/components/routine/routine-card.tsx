@@ -5,6 +5,7 @@ import { cn } from "@LE-REMINDER/ui/lib/utils";
 import { Check, Pause, Play, Settings2, Star } from "lucide-react";
 import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { cryoSound } from "@/lib/cryo-sound";
 import { triggerCyberExplosion } from "@/lib/cyber-explosion";
 import type { DashboardRoutine } from "@/lib/dashboard-routine";
 import { describeTaskType } from "@/lib/describe-task-type";
@@ -61,6 +62,10 @@ export function RoutineCard({
 		routine.taskType.schedule.type === "FixedCalendar";
 
 	function handleComplete(target?: HTMLElement) {
+		cryoSound.playShatterComplete();
+		if (typeof window !== "undefined") {
+			window.dispatchEvent(new CustomEvent("core-overdrive"));
+		}
 		if (target) {
 			triggerCyberExplosion(target);
 		}
@@ -73,24 +78,51 @@ export function RoutineCard({
 		<motion.div
 			ref={cardRef}
 			onClick={() => setRevealed((v) => !v)}
+			style={{ willChange: "transform", transform: "translateZ(0)" }}
 			className={cn(
-				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-[12px] p-4 backdrop-blur-md transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]",
-				// Due Cards: Bright crystalline border with top frost glow
+				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-[12px] p-4 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.99]",
+				// Due Cards: Bright crystalline border with top frost glow & scanline
 				isDue &&
-					"border border-[#7DD3FC]/75 bg-[linear-gradient(135deg,rgba(35,68,110,0.85)_0%,rgba(18,38,64,0.92)_100%)] shadow-[0_0_25px_-5px_rgba(56,189,248,0.32),inset_0_1px_0_0_rgba(255,255,255,0.7)] hover:border-[#7DD3FC]",
+					"border border-[#7DD3FC]/75 bg-[linear-gradient(145deg,rgba(35,68,110,0.94)_0%,rgba(18,38,64,0.97)_100%)] shadow-[0_0_25px_-5px_rgba(56,189,248,0.35),inset_0_1px_0_0_rgba(255,255,255,0.7)] hover:border-[#7DD3FC]",
 				// Overdue Cards: Subtle rose border with clean rose status pill
 				isOverdue &&
-					"border border-rose-500/60 bg-[linear-gradient(135deg,rgba(48,18,28,0.85)_0%,rgba(28,14,22,0.92)_100%)] shadow-[inset_0_1px_0_0_rgba(244,63,94,0.4),0_10px_30px_-10px_rgba(2,6,23,0.8)] hover:border-rose-500/80",
+					"border border-rose-500/60 bg-[linear-gradient(145deg,rgba(48,18,28,0.94)_0%,rgba(28,14,22,0.97)_100%)] shadow-[inset_0_1px_0_0_rgba(244,63,94,0.4),0_10px_30px_-10px_rgba(2,6,23,0.8)] hover:border-rose-500/80",
 				// Done Cards: Clearly darker, settled, recessed, easily distinguishable from active tasks!
 				isCompleted &&
-					"border border-white/[0.06] bg-[#050C16]/90 opacity-60 shadow-none hover:border-[#7DD3FC]/20 hover:opacity-90",
-				// Default
+					"border border-white/[0.06] bg-[#050C16]/95 opacity-60 shadow-none hover:border-[#7DD3FC]/20 hover:opacity-90",
+				// Default 120fps Glacial Card Surface
 				!isDue &&
 					!isOverdue &&
 					!isCompleted &&
-					"frost-panel hover:border-[#7DD3FC]/40",
+					"border border-[#BAE6FD]/25 bg-[linear-gradient(145deg,rgba(22,43,70,0.94)_0%,rgba(11,24,42,0.97)_100%)] shadow-[inset_0_1px_0_0_rgba(224,242,254,0.4),0_12px_28px_-8px_rgba(4,10,20,0.55)] hover:border-[#7DD3FC]/50",
 			)}
 		>
+			{/* Tactical Corner Reticle Brackets (4px x 4px L-shaped #7DD3FC accents) */}
+			<div
+				aria-hidden="true"
+				className={cn(
+					"pointer-events-none absolute inset-0 z-10 transition-opacity duration-200",
+					isDue || isOverdue
+						? "opacity-100"
+						: "opacity-0 group-hover:opacity-100",
+				)}
+			>
+				<div className="absolute top-1.5 left-1.5 size-1.5 border-[#7DD3FC] border-t-2 border-l-2" />
+				<div className="absolute top-1.5 right-1.5 size-1.5 border-[#7DD3FC] border-t-2 border-r-2" />
+				<div className="absolute bottom-1.5 left-1.5 size-1.5 border-[#7DD3FC] border-b-2 border-l-2" />
+				<div className="absolute right-1.5 bottom-1.5 size-1.5 border-[#7DD3FC] border-r-2 border-b-2" />
+			</div>
+
+			{/* Subtle Animated Cryo Scanline for Active Due Cards */}
+			{isDue && (
+				<div
+					aria-hidden="true"
+					className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+				>
+					<div className="absolute inset-x-0 -top-12 h-10 animate-[cryo-scanline_4s_linear_infinite] bg-gradient-to-b from-transparent via-[#BAE6FD]/10 to-transparent" />
+				</div>
+			)}
+
 			{flipping && (
 				<div
 					aria-hidden="true"
@@ -198,7 +230,7 @@ export function RoutineCard({
 				</div>
 			</div>
 
-			{/* Bottom Row: Last Done + Hover Action Buttons */}
+			{/* Bottom Row: Last Done + Action Buttons */}
 			<div className="relative mt-2 flex min-h-[30px] items-center justify-between gap-2 border-white/[0.08] border-t pt-2">
 				<div
 					className={cn(
@@ -209,7 +241,7 @@ export function RoutineCard({
 					Last · {formatLastCompleted(routine.lastCompletedAt)}
 				</div>
 
-				{/* Sleek Frosted Ghost Action Buttons - Compact pills that never overflow the card boundaries */}
+				{/* Sleek Action Buttons (120fps hardware accelerated) */}
 				<div
 					className={cn(
 						"flex shrink-0 items-center gap-1 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100",
@@ -225,7 +257,7 @@ export function RoutineCard({
 							}}
 							aria-label="Complete routine"
 							title="Complete routine"
-							className="inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-[#38BDF8]/50 bg-[#38BDF8]/20 px-2 font-medium text-[#BAE6FD] text-[11px] shadow-[0_0_10px_rgba(56,189,248,0.2)] backdrop-blur-xs transition-all hover:border-[#38BDF8] hover:bg-[#38BDF8] hover:text-[#06101E] active:scale-95"
+							className="inline-flex h-6.5 cursor-pointer items-center gap-1 rounded-md border border-[#38BDF8]/60 bg-[#38BDF8]/25 px-2 font-medium text-[#BAE6FD] text-[11px] shadow-[0_0_10px_rgba(56,189,248,0.25)] transition-all hover:border-[#38BDF8] hover:bg-[#38BDF8] hover:text-[#06101E] active:scale-95"
 						>
 							<Check className="size-3 stroke-[2.5]" />
 							<span>Done</span>
@@ -240,7 +272,7 @@ export function RoutineCard({
 							}}
 							aria-label={isPaused ? "Resume routine" : "Pause routine"}
 							title={isPaused ? "Resume routine" : "Pause routine"}
-							className="inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-white/5 text-[#93C5FD] backdrop-blur-xs transition-all hover:border-white/25 hover:bg-white/10 hover:text-white active:scale-95"
+							className="inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md border border-white/15 bg-[#102136]/90 text-[#93C5FD] transition-all hover:border-white/30 hover:bg-[#1A385C] hover:text-white active:scale-95"
 						>
 							{isPaused ? (
 								<Play className="size-3 text-[#38BDF8]" />
@@ -257,7 +289,7 @@ export function RoutineCard({
 						}}
 						aria-label="Edit routine"
 						title="Edit routine"
-						className="inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md border border-white/10 bg-white/5 text-[#93C5FD] backdrop-blur-xs transition-all hover:border-white/25 hover:bg-white/10 hover:text-white active:scale-95"
+						className="inline-flex size-6.5 cursor-pointer items-center justify-center rounded-md border border-white/15 bg-[#102136]/90 text-[#93C5FD] transition-all hover:border-white/30 hover:bg-[#1A385C] hover:text-white active:scale-95"
 					>
 						<Settings2 className="size-3" />
 					</button>
