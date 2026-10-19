@@ -104,7 +104,7 @@ function TacticalClock() {
 	return (
 		<div
 			title="Tactical System Time (Local)"
-			className="hidden items-center gap-0.5 rounded-lg border border-[#7DD3FC]/25 bg-[#091524]/85 px-2.5 py-1 font-mono font-semibold text-[#BAE6FD] text-[11px] tabular-nums shadow-[0_0_8px_rgba(56,189,248,0.15)] md:flex"
+			className="hidden shrink-0 items-center gap-0.5 whitespace-nowrap rounded-lg border border-[#7DD3FC]/25 bg-[#091524]/85 px-2.5 py-1 font-mono font-semibold text-[#BAE6FD] text-[11px] tabular-nums shadow-[0_0_8px_rgba(56,189,248,0.15)] md:flex"
 		>
 			<span>{hh}</span>
 			<span className="animate-pulse text-[#7DD3FC]">:</span>
@@ -466,7 +466,10 @@ export default function Home() {
 	return (
 		<div
 			data-overdrive={isOverdrive ? "true" : "false"}
-			className="cryo-canvas frost-fracture-bg relative min-h-screen overflow-x-hidden text-[#F8FAFC]"
+			className={cn(
+				"cryo-canvas relative min-h-screen overflow-x-hidden text-[#F8FAFC]",
+				!isOverdrive && "frost-fracture-bg",
+			)}
 		>
 			{/* Top Viewport Laser Rail in Overdrive Mode */}
 			{isOverdrive && (
@@ -565,11 +568,11 @@ export default function Home() {
 							Analytics
 						</TabButton>
 					</div>
-					<div className="flex w-auto shrink-0 items-center justify-end gap-2 sm:w-[320px]">
+					<div className="flex w-auto shrink-0 items-center justify-end gap-2">
 						{isOverdrive && (
 							<div
 								title="Overdrive Mode Active"
-								className="hidden animate-pulse items-center gap-1.5 rounded-full border border-[#38BDF8]/60 bg-[#38BDF8]/20 px-2 py-0.5 font-bold font-mono text-[#E0F2FE] text-[10.5px] shadow-[0_0_12px_rgba(56,189,248,0.5)] sm:flex"
+								className="hidden shrink-0 animate-pulse items-center gap-1.5 whitespace-nowrap rounded-full border border-[#38BDF8]/60 bg-[#38BDF8]/20 px-2 py-0.5 font-bold font-mono text-[#E0F2FE] text-[10.5px] shadow-[0_0_12px_rgba(56,189,248,0.5)] sm:flex"
 							>
 								<span>⚡</span>
 								<span>OVERDRIVE</span>
@@ -581,10 +584,12 @@ export default function Home() {
 							href="https://github.com/Lemong-22/LE-REMINDER.git"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="flex items-center gap-1.5 rounded-lg border border-[#7DD3FC]/20 bg-[#102136]/60 px-2.5 py-1.5 font-semibold text-[#BAE6FD] text-xs transition-colors hover:border-[#7DD3FC]/45 hover:bg-[#102136] hover:text-[#F8FAFC]"
+							className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border border-[#7DD3FC]/20 bg-[#102136]/60 px-2.5 py-1.5 font-semibold text-[#BAE6FD] text-xs transition-colors hover:border-[#7DD3FC]/45 hover:bg-[#102136] hover:text-[#F8FAFC]"
 						>
-							<Github className="size-4" />
-							<span className="hidden sm:inline">Lemong-22</span>
+							<Github className="size-4 shrink-0" />
+							<span className="hidden whitespace-nowrap sm:inline">
+								Lemong-22
+							</span>
 						</a>
 					</div>
 				</div>

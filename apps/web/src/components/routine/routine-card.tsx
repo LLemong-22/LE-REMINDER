@@ -252,11 +252,13 @@ export function RoutineCard({
 			</div>
 
 			{/* Bottom Row: Last Done + Action Buttons */}
-			<div className="relative mt-2 flex min-h-[30px] items-center justify-between gap-2 border-white/[0.08] border-t pt-2">
+			<div className="relative mt-2 flex min-h-[30px] items-center justify-between border-white/[0.08] border-t pt-2">
 				<div
 					className={cn(
-						"truncate font-medium font-mono text-xs",
+						"shrink-0 whitespace-nowrap font-medium font-mono text-[11px] transition-opacity duration-150",
 						isCompleted ? "text-[#64748B]" : "text-[#93C5FD]",
+						"group-focus-within:opacity-0 group-hover:opacity-0",
+						revealed && "opacity-0",
 					)}
 				>
 					Last · {formatLastCompleted(routine.lastCompletedAt)}
@@ -265,8 +267,8 @@ export function RoutineCard({
 				{/* Rock-solid Action Buttons (Always clickable, relative z-30, no position shift on click) */}
 				<div
 					className={cn(
-						"pointer-events-auto relative z-30 flex shrink-0 items-center gap-1.5 opacity-0 transition-opacity duration-150 group-focus-within:opacity-100 group-hover:opacity-100",
-						revealed && "opacity-100",
+						"pointer-events-none absolute top-2 right-0 bottom-0 z-30 flex items-center gap-1.5 opacity-0 transition-opacity duration-150 group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100",
+						revealed && "pointer-events-auto opacity-100",
 					)}
 				>
 					{showComplete && (

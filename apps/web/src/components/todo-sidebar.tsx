@@ -348,18 +348,21 @@ export function TodoSidebar({
 					<div aria-hidden="true" className="animate-overdrive-sheen" />
 				</>
 			)}
-			<div className="flex items-center justify-between">
-				<div className="flex items-center gap-2">
-					<div className="font-extrabold text-[#F0F9FF] text-[18px] tracking-tight">
+			<div className="flex items-center justify-between gap-1.5">
+				<div className="flex min-w-0 items-center gap-1.5">
+					<div className="shrink-0 whitespace-nowrap font-bold text-[#F0F9FF] text-[15px] tracking-tight">
 						Today's To-Do
 					</div>
 					{isOverdrive && (
-						<span className="rounded-full border border-[#38BDF8]/60 bg-[#38BDF8]/20 px-2 py-0.5 font-bold font-mono text-[#E0F2FE] text-[9px] shadow-[0_0_10px_rgba(56,189,248,0.4)]">
+						<span
+							title="Synced with Overdrive"
+							className="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-[#38BDF8]/60 bg-[#38BDF8]/20 px-1.5 py-0.5 font-bold font-mono text-[#E0F2FE] text-[9px] shadow-[0_0_8px_rgba(56,189,248,0.35)]"
+						>
 							⚡ SYNCED
 						</span>
 					)}
 				</div>
-				<div className="flex items-center gap-2">
+				<div className="flex shrink-0 items-center gap-1.5">
 					{editMode && sortedTodos.some((t) => t.done) && (
 						<button
 							type="button"
@@ -368,7 +371,7 @@ export function TodoSidebar({
 									deleteMutation.mutate({ todoId: t.id });
 								}
 							}}
-							className="cursor-pointer font-mono font-semibold text-[#38BDF8] text-[11px] hover:underline active:scale-95"
+							className="shrink-0 cursor-pointer whitespace-nowrap font-mono font-semibold text-[#38BDF8] text-[11px] hover:underline active:scale-95"
 						>
 							Clear Done
 						</button>
@@ -376,7 +379,7 @@ export function TodoSidebar({
 					<button
 						type="button"
 						onClick={() => setEditMode((v) => !v)}
-						className="cursor-pointer bg-transparent p-0.5 font-semibold text-[#93C5FD] text-[11.5px] transition-all duration-150 hover:scale-105 hover:text-[#F0F9FF] active:scale-95"
+						className="shrink-0 cursor-pointer whitespace-nowrap bg-transparent p-0.5 font-semibold text-[#93C5FD] text-[11.5px] transition-all duration-150 hover:scale-105 hover:text-[#F0F9FF] active:scale-95"
 					>
 						{editMode ? "Done" : "Edit List"}
 					</button>
