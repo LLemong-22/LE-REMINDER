@@ -12,11 +12,13 @@ export function RoutineList({
 	onComplete,
 	onEdit,
 	onTogglePause,
+	isOverdrive = false,
 }: {
 	routines: DashboardRoutine[];
 	onComplete: (routine: DashboardRoutine) => void;
 	onEdit: (routine: DashboardRoutine) => void;
 	onTogglePause: (routine: DashboardRoutine) => void;
+	isOverdrive?: boolean;
 }) {
 	const sorted = sortByStatus(routines);
 
@@ -63,6 +65,7 @@ export function RoutineList({
 								onComplete={() => onComplete(routine)}
 								onEdit={() => onEdit(routine)}
 								onTogglePause={() => onTogglePause(routine)}
+								isOverdrive={isOverdrive}
 							/>
 						</SpotlightCard>
 					</motion.div>

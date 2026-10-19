@@ -227,3 +227,70 @@
 	transform: translateZ(0);
 	will-change: transform;
 }
+
+/* Root Smooth Scroll & GPU Compositor Optimization */
+html {
+	scroll-behavior: smooth;
+	-webkit-font-smoothing: antialiased;
+	overscroll-behavior-y: none;
+}
+
+/* 120fps GPU Containment for Cards and Frost Panels */
+.frost-panel {
+	contain: layout style paint;
+	transform: translateZ(0);
+	will-change: transform;
+}
+
+/* Diagonal Laser Sheen for Overdrive Mode (Zero layout recalculation, 120fps transform only) */
+@keyframes overdrive-sheen {
+	0% {
+		transform: translate3d(-100%, 0, 0) skewX(-20deg);
+		opacity: 0;
+	}
+	15% {
+		opacity: 0.9;
+	}
+	60% {
+		opacity: 0.9;
+	}
+	100% {
+		transform: translate3d(240%, 0, 0) skewX(-20deg);
+		opacity: 0;
+	}
+}
+
+.animate-overdrive-sheen {
+	position: absolute;
+	inset: 0;
+	width: 50%;
+	pointer-events: none;
+	will-change: transform;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgba(56, 189, 248, 0.08) 25%,
+		rgba(255, 255, 255, 0.45) 50%,
+		rgba(125, 211, 252, 0.25) 75%,
+		transparent 100%
+	);
+	animation: overdrive-sheen 3.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+/* Overdrive Viewport & Canvas Boost */
+[data-overdrive="true"] .cryo-canvas,
+.cryo-canvas[data-overdrive="true"] {
+	background-image:
+		radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.25), transparent 60%),
+		radial-gradient(
+			circle at 20% 15%,
+			rgba(147, 197, 253, 0.35),
+			transparent 50%
+		),
+		radial-gradient(
+			circle at 80% 10%,
+			rgba(186, 230, 253, 0.32),
+			transparent 55%
+		),
+		linear-gradient(180deg, #132840 0%, #0d1b2a 55%, #09131e 100%);
+}

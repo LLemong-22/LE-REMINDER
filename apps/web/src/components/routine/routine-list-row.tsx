@@ -7,7 +7,13 @@ import { formatLastCompleted } from "@/lib/format-last-completed";
 import { isStrictlyDueToday } from "@/lib/is-due-today";
 import { StatusShape } from "./status-shape";
 
-export function RoutineListRow({ routine }: { routine: DashboardRoutine }) {
+export function RoutineListRow({
+	routine,
+	isOverdrive = false,
+}: {
+	routine: DashboardRoutine;
+	isOverdrive?: boolean;
+}) {
 	const isFinished = routine.status === "Finished";
 	const isCompleted = routine.status === "Done" || isFinished;
 	const isDue = isStrictlyDueToday(routine.taskType, routine.status);
@@ -15,8 +21,13 @@ export function RoutineListRow({ routine }: { routine: DashboardRoutine }) {
 	return (
 		<div
 			className={cn(
-				"group flex items-center gap-4 border-[#BAE6FD]/10 border-b p-3.5 px-5 transition-all duration-150 last:border-0 hover:bg-[#BAE6FD]/[0.04]",
-				isCompleted && "opacity-55 hover:opacity-90",
+				"group flex items-center gap-4 border-b p-3.5 px-5 transition-all duration-150 last:border-0 hover:bg-[#BAE6FD]/[0.04]",
+				isOverdrive ? "border-[#7DD3FC]/25" : "border-[#BAE6FD]/10",
+				isCompleted
+					? isOverdrive
+						? "border-l-2 border-l-[#38BDF8] bg-[#0C1E36]/35 opacity-100 shadow-[inset_0_0_12px_rgba(56,189,248,0.1)]"
+						: "opacity-55 hover:opacity-90"
+					: "opacity-100",
 				isDue &&
 					"border-[#BAE6FD]/25 bg-[#BAE6FD]/[0.06] shadow-[inset_0_0_16px_rgba(186,230,253,0.06)]",
 			)}
@@ -39,7 +50,9 @@ export function RoutineListRow({ routine }: { routine: DashboardRoutine }) {
 					className={cn(
 						"font-semibold text-sm transition-colors duration-150",
 						isCompleted
-							? "text-[#64748B] line-through"
+							? isOverdrive
+								? "text-[#E0F2FE] line-through decoration-[#38BDF8]/40 drop-shadow-[0_0_6px_rgba(186,230,253,0.3)]"
+								: "text-[#64748B] line-through"
 							: "text-[#F0F9FF] group-hover:text-[#BAE6FD]",
 					)}
 				>

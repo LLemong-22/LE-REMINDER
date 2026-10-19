@@ -26,11 +26,13 @@ export function RoutineCard({
 	onComplete,
 	onEdit,
 	onTogglePause,
+	isOverdrive = false,
 }: {
 	routine: DashboardRoutine;
 	onComplete: () => void;
 	onEdit: () => void;
 	onTogglePause: () => void;
+	isOverdrive?: boolean;
 }) {
 	const [flipping, setFlipping] = useState(false);
 	const [revealed, setRevealed] = useState(false);
@@ -80,21 +82,25 @@ export function RoutineCard({
 			onClick={() => setRevealed((v) => !v)}
 			style={{ willChange: "transform", transform: "translateZ(0)" }}
 			className={cn(
-				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-[12px] p-4 transition-colors duration-200",
+				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-[12px] p-4 transition-all duration-300",
 				// Due Cards: Bright crystalline border with top frost glow & scanline
 				isDue &&
 					"border border-[#7DD3FC]/75 bg-[linear-gradient(145deg,rgba(35,68,110,0.94)_0%,rgba(18,38,64,0.97)_100%)] shadow-[0_0_25px_-5px_rgba(56,189,248,0.35),inset_0_1px_0_0_rgba(255,255,255,0.7)] hover:border-[#7DD3FC]",
 				// Overdue Cards: Subtle rose border with clean rose status pill
 				isOverdue &&
 					"border border-rose-500/60 bg-[linear-gradient(145deg,rgba(48,18,28,0.94)_0%,rgba(28,14,22,0.97)_100%)] shadow-[inset_0_1px_0_0_rgba(244,63,94,0.4),0_10px_30px_-10px_rgba(2,6,23,0.8)] hover:border-rose-500/80",
-				// Done Cards: Clearly darker, settled, recessed, easily distinguishable from active tasks!
+				// Done Cards: Dark and recessed when normal, but in Overdrive: Luminous Ascended Glacier Surface!
 				isCompleted &&
-					"border border-white/[0.06] bg-[#050C16]/95 opacity-60 shadow-none hover:border-[#7DD3FC]/20 hover:opacity-90",
+					(isOverdrive
+						? "border border-[#7DD3FC]/45 bg-gradient-to-br from-[#122B4A]/92 via-[#0C1E36]/95 to-[#081526]/98 opacity-100 shadow-[0_0_24px_-6px_rgba(56,189,248,0.28),inset_0_1px_0_0_rgba(224,242,254,0.4)]"
+						: "border border-white/[0.06] bg-[#050C16]/95 opacity-60 shadow-none hover:border-[#7DD3FC]/20 hover:opacity-90"),
 				// Default 120fps Glacial Card Surface
 				!isDue &&
 					!isOverdue &&
 					!isCompleted &&
-					"border border-[#BAE6FD]/25 bg-[linear-gradient(145deg,rgba(22,43,70,0.94)_0%,rgba(11,24,42,0.97)_100%)] shadow-[inset_0_1px_0_0_rgba(224,242,254,0.4),0_12px_28px_-8px_rgba(4,10,20,0.55)] hover:border-[#7DD3FC]/50",
+					(isOverdrive
+						? "border border-[#7DD3FC]/40 bg-[linear-gradient(145deg,rgba(26,52,84,0.94)_0%,rgba(13,29,50,0.97)_100%)] shadow-[inset_0_1px_0_0_rgba(224,242,254,0.5),0_12px_28px_-8px_rgba(4,10,20,0.55)]"
+						: "border border-[#BAE6FD]/25 bg-[linear-gradient(145deg,rgba(22,43,70,0.94)_0%,rgba(11,24,42,0.97)_100%)] shadow-[inset_0_1px_0_0_rgba(224,242,254,0.4),0_12px_28px_-8px_rgba(4,10,20,0.55)] hover:border-[#7DD3FC]/50"),
 			)}
 		>
 			{/* Tactical Corner Reticle Brackets (4px x 4px L-shaped #7DD3FC accents) */}
@@ -102,7 +108,7 @@ export function RoutineCard({
 				aria-hidden="true"
 				className={cn(
 					"pointer-events-none absolute inset-0 z-10 transition-opacity duration-200",
-					isDue || isOverdue
+					isOverdrive || isDue || isOverdue
 						? "opacity-100"
 						: "opacity-0 group-hover:opacity-100",
 				)}
@@ -112,6 +118,11 @@ export function RoutineCard({
 				<div className="absolute bottom-1.5 left-1.5 size-1.5 border-[#7DD3FC] border-b-2 border-l-2" />
 				<div className="absolute right-1.5 bottom-1.5 size-1.5 border-[#7DD3FC] border-r-2 border-b-2" />
 			</div>
+
+			{/* Diagonal Crystalline Laser Sheen in Overdrive */}
+			{isOverdrive && (
+				<div aria-hidden="true" className="animate-overdrive-sheen" />
+			)}
 
 			{/* Subtle Animated Cryo Scanline for Active Due Cards */}
 			{isDue && (
@@ -151,9 +162,13 @@ export function RoutineCard({
 								: isDue
 									? "border border-[#7DD3FC]/60 bg-[#7DD3FC]/20 text-[#BAE6FD] shadow-[0_0_8px_rgba(56,189,248,0.25)]"
 									: isDone
-										? "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400/80"
+										? isOverdrive
+											? "border border-cyan-400/40 bg-cyan-500/15 text-[#7DD3FC] shadow-[0_0_10px_rgba(56,189,248,0.35)]"
+											: "border border-emerald-500/20 bg-emerald-500/10 text-emerald-400/80"
 										: isFinished
-											? "border border-white/10 bg-white/5 text-[#64748B]"
+											? isOverdrive
+												? "border border-cyan-400/30 bg-cyan-500/10 text-[#BAE6FD]"
+												: "border border-white/10 bg-white/5 text-[#64748B]"
 											: "text-[#93C5FD]",
 						)}
 					>
@@ -167,7 +182,9 @@ export function RoutineCard({
 						className={cn(
 							"rounded-full px-2 py-0.5 font-bold font-mono text-[9px] uppercase tracking-[0.06em] transition-all",
 							isCompleted
-								? "border-white/[0.08] bg-white/[0.04] text-[#64748B]"
+								? isOverdrive
+									? "border-cyan-400/30 bg-cyan-500/10 text-[#BAE6FD]"
+									: "border-white/[0.08] bg-white/[0.04] text-[#64748B]"
 								: routine.isTask
 									? "border-[#38BDF8]/40 bg-[#091528]/90 text-[#7DD3FC] shadow-[0_0_10px_-2px_rgba(56,189,248,0.3)]"
 									: "border-[#BAE6FD]/30 bg-[#07111E]/90 text-[#93C5FD]",
@@ -180,7 +197,9 @@ export function RoutineCard({
 						className={cn(
 							"rounded-full px-2.5 py-0.5 font-mono font-semibold text-[9.5px] tracking-wider",
 							isCompleted
-								? "border border-white/[0.06] bg-white/[0.03] text-[#64748B]"
+								? isOverdrive
+									? "border border-[#7DD3FC]/30 bg-[#17304F] text-[#BAE6FD]"
+									: "border border-white/[0.06] bg-white/[0.03] text-[#64748B]"
 								: "border border-[#7DD3FC]/25 bg-[#17304F] text-[#BAE6FD]",
 						)}
 					>
@@ -199,7 +218,9 @@ export function RoutineCard({
 						className={cn(
 							"line-clamp-2 font-semibold text-[15px] tracking-tight transition-colors",
 							isCompleted
-								? "text-[#64748B] line-through decoration-[#38BDF8]/25 group-hover:text-[#93C5FD]/80"
+								? isOverdrive
+									? "text-[#E0F2FE] line-through decoration-[#38BDF8]/40 drop-shadow-[0_0_8px_rgba(186,230,253,0.3)]"
+									: "text-[#64748B] line-through decoration-[#38BDF8]/25 group-hover:text-[#93C5FD]/80"
 								: "text-[#F8FAFC]",
 						)}
 					>

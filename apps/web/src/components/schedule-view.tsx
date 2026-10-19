@@ -12,6 +12,7 @@ import {
 	Utensils,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { BorderBeam } from "@/components/ui/border-beam";
 import { MASTER_SCHEDULE, type ScheduleEventType } from "@/lib/schedule-data";
 import { smoothScrollToElement } from "@/lib/smooth-scroll";
 
@@ -106,7 +107,11 @@ function parseEventTimeRange(
 	return { start, end: end.getTime() > endOfDay.getTime() ? endOfDay : end };
 }
 
-export function ScheduleView() {
+export function ScheduleView({
+	isOverdrive = false,
+}: {
+	isOverdrive?: boolean;
+}) {
 	// Auto-select today's day of week (0 = Minggu, 1 = Senin, ... 6 = Sabtu)
 	const [selectedDay, setSelectedDay] = useState<number>(() =>
 		new Date().getDay(),
@@ -115,6 +120,7 @@ export function ScheduleView() {
 
 	const activeCardRef = useRef<HTMLDivElement | null>(null);
 	const hasAutoScrolledRef = useRef(false);
+	const cancelScrollRef = useRef<(() => void) | null>(null);
 	const [highlightPulse, setHighlightPulse] = useState(false);
 
 	const triggerArrivalPulse = useCallback(() => {
@@ -202,6 +208,13 @@ export function ScheduleView() {
 		return { ranges, activeTargetIndex, hasLiveEvent: foundLiveIndex !== -1 };
 	}, [currentDaySchedule, isSelectedDayToday, currentTime]);
 
+	// Clean up any in-flight scroll on unmount
+	useEffect(() => {
+		return () => {
+			cancelScrollRef.current?.();
+		};
+	}, []);
+
 	// Butter-smooth auto-scroll on mount or when switching to today
 	useEffect(() => {
 		if (
@@ -212,14 +225,18 @@ export function ScheduleView() {
 			hasAutoScrolledRef.current = true;
 			const timer = setTimeout(() => {
 				if (activeCardRef.current) {
-					smoothScrollToElement(
+					cancelScrollRef.current?.();
+					cancelScrollRef.current = smoothScrollToElement(
 						activeCardRef.current,
-						650,
+						600,
 						triggerArrivalPulse,
 					);
 				}
 			}, 180);
-			return () => clearTimeout(timer);
+			return () => {
+				clearTimeout(timer);
+				cancelScrollRef.current?.();
+			};
 		}
 	}, [isSelectedDayToday, triggerArrivalPulse]);
 
@@ -229,7 +246,12 @@ export function ScheduleView() {
 		hasAutoScrolledRef.current = false;
 		setTimeout(() => {
 			if (activeCardRef.current) {
-				smoothScrollToElement(activeCardRef.current, 650, triggerArrivalPulse);
+				cancelScrollRef.current?.();
+				cancelScrollRef.current = smoothScrollToElement(
+					activeCardRef.current,
+					600,
+					triggerArrivalPulse,
+				);
 			}
 		}, 60);
 	}
@@ -319,7 +341,25 @@ export function ScheduleView() {
 			</div>
 
 			{/* Day Theme Banner */}
-			<div className="frost-panel relative overflow-hidden rounded-xl p-4 sm:p-5">
+			<div
+				className={cn(
+					"frost-panel relative overflow-hidden rounded-xl p-4 transition-all duration-300 sm:p-5",
+					isOverdrive &&
+						"border-[#7DD3FC]/45 shadow-[0_0_28px_-6px_rgba(56,189,248,0.25)]",
+				)}
+			>
+				{isOverdrive && (
+					<>
+						<BorderBeam
+							size={260}
+							duration={6}
+							borderWidth={1.5}
+							colorFrom="#38BDF8"
+							colorTo="#BAE6FD"
+						/>
+						<div aria-hidden="true" className="animate-overdrive-sheen" />
+					</>
+				)}
 				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 					<div className="flex flex-col gap-1">
 						<div className="flex items-center gap-2">
@@ -366,7 +406,17 @@ export function ScheduleView() {
 			</div>
 
 			{/* Vertical Timeline */}
-			<div className="relative ml-3 space-y-4 border-[#BAE6FD]/15 border-l pl-5 sm:ml-4 sm:pl-7">
+			<div className="relative ml-3 space-y-4 pl-5 sm:ml-4 sm:pl-7">
+				{/* Illuminated Vertical Spine (Cyan gradient in Overdrive) */}
+				<div
+					aria-hidden="true"
+					className={cn(
+						"pointer-events-none absolute inset-y-0 left-0 transition-all duration-500",
+						isOverdrive
+							? "w-[2px] bg-gradient-to-b from-[#7DD3FC] via-[#38BDF8] to-[#0284C7] shadow-[0_0_12px_#38BDF8]"
+							: "w-px bg-[#BAE6FD]/15",
+					)}
+				/>
 				{currentDaySchedule.events.map((event, index) => {
 					const config = TYPE_CONFIG[event.type];
 					const Icon = config.icon;
@@ -403,10 +453,27 @@ export function ScheduleView() {
 							{isLive ? (
 								<div
 									className={cn(
-										"frost-panel relative rounded-xl border border-[#BAE6FD]/50 p-4 shadow-[0_0_24px_rgba(56,189,248,0.3),inset_0_1px_0_0_rgba(224,242,254,0.35)] sm:p-5",
+										"frost-panel relative overflow-hidden rounded-xl border border-[#BAE6FD]/50 p-4 shadow-[0_0_24px_rgba(56,189,248,0.3),inset_0_1px_0_0_rgba(224,242,254,0.35)] transition-all sm:p-5",
 										highlightPulse && "arrival-glow-pulse",
+										isOverdrive &&
+											"border-[#7DD3FC]/75 shadow-[0_0_30px_rgba(56,189,248,0.45)]",
 									)}
 								>
+									{isOverdrive && (
+										<>
+											<BorderBeam
+												size={220}
+												duration={5}
+												borderWidth={1.5}
+												colorFrom="#38BDF8"
+												colorTo="#BAE6FD"
+											/>
+											<div
+												aria-hidden="true"
+												className="animate-overdrive-sheen"
+											/>
+										</>
+									)}
 									<div className="flex flex-col gap-2.5">
 										<div className="flex items-center justify-between gap-3">
 											<div className="flex items-center gap-2 font-mono font-semibold text-[#BAE6FD] text-xs sm:text-[13px]">
@@ -452,7 +519,13 @@ export function ScheduleView() {
 								</div>
 							) : (
 								/* Standard Card for Normal / Upcoming / Past Events */
-								<div className="frost-panel flex flex-col gap-2 rounded-xl p-3.5 transition-all duration-150 hover:border-[#BAE6FD]/30 sm:p-4">
+								<div className="frost-panel relative flex flex-col gap-2 overflow-hidden rounded-xl p-3.5 transition-all duration-150 hover:border-[#BAE6FD]/30 sm:p-4">
+									{isOverdrive && (
+										<div
+											aria-hidden="true"
+											className="animate-overdrive-sheen"
+										/>
+									)}
 									<div className="flex items-center justify-between gap-3">
 										<div className="flex items-center gap-2 font-mono text-[#93C5FD] text-xs sm:text-[13px]">
 											<Clock className="size-3.5 text-[#93C5FD]/70" />

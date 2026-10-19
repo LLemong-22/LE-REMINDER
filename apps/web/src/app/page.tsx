@@ -17,17 +17,19 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { HeroPanel } from "@/components/routine/hero-panel";
 import { RoutineFormDialog } from "@/components/routine/routine-form-dialog";
 import { RoutineList } from "@/components/routine/routine-list";
 import { RoutineListRow } from "@/components/routine/routine-list-row";
 import { ScheduleView } from "@/components/schedule-view";
 import { TodoSidebar } from "@/components/todo-sidebar";
+import { BorderBeam } from "@/components/ui/border-beam";
 import { DecryptedText } from "@/components/ui/decrypted-text";
 import { VillainIntro } from "@/components/villain-intro";
 import { buildCategorySuggestions } from "@/lib/category-suggestions";
 import { cryoSound } from "@/lib/cryo-sound";
+import { triggerCyberExplosion } from "@/lib/cyber-explosion";
 import type { DashboardRoutine } from "@/lib/dashboard-routine";
 import {
 	withCompleted,
@@ -188,8 +190,77 @@ function RoutinesErrorState({ onRetry }: { onRetry: () => void }) {
 // scratchpad by design — see hero-panel.tsx.
 export default function Home() {
 	const router = useRouter();
-	// Always trigger the 0.65s razor slash-shatter reveal on every reload
+	// Always trigger the 1.25s razor crest reveal on reload & on 2-min return
 	const [showVillainIntro, setShowVillainIntro] = useState(true);
+	const [introKey, setIntroKey] = useState(0);
+
+	const hiddenAtRef = useRef<number | null>(null);
+	const lastActivityRef = useRef<number>(Date.now());
+	const AWAY_THRESHOLD_MS = 120_000; // 2 minutes
+
+	const triggerIntro = useCallback(() => {
+		cryoSound.playReactorPulse();
+		setIntroKey((k) => k + 1);
+		setShowVillainIntro(true);
+	}, []);
+
+	useEffect(() => {
+		function checkAndTriggerAway() {
+			const now = Date.now();
+			if (
+				hiddenAtRef.current &&
+				now - hiddenAtRef.current >= AWAY_THRESHOLD_MS
+			) {
+				hiddenAtRef.current = null;
+				triggerIntro();
+			}
+		}
+
+		function handleVisibilityChange() {
+			if (document.visibilityState === "hidden") {
+				hiddenAtRef.current = Date.now();
+			} else if (document.visibilityState === "visible") {
+				checkAndTriggerAway();
+			}
+		}
+
+		function handleBlur() {
+			if (!hiddenAtRef.current) {
+				hiddenAtRef.current = Date.now();
+			}
+		}
+
+		function handleFocus() {
+			checkAndTriggerAway();
+		}
+
+		function handleUserActivity() {
+			const now = Date.now();
+			if (now - lastActivityRef.current >= AWAY_THRESHOLD_MS) {
+				triggerIntro();
+			}
+			lastActivityRef.current = now;
+			hiddenAtRef.current = null;
+		}
+
+		document.addEventListener("visibilitychange", handleVisibilityChange);
+		window.addEventListener("blur", handleBlur);
+		window.addEventListener("focus", handleFocus);
+		window.addEventListener("mousemove", handleUserActivity, { passive: true });
+		window.addEventListener("keydown", handleUserActivity, { passive: true });
+		window.addEventListener("touchstart", handleUserActivity, {
+			passive: true,
+		});
+
+		return () => {
+			document.removeEventListener("visibilitychange", handleVisibilityChange);
+			window.removeEventListener("blur", handleBlur);
+			window.removeEventListener("focus", handleFocus);
+			window.removeEventListener("mousemove", handleUserActivity);
+			window.removeEventListener("keydown", handleUserActivity);
+			window.removeEventListener("touchstart", handleUserActivity);
+		};
+	}, [triggerIntro]);
 	const [searchInput, setSearchInput] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -356,32 +427,55 @@ export default function Home() {
 
 	const [manualOverdrive, setManualOverdrive] = useState<boolean | null>(null);
 
-	const dailyRoutines = routines.filter(
-		(r) =>
-			r.taskType.kind === "Recurring" &&
-			r.taskType.schedule.type === "FixedCalendar" &&
-			r.taskType.schedule.recurrence.kind === "Daily",
-	);
-	const completedDailyCount = dailyRoutines.filter(
+	const activeRoutines = routines.filter((r) => r.status !== "Paused");
+	const overdueCount = activeRoutines.filter(
+		(r) => r.status === "Overdue",
+	).length;
+	const dueCount = activeRoutines.filter((r) => r.status === "Due").length;
+	const doneCount = activeRoutines.filter(
 		(r) => r.status === "Done" || r.status === "Finished",
 	).length;
-	const isDailyAllDone =
-		dailyRoutines.length > 0 && completedDailyCount === dailyRoutines.length;
-	const completedTotal = routines.filter(
-		(r) => r.status === "Done" || r.status === "Finished",
-	).length;
-	const isTotalAllDone =
-		routines.length > 0 && completedTotal === routines.length;
-	const autoOverdrive = isDailyAllDone || isTotalAllDone;
+	const isHundredPercent =
+		activeRoutines.length > 0 &&
+		overdueCount === 0 &&
+		dueCount === 0 &&
+		doneCount > 0;
+
+	const prevIsHundredPercentRef = useRef<boolean>(false);
+	useEffect(() => {
+		if (!prevIsHundredPercentRef.current && isHundredPercent) {
+			setManualOverdrive(null);
+			cryoSound.playReactorPulse();
+			if (typeof window !== "undefined") {
+				triggerCyberExplosion({
+					clientX: window.innerWidth / 2,
+					clientY: window.innerHeight / 2,
+				});
+			}
+		}
+		prevIsHundredPercentRef.current = isHundredPercent;
+	}, [isHundredPercent]);
+
 	const isOverdrive =
-		manualOverdrive !== null ? manualOverdrive : autoOverdrive;
+		manualOverdrive !== null ? manualOverdrive : isHundredPercent;
 
 	function handleToggleOverdrive() {
-		setManualOverdrive((prev) => (prev !== null ? !prev : !autoOverdrive));
+		setManualOverdrive((prev) => !(prev !== null ? prev : isHundredPercent));
 	}
 
 	return (
-		<div className="cryo-canvas frost-fracture-bg relative min-h-screen overflow-x-hidden text-[#F8FAFC]">
+		<div
+			data-overdrive={isOverdrive ? "true" : "false"}
+			className="cryo-canvas frost-fracture-bg relative min-h-screen overflow-x-hidden text-[#F8FAFC]"
+		>
+			{/* Top Viewport Laser Rail in Overdrive Mode */}
+			{isOverdrive && (
+				<div
+					aria-hidden="true"
+					className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[2px] bg-gradient-to-r from-transparent via-[#38BDF8] to-transparent shadow-[0_0_20px_#38BDF8]"
+				/>
+			)}
+
 			{/* Top Ambient Crown Light in Overdrive Mode */}
 			<div
 				aria-hidden="true"
@@ -395,19 +489,35 @@ export default function Home() {
 
 			<AnimatePresence>
 				{showVillainIntro && (
-					<VillainIntro onComplete={() => setShowVillainIntro(false)} />
+					<VillainIntro
+						key={introKey}
+						onComplete={() => setShowVillainIntro(false)}
+					/>
 				)}
 			</AnimatePresence>
 
-			<div className="sticky top-0 z-20 border-[#BAE6FD]/15 border-b bg-[#0D1B2A]/90 backdrop-blur-md">
+			<div
+				className={cn(
+					"sticky top-0 z-20 border-b bg-[#0D1B2A]/90 backdrop-blur-md transition-all duration-500",
+					isOverdrive
+						? "border-[#7DD3FC]/55 shadow-[0_0_28px_rgba(56,189,248,0.25)]"
+						: "border-[#BAE6FD]/15",
+				)}
+			>
+				{isOverdrive && (
+					<BorderBeam
+						size={350}
+						duration={6}
+						borderWidth={1.5}
+						colorFrom="#38BDF8"
+						colorTo="#BAE6FD"
+					/>
+				)}
 				<div className="mx-auto flex max-w-[1600px] items-center justify-between px-4 py-3 sm:px-6">
 					<div className="flex items-center gap-2.5 sm:w-[220px]">
 						<button
 							type="button"
-							onClick={() => {
-								cryoSound.playReactorPulse();
-								setShowVillainIntro(true);
-							}}
+							onClick={triggerIntro}
 							title="Replay Cryo-Boot Sequence"
 							className={cn(
 								"group flex size-7 shrink-0 items-center justify-center rounded border font-bold font-mono text-[12px] transition-all hover:scale-105 active:scale-95",
@@ -456,6 +566,15 @@ export default function Home() {
 						</TabButton>
 					</div>
 					<div className="flex w-auto shrink-0 items-center justify-end gap-2 sm:w-[320px]">
+						{isOverdrive && (
+							<div
+								title="Overdrive Mode Active"
+								className="hidden animate-pulse items-center gap-1.5 rounded-full border border-[#38BDF8]/60 bg-[#38BDF8]/20 px-2 py-0.5 font-bold font-mono text-[#E0F2FE] text-[10.5px] shadow-[0_0_12px_rgba(56,189,248,0.5)] sm:flex"
+							>
+								<span>⚡</span>
+								<span>OVERDRIVE</span>
+							</div>
+						)}
 						<TacticalClock />
 						<AudioToggle />
 						<a
@@ -596,12 +715,15 @@ export default function Home() {
 										onComplete={handleComplete}
 										onEdit={handleOpenEdit}
 										onTogglePause={handleTogglePause}
+										isOverdrive={isOverdrive}
 									/>
 								)}
 							</>
 						)}
 
-						{activeTab === "schedule" && <ScheduleView />}
+						{activeTab === "schedule" && (
+							<ScheduleView isOverdrive={isOverdrive} />
+						)}
 
 						{activeTab === "all" && (
 							<div className="flex flex-col gap-4">
@@ -700,7 +822,22 @@ export default function Home() {
 										</button>
 									</div>
 								) : (
-									<div className="frost-panel overflow-hidden rounded-xl">
+									<div
+										className={cn(
+											"frost-panel relative overflow-hidden rounded-xl transition-all duration-300",
+											isOverdrive &&
+												"border-[#7DD3FC]/45 shadow-[0_0_28px_-6px_rgba(56,189,248,0.25)]",
+										)}
+									>
+										{isOverdrive && (
+											<BorderBeam
+												size={280}
+												duration={6}
+												borderWidth={1.5}
+												colorFrom="#38BDF8"
+												colorTo="#BAE6FD"
+											/>
+										)}
 										<AnimatePresence mode="popLayout" initial={false}>
 											{sortedRoutines.map((routine) => (
 												<motion.div
@@ -719,7 +856,10 @@ export default function Home() {
 														duration: 0.2,
 													}}
 												>
-													<RoutineListRow routine={routine} />
+													<RoutineListRow
+														routine={routine}
+														isOverdrive={isOverdrive}
+													/>
 												</motion.div>
 											))}
 										</AnimatePresence>
@@ -737,22 +877,82 @@ export default function Home() {
 									</div>
 								</div>
 								<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-									<div className="frost-panel flex flex-col gap-1 rounded-xl p-4">
+									<div
+										className={cn(
+											"frost-panel relative flex flex-col gap-1 overflow-hidden rounded-xl p-4 transition-all duration-300",
+											isOverdrive &&
+												"border-[#7DD3FC]/45 shadow-[0_0_24px_-6px_rgba(56,189,248,0.25)]",
+										)}
+									>
+										{isOverdrive && (
+											<>
+												<BorderBeam
+													size={180}
+													duration={5}
+													borderWidth={1.2}
+													colorFrom="#38BDF8"
+													colorTo="#BAE6FD"
+												/>
+												<div
+													aria-hidden="true"
+													className="animate-overdrive-sheen"
+												/>
+											</>
+										)}
 										<div className="font-mono text-[#64748B] text-[11px] uppercase tracking-wider">
 											Total Routines
 										</div>
-										<div className="font-extrabold text-2xl text-[#F0F9FF]">
+										<div
+											className={cn(
+												"font-extrabold text-2xl text-[#F0F9FF]",
+												isOverdrive &&
+													"text-[#E0F2FE] drop-shadow-[0_0_10px_#38BDF8]",
+											)}
+										>
 											{routines.length}
 										</div>
-										<div className="text-[#93C5FD] text-[11.5px]">
+										<div
+											className={cn(
+												"text-[#93C5FD] text-[11.5px]",
+												isOverdrive && "text-[#BAE6FD]",
+											)}
+										>
 											Configured in your dashboard
 										</div>
 									</div>
-									<div className="frost-panel flex flex-col gap-1 rounded-xl p-4">
+									<div
+										className={cn(
+											"frost-panel relative flex flex-col gap-1 overflow-hidden rounded-xl p-4 transition-all duration-300",
+											isOverdrive &&
+												"border-[#7DD3FC]/45 shadow-[0_0_24px_-6px_rgba(56,189,248,0.25)]",
+										)}
+									>
+										{isOverdrive && (
+											<>
+												<BorderBeam
+													size={180}
+													duration={5}
+													borderWidth={1.2}
+													colorFrom="#38BDF8"
+													colorTo="#BAE6FD"
+													delay={1.5}
+												/>
+												<div
+													aria-hidden="true"
+													className="animate-overdrive-sheen"
+												/>
+											</>
+										)}
 										<div className="font-mono text-[#64748B] text-[11px] uppercase tracking-wider">
 											Cycle Completion
 										</div>
-										<div className="font-extrabold text-2xl text-[#F0F9FF]">
+										<div
+											className={cn(
+												"font-extrabold text-2xl text-[#F0F9FF]",
+												isOverdrive &&
+													"text-[#E0F2FE] drop-shadow-[0_0_10px_#38BDF8]",
+											)}
+										>
 											{routines.length > 0
 												? Math.round(
 														(routines.filter(
@@ -765,18 +965,56 @@ export default function Home() {
 												: 0}
 											%
 										</div>
-										<div className="text-[#93C5FD] text-[11.5px]">
+										<div
+											className={cn(
+												"text-[#93C5FD] text-[11.5px]",
+												isOverdrive && "text-[#BAE6FD]",
+											)}
+										>
 											Current period completion
 										</div>
 									</div>
-									<div className="frost-panel flex flex-col gap-1 rounded-xl p-4">
+									<div
+										className={cn(
+											"frost-panel relative flex flex-col gap-1 overflow-hidden rounded-xl p-4 transition-all duration-300",
+											isOverdrive &&
+												"border-[#7DD3FC]/45 shadow-[0_0_24px_-6px_rgba(56,189,248,0.25)]",
+										)}
+									>
+										{isOverdrive && (
+											<>
+												<BorderBeam
+													size={180}
+													duration={5}
+													borderWidth={1.2}
+													colorFrom="#38BDF8"
+													colorTo="#BAE6FD"
+													delay={3}
+												/>
+												<div
+													aria-hidden="true"
+													className="animate-overdrive-sheen"
+												/>
+											</>
+										)}
 										<div className="font-mono text-[#64748B] text-[11px] uppercase tracking-wider">
 											Active Categories
 										</div>
-										<div className="font-extrabold text-2xl text-[#F0F9FF]">
+										<div
+											className={cn(
+												"font-extrabold text-2xl text-[#F0F9FF]",
+												isOverdrive &&
+													"text-[#E0F2FE] drop-shadow-[0_0_10px_#38BDF8]",
+											)}
+										>
 											{allCategories.length}
 										</div>
-										<div className="text-[#93C5FD] text-[11.5px]">
+										<div
+											className={cn(
+												"text-[#93C5FD] text-[11.5px]",
+												isOverdrive && "text-[#BAE6FD]",
+											)}
+										>
 											Distinct routine categories
 										</div>
 									</div>
@@ -800,7 +1038,7 @@ export default function Home() {
 						)}
 					</div>
 
-					<TodoSidebar />
+					<TodoSidebar isOverdrive={isOverdrive} />
 				</div>
 			</div>
 

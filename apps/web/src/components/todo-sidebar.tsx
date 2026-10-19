@@ -29,6 +29,7 @@ import { GripVertical, Inbox } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { BorderBeam } from "@/components/ui/border-beam";
 import { cryoSound } from "@/lib/cryo-sound";
 import { triggerCyberExplosion } from "@/lib/cyber-explosion";
 import { queryClient, trpc } from "@/utils/trpc";
@@ -193,7 +194,11 @@ function SortableTodoRow({
 // signed-in account, so it's the same list across devices/sessions —
 // still deliberately not a Routine: plain text, no schedule, no
 // computeRoutineStatus involvement (see packages/db/src/schema/todo.ts).
-export function TodoSidebar() {
+export function TodoSidebar({
+	isOverdrive = false,
+}: {
+	isOverdrive?: boolean;
+}) {
 	const [editMode, setEditMode] = useState(false);
 	const [newText, setNewText] = useState("");
 	const [activeId, setActiveId] = useState<string | null>(null);
@@ -325,11 +330,34 @@ export function TodoSidebar() {
 	return (
 		<div
 			style={{ willChange: "transform", transform: "translateZ(0)" }}
-			className="frost-panel sticky top-[76px] flex max-h-[calc(100vh-96px)] w-[280px] shrink-0 flex-col gap-3.5 overflow-y-auto rounded-xl p-5"
+			className={cn(
+				"frost-panel sticky top-[76px] flex max-h-[calc(100vh-96px)] w-[280px] shrink-0 flex-col gap-3.5 overflow-hidden rounded-xl p-5 transition-all duration-300",
+				isOverdrive &&
+					"border-[#7DD3FC]/45 shadow-[0_0_28px_-6px_rgba(56,189,248,0.25)]",
+			)}
 		>
+			{isOverdrive && (
+				<>
+					<BorderBeam
+						size={220}
+						duration={7}
+						borderWidth={1.5}
+						colorFrom="#38BDF8"
+						colorTo="#BAE6FD"
+					/>
+					<div aria-hidden="true" className="animate-overdrive-sheen" />
+				</>
+			)}
 			<div className="flex items-center justify-between">
-				<div className="font-extrabold text-[#F0F9FF] text-[18px] tracking-tight">
-					Today's To-Do
+				<div className="flex items-center gap-2">
+					<div className="font-extrabold text-[#F0F9FF] text-[18px] tracking-tight">
+						Today's To-Do
+					</div>
+					{isOverdrive && (
+						<span className="rounded-full border border-[#38BDF8]/60 bg-[#38BDF8]/20 px-2 py-0.5 font-bold font-mono text-[#E0F2FE] text-[9px] shadow-[0_0_10px_rgba(56,189,248,0.4)]">
+							⚡ SYNCED
+						</span>
+					)}
 				</div>
 				<div className="flex items-center gap-2">
 					{editMode && sortedTodos.some((t) => t.done) && (
