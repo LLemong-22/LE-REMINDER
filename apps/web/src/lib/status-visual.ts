@@ -1,23 +1,23 @@
 import type { RoutineStatus } from "@LE-REMINDER/core/domain/routine-status";
 
-// Cryo-Vault & Icy Frost status tokens:
-// Overdue = Villain Crimson (#F43F5E)
-// Due = Icy Frost Blue (#BAE6FD) & Cryo Cyan (#38BDF8)
+// High-Authority Executive Glacier status tokens:
+// Overdue = Crimson (#F43F5E)
+// Due = Bright Ice Platinum (#E0F2FE)
 // Done = Glacial Cyan (#38BDF8)
-// Paused = Cryo Violet (#A855F7)
-// Finished = Cryo Slate (#64748B)
+// Paused = Muted Slate (#475569 - no purple!)
+// Finished = Muted Slate (#475569)
 export const STATUS_FILL: Record<RoutineStatus, string> = {
 	Overdue: "#F43F5E",
-	Due: "#38BDF8",
-	Done: "#7DD3FC",
-	Paused: "#A855F7",
-	Finished: "#64748B",
+	Due: "#E0F2FE",
+	Done: "#38BDF8",
+	Paused: "#475569",
+	Finished: "#475569",
 };
 
 export const STATUS_TEXT: Record<RoutineStatus, string> = {
 	Overdue: "#FDA4AF",
-	Due: "#BAE6FD",
+	Due: "#E0F2FE",
 	Done: "#BAE6FD",
-	Paused: "#E9D5FF",
+	Paused: "#94A3B8",
 	Finished: "#94A3B8",
 };

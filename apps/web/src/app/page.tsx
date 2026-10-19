@@ -466,10 +466,7 @@ export default function Home() {
 	return (
 		<div
 			data-overdrive={isOverdrive ? "true" : "false"}
-			className={cn(
-				"cryo-canvas relative min-h-screen overflow-x-hidden text-[#F8FAFC]",
-				!isOverdrive && "frost-fracture-bg",
-			)}
+			className="cryo-canvas relative min-h-screen overflow-x-hidden text-[#F8FAFC]"
 		>
 			{/* Top Viewport Laser Rail in Overdrive Mode */}
 			{isOverdrive && (
@@ -639,7 +636,7 @@ export default function Home() {
 										<button
 											type="button"
 											onClick={handleOpenCreate}
-											className="frost-pill-btn shrink-0 cursor-pointer whitespace-nowrap rounded-lg px-4 py-2 font-bold text-[13px] active:scale-95"
+											className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg border border-white/80 bg-gradient-to-b from-[#F0F9FF] to-[#BAE6FD] px-4 py-2 font-semibold text-[#060B13] text-[13px] tracking-tight shadow-[0_1px_12px_rgba(186,230,253,0.25)] transition-all hover:brightness-105 active:scale-95"
 										>
 											+ New Routine
 										</button>
@@ -651,10 +648,10 @@ export default function Home() {
 												type="button"
 												onClick={() => setSelectedCategory(null)}
 												className={cn(
-													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
+													"cursor-pointer rounded-md px-3 py-1 font-mono text-xs tracking-wide transition-all duration-150 active:scale-95",
 													selectedCategory === null
-														? "border-[#7DD3FC] bg-[#1A385C] font-semibold text-[#F8FAFC] shadow-[0_0_12px_rgba(56,189,248,0.35)]"
-														: "border-[#7DD3FC]/25 bg-[#102136] text-[#BAE6FD] hover:border-[#7DD3FC]/50 hover:text-[#F8FAFC]",
+														? "border border-[#E0F2FE] bg-[#E0F2FE] font-semibold text-[#070C15] shadow-[0_0_16px_rgba(224,242,254,0.25)]"
+														: "border border-white/[0.07] bg-[#0F1B2D]/80 font-medium text-[#94A3B8] hover:border-[#BAE6FD]/30 hover:text-[#F0F9FF]",
 												)}
 											>
 												All
@@ -669,10 +666,10 @@ export default function Home() {
 														)
 													}
 													className={cn(
-														"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
+														"cursor-pointer rounded-md px-3 py-1 font-mono text-xs tracking-wide transition-all duration-150 active:scale-95",
 														selectedCategory === cat
-															? "border-[#7DD3FC] bg-[#1A385C] font-semibold text-[#F8FAFC] shadow-[0_0_12px_rgba(56,189,248,0.35)]"
-															: "border-[#7DD3FC]/25 bg-[#102136] text-[#BAE6FD] hover:border-[#7DD3FC]/50 hover:text-[#F8FAFC]",
+															? "border border-[#E0F2FE] bg-[#E0F2FE] font-semibold text-[#070C15] shadow-[0_0_16px_rgba(224,242,254,0.25)]"
+															: "border border-white/[0.07] bg-[#0F1B2D]/80 font-medium text-[#94A3B8] hover:border-[#BAE6FD]/30 hover:text-[#F0F9FF]",
 													)}
 												>
 													{cat}

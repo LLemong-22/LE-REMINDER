@@ -108,75 +108,55 @@
 	will-change: transform;
 }
 
-/* Luminous Arctic Glacier Canvas */
+/* Pure Architectural Midnight Glacier Canvas */
 .cryo-canvas {
-	background-color: #0d1b2a;
+	background-color: #050911;
 	background-image:
 		radial-gradient(
-			circle at 20% 15%,
-			rgba(147, 197, 253, 0.28),
-			transparent 50%
+			ellipse 80% 50% at 50% -10%,
+			rgba(186, 230, 253, 0.08),
+			transparent 70%
 		),
-		radial-gradient(
-			circle at 80% 10%,
-			rgba(186, 230, 253, 0.25),
-			transparent 55%
+		conic-gradient(
+			from 150deg at 50% 0%,
+			transparent 0deg,
+			rgba(186, 230, 253, 0.05) 25deg,
+			rgba(224, 242, 254, 0.09) 30deg,
+			rgba(186, 230, 253, 0.05) 35deg,
+			transparent 60deg
 		),
-		linear-gradient(180deg, #132840 0%, #0d1b2a 55%, #09131e 100%);
+		linear-gradient(180deg, #0c1524 0%, #080e18 60%, #050911 100%);
 	background-attachment: fixed;
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
 }
 
-/* Crystalline Frost Fracture Subtle Texture */
-.frost-fracture-bg {
-	background-image:
-		radial-gradient(
-			circle at 50% 50%,
-			rgba(186, 230, 253, 0.03) 0%,
-			transparent 60%
-		),
-		linear-gradient(
-			45deg,
-			transparent 48%,
-			rgba(186, 230, 253, 0.04) 50%,
-			transparent 52%
-		),
-		linear-gradient(
-			-45deg,
-			transparent 48%,
-			rgba(186, 230, 253, 0.04) 50%,
-			transparent 52%
-		);
-	background-size:
-		100% 100%,
-		80px 80px,
-		80px 80px;
-}
-
-/* Seamless Glacial Aurora Canvas in Overdrive Mode */
+/* Seamless Architectural Glacial Aurora in Overdrive Mode */
 [data-overdrive="true"] .cryo-canvas,
 .cryo-canvas[data-overdrive="true"],
 [data-overdrive="true"].cryo-canvas {
-	background-color: #0d1b2a;
+	background-color: #060d17;
 	background-image:
-		radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.25), transparent 60%),
 		radial-gradient(
-			circle at 20% 15%,
-			rgba(147, 197, 253, 0.35),
-			transparent 50%
+			ellipse 85% 55% at 50% -10%,
+			rgba(56, 189, 248, 0.18),
+			transparent 75%
 		),
-		radial-gradient(
-			circle at 80% 10%,
-			rgba(186, 230, 253, 0.32),
-			transparent 55%
+		conic-gradient(
+			from 150deg at 50% 0%,
+			transparent 0deg,
+			rgba(56, 189, 248, 0.1) 25deg,
+			rgba(224, 242, 254, 0.18) 30deg,
+			rgba(56, 189, 248, 0.1) 35deg,
+			transparent 60deg
 		),
-		linear-gradient(180deg, #132840 0%, #0d1b2a 55%, #09131e 100%);
+		linear-gradient(180deg, #102238 0%, #0a1424 60%, #060d17 100%);
 	background-attachment: fixed;
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
 }
 
+.frost-fracture-bg,
 [data-overdrive="true"] .frost-fracture-bg,
 .frost-fracture-bg[data-overdrive="true"],
 [data-overdrive="true"].frost-fracture-bg {

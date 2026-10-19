@@ -281,25 +281,28 @@ html {
 [data-overdrive="true"] .cryo-canvas,
 .cryo-canvas[data-overdrive="true"],
 [data-overdrive="true"].cryo-canvas {
-	background-color: #0d1b2a;
+	background-color: #060d17;
 	background-image:
-		radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.25), transparent 60%),
 		radial-gradient(
-			circle at 20% 15%,
-			rgba(147, 197, 253, 0.35),
-			transparent 50%
+			ellipse 85% 55% at 50% -10%,
+			rgba(56, 189, 248, 0.18),
+			transparent 75%
 		),
-		radial-gradient(
-			circle at 80% 10%,
-			rgba(186, 230, 253, 0.32),
-			transparent 55%
+		conic-gradient(
+			from 150deg at 50% 0%,
+			transparent 0deg,
+			rgba(56, 189, 248, 0.1) 25deg,
+			rgba(224, 242, 254, 0.18) 30deg,
+			rgba(56, 189, 248, 0.1) 35deg,
+			transparent 60deg
 		),
-		linear-gradient(180deg, #132840 0%, #0d1b2a 55%, #09131e 100%);
+		linear-gradient(180deg, #102238 0%, #0a1424 60%, #060d17 100%);
 	background-attachment: fixed;
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
 }
 
+.frost-fracture-bg,
 [data-overdrive="true"] .frost-fracture-bg,
 .frost-fracture-bg[data-overdrive="true"],
 [data-overdrive="true"].frost-fracture-bg {

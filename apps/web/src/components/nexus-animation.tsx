@@ -33,6 +33,22 @@ const CRYSTAL_PARTICLES = Array.from({ length: 12 }, (_, i) => ({
 	isCyan: i % 2 === 0,
 }));
 
+// Luxury chronograph degree ticks around 360 degrees
+const BEZEL_TICKS = Array.from({ length: 60 }, (_, i) => {
+	const deg = i * 6;
+	const rad = (deg * Math.PI) / 180;
+	const isMajor = i % 5 === 0;
+	const r1 = isMajor ? 51 : 53.5;
+	const r2 = 56;
+	return {
+		x1: 60 + r1 * Math.cos(rad),
+		y1: 60 + r1 * Math.sin(rad),
+		x2: 60 + r2 * Math.cos(rad),
+		y2: 60 + r2 * Math.sin(rad),
+		isMajor,
+	};
+});
+
 export function NexusAnimation({
 	progressPct = 0,
 	isOverdrive: externalOverdrive,
@@ -124,13 +140,10 @@ export function NexusAnimation({
 				{/* 3D Ring 1: Pitch X-tilted clockwise crystalline ring */}
 				<div
 					className={cn(
-						"absolute size-24 rounded-full border shadow-[0_0_12px_rgba(125,211,252,0.4)]",
-						isOverdrive
-							? "border-[#FFFFFF]/90 shadow-[0_0_20px_#38BDF8]"
-							: "border-[#7DD3FC]/50",
+						"absolute size-24 rounded-full border border-white/20 shadow-[0_0_12px_rgba(224,242,254,0.15)]",
+						isOverdrive && "border-[#FFFFFF]/80 shadow-[0_0_20px_#38BDF8]",
 					)}
 					style={{
-						borderStyle: "dashed",
 						animation: `core-3d-orbit-1 ${isOverdrive ? "3.6s" : "9s"} linear infinite`,
 					}}
 				/>
@@ -138,13 +151,10 @@ export function NexusAnimation({
 				{/* 3D Ring 2: Yaw Y-tilted counter-clockwise ring */}
 				<div
 					className={cn(
-						"absolute size-20 rounded-full border shadow-[0_0_10px_rgba(186,230,253,0.35)]",
-						isOverdrive
-							? "border-[#7DD3FC]/90 shadow-[0_0_16px_#BAE6FD]"
-							: "border-[#BAE6FD]/60",
+						"absolute size-20 rounded-full border border-[#BAE6FD]/30 shadow-[0_0_10px_rgba(186,230,253,0.2)]",
+						isOverdrive && "border-[#BAE6FD]/80 shadow-[0_0_16px_#BAE6FD]",
 					)}
 					style={{
-						borderStyle: "dotted",
 						animation: `core-3d-orbit-2 ${isOverdrive ? "2.8s" : "7s"} linear infinite`,
 					}}
 				/>
@@ -152,10 +162,8 @@ export function NexusAnimation({
 				{/* 3D Ring 3: Diagonal 45-deg tilted inner diamond frame */}
 				<div
 					className={cn(
-						"absolute size-16 border shadow-[0_0_14px_rgba(56,189,248,0.5)]",
-						isOverdrive
-							? "border-[#FFFFFF]/95 shadow-[0_0_22px_#38BDF8]"
-							: "border-[#38BDF8]/75",
+						"absolute size-16 border border-[#38BDF8]/40 shadow-[0_0_12px_rgba(56,189,248,0.3)]",
+						isOverdrive && "border-[#FFFFFF]/90 shadow-[0_0_20px_#38BDF8]",
 					)}
 					style={{
 						animation: `core-3d-orbit-3 ${isOverdrive ? "4.4s" : "11s"} linear infinite`,
@@ -207,6 +215,43 @@ export function NexusAnimation({
 					</radialGradient>
 				</defs>
 
+				{/* Luxury Chronograph Bezel Degree Ticks */}
+				<g className="origin-center" opacity={isOverdrive ? 0.95 : 0.75}>
+					<circle
+						cx="60"
+						cy="60"
+						r="56"
+						stroke="rgba(224, 242, 254, 0.28)"
+						strokeWidth="1"
+						fill="none"
+					/>
+					<circle
+						cx="60"
+						cy="60"
+						r="50.5"
+						stroke="rgba(224, 242, 254, 0.16)"
+						strokeWidth="0.75"
+						fill="none"
+					/>
+					{BEZEL_TICKS.map((t, idx) => (
+						<line
+							key={idx}
+							x1={t.x1}
+							y1={t.y1}
+							x2={t.x2}
+							y2={t.y2}
+							stroke={
+								t.isMajor
+									? isOverdrive
+										? "#E0F2FE"
+										: "rgba(224, 242, 254, 0.45)"
+									: "rgba(224, 242, 254, 0.2)"
+							}
+							strokeWidth={t.isMajor ? "1" : "0.5"}
+						/>
+					))}
+				</g>
+
 				{/* Hexagonal Inner Reticle Vertex Ring (2.5x faster in Overdrive) */}
 				<g
 					className="origin-center motion-reduce:animate-none"
@@ -217,35 +262,35 @@ export function NexusAnimation({
 					<polygon
 						points="60,34 82.5,47 82.5,73 60,86 37.5,73 37.5,47"
 						stroke={isOverdrive ? "#FFFFFF" : "#BAE6FD"}
-						strokeWidth={isOverdrive ? "1.6" : "1.2"}
+						strokeWidth={isOverdrive ? "1.2" : "1"}
 						strokeOpacity="0.85"
 						filter="url(#coreGlow)"
 					/>
-					<circle cx="60" cy="34" r="1.8" fill="#FFFFFF" />
+					<circle cx="60" cy="34" r="1.5" fill="#FFFFFF" />
 					<circle
 						cx="82.5"
 						cy="47"
-						r="1.8"
-						fill={isOverdrive ? "#FFFFFF" : "#7DD3FC"}
+						r="1.5"
+						fill={isOverdrive ? "#FFFFFF" : "#BAE6FD"}
 					/>
 					<circle
 						cx="82.5"
 						cy="73"
-						r="1.8"
-						fill={isOverdrive ? "#FFFFFF" : "#7DD3FC"}
+						r="1.5"
+						fill={isOverdrive ? "#FFFFFF" : "#BAE6FD"}
 					/>
-					<circle cx="60" cy="86" r="1.8" fill="#FFFFFF" />
+					<circle cx="60" cy="86" r="1.5" fill="#FFFFFF" />
 					<circle
 						cx="37.5"
 						cy="73"
-						r="1.8"
-						fill={isOverdrive ? "#FFFFFF" : "#7DD3FC"}
+						r="1.5"
+						fill={isOverdrive ? "#FFFFFF" : "#BAE6FD"}
 					/>
 					<circle
 						cx="37.5"
 						cy="47"
-						r="1.8"
-						fill={isOverdrive ? "#FFFFFF" : "#7DD3FC"}
+						r="1.5"
+						fill={isOverdrive ? "#FFFFFF" : "#BAE6FD"}
 					/>
 				</g>
 
@@ -259,7 +304,7 @@ export function NexusAnimation({
 					<polygon
 						points="60,45 75,60 60,75 45,60"
 						stroke={isOverdrive ? "#FFFFFF" : "#38BDF8"}
-						strokeWidth={isOverdrive ? "1.8" : "1.2"}
+						strokeWidth={isOverdrive ? "1.2" : "1"}
 						strokeOpacity="0.9"
 					/>
 				</g>

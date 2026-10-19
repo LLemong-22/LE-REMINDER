@@ -22,10 +22,10 @@ const STATUS_ORDER: RoutineStatus[] = [
 
 const STATUS_GRADIENT: Record<RoutineStatus, string> = {
 	Overdue: "linear-gradient(90deg, #F43F5E, #FB7185)",
-	Due: "linear-gradient(90deg, #0284C7, #38BDF8)",
-	Done: "linear-gradient(90deg, #0EA5E9, #BAE6FD)",
-	Paused: "linear-gradient(90deg, #7C3AED, #C084FC)",
-	Finished: "linear-gradient(90deg, #334155, #64748B)",
+	Due: "linear-gradient(90deg, #BAE6FD, #E0F2FE)",
+	Done: "linear-gradient(90deg, #0284C7, #38BDF8)",
+	Paused: "linear-gradient(90deg, #334155, #475569)",
+	Finished: "linear-gradient(90deg, #1E293B, #334155)",
 };
 
 function isDailyRoutine(routine: DashboardRoutine): boolean {
@@ -282,15 +282,10 @@ export function HeroPanel({
 							encryptedClassName="text-[#38BDF8]"
 						/>
 					</div>
-					<span
-						className={cn(
-							"font-bold font-mono text-[11px] tracking-[0.25em] transition-all",
-							isOverdrive
-								? "text-[#E0F2FE] drop-shadow-[0_0_10px_#38BDF8]"
-								: "text-[#7DD3FC] drop-shadow-[0_0_8px_rgba(56,189,248,0.5)]",
-						)}
-					>
-						{isOverdrive ? "THE-CORE // OVERDRIVE" : "THE-CORE"}
+					<span className="font-mono text-[#64748B] text-[10px] uppercase tracking-[0.2em]">
+						{isOverdrive
+							? "SYSTEM TELEMETRY // 100% SYNC"
+							: `${counts.Overdue + counts.Due + counts.Done} ACTIVE ROUTINES`}
 					</span>
 				</div>
 
@@ -302,7 +297,7 @@ export function HeroPanel({
 				<div className="relative">
 					<div
 						className={cn(
-							"relative flex h-2.5 overflow-hidden rounded-full border border-[#BAE6FD]/20 bg-[#091524] shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)] transition-all",
+							"relative flex h-2 overflow-hidden rounded-[4px] border border-white/[0.08] bg-[#070D18] shadow-[inset_0_1px_3px_rgba(0,0,0,0.8)] transition-all",
 							isOverdrive &&
 								"border-[#7DD3FC]/70 shadow-[0_0_14px_rgba(56,189,248,0.45)]",
 						)}
@@ -334,13 +329,13 @@ export function HeroPanel({
 					{STATUS_ORDER.map((status) => (
 						<div key={status} className="flex items-center gap-1.5">
 							<span
-								className="inline-block size-1.5 rounded-full shadow-[0_0_6px_currentColor]"
+								className="inline-block size-1.5 rounded-sm shadow-[0_0_6px_currentColor]"
 								style={{ background: STATUS_FILL[status] }}
 							/>
 							<span className="font-semibold text-[#F8FAFC]">
 								{counts[status]}
 							</span>
-							<span className="text-[#93C5FD]">{status}</span>
+							<span className="text-[#94A3B8]">{status}</span>
 						</div>
 					))}
 				</div>
