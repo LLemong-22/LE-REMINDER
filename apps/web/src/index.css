@@ -91,11 +91,11 @@
 	0%,
 	100% {
 		transform: scale(0.92);
-		filter: drop-shadow(0 0 10px #38bdf8) drop-shadow(0 0 20px #0284c7);
+		opacity: 0.88;
 	}
 	50% {
 		transform: scale(1.08);
-		filter: drop-shadow(0 0 18px #7dd3fc) drop-shadow(0 0 32px #38bdf8);
+		opacity: 1;
 	}
 }
 
@@ -224,28 +224,29 @@
 		inset 0 1px 0 0 rgba(224, 242, 254, 0.45),
 		inset 0 0 24px rgba(125, 211, 252, 0.06),
 		0 12px 32px -8px rgba(4, 10, 20, 0.55);
-	transform: translateZ(0);
-	will-change: transform;
+	contain: layout style paint;
 }
 
-/* Root Smooth Scroll & GPU Compositor Optimization */
+/* Root Native Compositor Scroll & Font Smoothing (no CSS smooth-scroll lag) */
 html {
-	scroll-behavior: smooth;
 	-webkit-font-smoothing: antialiased;
 	overscroll-behavior-y: none;
 }
 
-/* 120fps GPU Containment for Cards and Frost Panels */
+/* 120fps Containment for Cards and Frost Panels (without VRAM layer bloat) */
 .frost-panel {
 	contain: layout style paint;
-	transform: translateZ(0);
-	will-change: transform;
 }
 
-/* Off-screen Render Containment for Zero-Jank Fast Scrolling */
+/* Off-screen Render Containment with Cached Auto Height (Zero Scrollbar Jump) */
 .cv-auto {
 	content-visibility: auto;
-	contain-intrinsic-size: 0 140px;
+	contain-intrinsic-size: auto 168px;
+}
+
+/* Suppress decorative pointer-glare repaints while actively scrolling */
+html[data-scrolling="true"] .spotlight-glare {
+	opacity: 0;
 }
 
 /* Pause All CSS Animations When Tab is Hidden or Idle (0.0% Background CPU/GPU) */
@@ -317,31 +318,6 @@ html[data-page-idle="true"] *::after {
 		transparent 100%
 	);
 	animation: overdrive-sheen 3.2s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
-}
-
-/* Overdrive Viewport & Canvas Boost */
-[data-overdrive="true"] .cryo-canvas,
-.cryo-canvas[data-overdrive="true"],
-[data-overdrive="true"].cryo-canvas {
-	background-color: #060d17;
-	background-image:
-		radial-gradient(
-			ellipse 85% 55% at 50% -10%,
-			rgba(56, 189, 248, 0.18),
-			transparent 75%
-		),
-		conic-gradient(
-			from 150deg at 50% 0%,
-			transparent 0deg,
-			rgba(56, 189, 248, 0.1) 25deg,
-			rgba(224, 242, 254, 0.18) 30deg,
-			rgba(56, 189, 248, 0.1) 35deg,
-			transparent 60deg
-		),
-		linear-gradient(180deg, #102238 0%, #0a1424 60%, #060d17 100%);
-	background-attachment: fixed;
-	background-size: 100% 100%;
-	background-repeat: no-repeat;
 }
 
 .frost-fracture-bg,

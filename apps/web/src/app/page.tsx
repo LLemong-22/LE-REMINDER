@@ -53,12 +53,10 @@ type Tab = "home" | "schedule" | "all" | "analytics";
 
 function TabButton({
 	active,
-	shortcut,
 	label,
 	onClick,
 }: {
 	active: boolean;
-	shortcut: string;
 	label: string;
 	onClick: () => void;
 }) {
@@ -66,23 +64,12 @@ function TabButton({
 		<button
 			type="button"
 			onClick={onClick}
-			title={`${label} (${shortcut})`}
 			className={cn(
-				"group relative flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-sm px-1 py-1.5 font-semibold text-sm transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]/40",
+				"relative flex cursor-pointer items-center whitespace-nowrap rounded-sm px-1 py-1.5 font-semibold text-sm transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]/40",
 				active ? "text-[#F0F9FF]" : "text-[#93C5FD] hover:text-[#F0F9FF]",
 			)}
 		>
 			<span>{label}</span>
-			<kbd
-				className={cn(
-					"hidden rounded border px-1 py-0.5 font-mono text-[9.5px] leading-none transition-colors duration-100 sm:inline-block",
-					active
-						? "border-[#38BDF8]/45 bg-[#38BDF8]/15 text-[#BAE6FD]"
-						: "border-[#7DD3FC]/15 bg-[#102136]/70 text-[#64748B] group-hover:border-[#7DD3FC]/30 group-hover:text-[#93C5FD]",
-				)}
-			>
-				{shortcut}
-			</kbd>
 			<span
 				aria-hidden="true"
 				className={cn(
@@ -252,12 +239,11 @@ function SearchField({
 				ref={inputRef}
 				type="text"
 				placeholder="Search tasks & routines..."
-				title="Search tasks & routines (Press / or Ctrl+K)"
 				value={value}
 				onChange={(e) => onChange(e.target.value)}
-				className="peer w-full rounded-lg border border-[#93C5FD]/35 bg-[#091524] py-1.5 pr-9 pl-8.5 font-medium font-sans text-[#F8FAFC] text-[13px] placeholder-[#64748B] outline-none transition-colors duration-150 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/25"
+				className="w-full rounded-lg border border-[#93C5FD]/35 bg-[#091524] py-1.5 pr-8 pl-8.5 font-medium font-sans text-[#F8FAFC] text-[13px] placeholder-[#64748B] outline-none transition-colors duration-150 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/25"
 			/>
-			{value ? (
+			{value && (
 				<button
 					type="button"
 					onClick={() => {
@@ -270,10 +256,6 @@ function SearchField({
 				>
 					<X className="size-3.5" />
 				</button>
-			) : (
-				<kbd className="pointer-events-none absolute right-2 select-none rounded border border-[#7DD3FC]/20 bg-[#102136]/85 px-1.5 py-0.5 font-mono text-[#64748B] text-[10px] leading-none transition-opacity duration-100 peer-focus:opacity-0">
-					[/]
-				</kbd>
 			)}
 		</div>
 	);
@@ -741,16 +723,44 @@ export default function Home() {
 		triggerIntro,
 	]);
 
+	// Zero-rerender passive scroll state flag to suppress pointer-glare reflows mid-scroll
+	useEffect(() => {
+		let scrollTimer: ReturnType<typeof setTimeout> | null = null;
+		let isScrolling = false;
+
+		function handleScroll() {
+			if (!isScrolling) {
+				isScrolling = true;
+				document.documentElement.dataset.scrolling = "true";
+			}
+			if (scrollTimer !== null) {
+				clearTimeout(scrollTimer);
+			}
+			scrollTimer = setTimeout(() => {
+				isScrolling = false;
+				delete document.documentElement.dataset.scrolling;
+				scrollTimer = null;
+			}, 100);
+		}
+
+		window.addEventListener("scroll", handleScroll, { passive: true });
+		return () => {
+			if (scrollTimer !== null) clearTimeout(scrollTimer);
+			delete document.documentElement.dataset.scrolling;
+			window.removeEventListener("scroll", handleScroll);
+		};
+	}, []);
+
 	return (
 		<div
 			data-overdrive={isOverdrive ? "true" : "false"}
-			className="cryo-canvas relative min-h-screen overflow-x-hidden text-[#F8FAFC]"
+			className="relative min-h-screen overflow-x-hidden text-[#F8FAFC]"
 		>
 			{/* Top Viewport Laser Rail in Overdrive Mode */}
 			{isOverdrive && (
 				<div
 					aria-hidden="true"
-					className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[2px] bg-gradient-to-r from-transparent via-[#38BDF8] to-transparent shadow-[0_0_20px_#38BDF8]"
+					className="pointer-events-none fixed inset-x-0 top-0 z-50 h-[2px] transform-gpu bg-gradient-to-r from-transparent via-[#38BDF8] to-transparent shadow-[0_0_20px_#38BDF8]"
 				/>
 			)}
 
@@ -758,7 +768,7 @@ export default function Home() {
 			<div
 				aria-hidden="true"
 				className={cn(
-					"pointer-events-none fixed inset-x-0 top-0 -z-10 h-96 transition-opacity duration-700",
+					"pointer-events-none fixed inset-x-0 top-0 -z-10 h-96 transform-gpu transition-opacity duration-700",
 					isOverdrive
 						? "bg-[radial-gradient(ellipse_at_50%_0%,rgba(56,189,248,0.35)_0%,rgba(14,165,233,0.15)_40%,transparent_75%)] opacity-100"
 						: "bg-[radial-gradient(ellipse_at_50%_0%,rgba(56,189,248,0.12)_0%,transparent_60%)] opacity-40",
@@ -776,7 +786,7 @@ export default function Home() {
 
 			<div
 				className={cn(
-					"sticky top-0 z-20 border-b bg-[#0D1B2A]/90 backdrop-blur-md transition-colors duration-300",
+					"sticky top-0 z-20 transform-gpu border-b bg-[#0B1726]/[0.97] transition-colors duration-200",
 					isOverdrive
 						? "border-[#7DD3FC]/55 shadow-[0_0_28px_rgba(56,189,248,0.25)]"
 						: "border-[#BAE6FD]/15",
@@ -796,7 +806,7 @@ export default function Home() {
 						<button
 							type="button"
 							onClick={triggerIntro}
-							title="Replay Cryo-Boot Sequence (V)"
+							title="Replay Cryo-Boot Sequence"
 							className={cn(
 								"group flex size-7 shrink-0 cursor-pointer items-center justify-center rounded border font-bold font-mono text-[12px] transition-all hover:scale-105 active:scale-95",
 								isOverdrive
@@ -817,28 +827,24 @@ export default function Home() {
 							/>
 						</div>
 					</div>
-					<div className="flex items-center gap-5 overflow-x-auto [scrollbar-width:none] sm:gap-7">
+					<div className="flex items-center gap-6 overflow-x-auto [scrollbar-width:none] sm:gap-8">
 						<TabButton
 							active={activeTab === "home"}
-							shortcut="1"
 							label="Home"
 							onClick={() => setActiveTab("home")}
 						/>
 						<TabButton
 							active={activeTab === "schedule"}
-							shortcut="2"
 							label="Schedule"
 							onClick={() => setActiveTab("schedule")}
 						/>
 						<TabButton
 							active={activeTab === "all"}
-							shortcut="3"
 							label="All Tasks"
 							onClick={() => setActiveTab("all")}
 						/>
 						<TabButton
 							active={activeTab === "analytics"}
-							shortcut="4"
 							label="Analytics"
 							onClick={() => setActiveTab("analytics")}
 						/>
@@ -848,7 +854,7 @@ export default function Home() {
 							<button
 								type="button"
 								onClick={handleToggleOverdrive}
-								title="Overdrive Mode Active · Press O to toggle"
+								title="Overdrive Mode Active"
 								className="hidden shrink-0 animate-pulse cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border border-[#38BDF8]/60 bg-[#38BDF8]/20 px-2 py-0.5 font-bold font-mono text-[#E0F2FE] text-[10.5px] shadow-[0_0_12px_rgba(56,189,248,0.5)] transition-transform active:scale-95 sm:flex"
 							>
 								<span>⚡</span>
@@ -906,13 +912,9 @@ export default function Home() {
 										<button
 											type="button"
 											onClick={handleOpenCreate}
-											title="Create new routine (N)"
-											className="inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-white/80 bg-gradient-to-b from-[#F0F9FF] to-[#BAE6FD] px-3.5 py-2 font-semibold text-[#060B13] text-[13px] tracking-tight shadow-[0_1px_12px_rgba(186,230,253,0.25)] transition-all hover:brightness-105 active:scale-95"
+											className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg border border-white/80 bg-gradient-to-b from-[#F0F9FF] to-[#BAE6FD] px-3.5 py-2 font-semibold text-[#060B13] text-[13px] tracking-tight shadow-[0_1px_12px_rgba(186,230,253,0.25)] transition-all hover:brightness-105 active:scale-95"
 										>
-											<span>+ New Routine</span>
-											<kbd className="hidden rounded border border-[#060B13]/25 bg-[#060B13]/10 px-1.5 py-0.5 font-mono font-semibold text-[#060B13]/80 text-[10px] leading-none sm:inline-block">
-												N
-											</kbd>
+											+ New Routine
 										</button>
 									</div>
 
@@ -1023,13 +1025,9 @@ export default function Home() {
 										<button
 											type="button"
 											onClick={handleOpenCreate}
-											title="Create new routine (N)"
-											className="inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-white/80 bg-gradient-to-b from-[#F0F9FF] to-[#BAE6FD] px-3.5 py-2 font-semibold text-[#060B13] text-[13px] tracking-tight shadow-[0_1px_12px_rgba(186,230,253,0.25)] transition-all hover:brightness-105 active:scale-95"
+											className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg border border-white/80 bg-gradient-to-b from-[#F0F9FF] to-[#BAE6FD] px-3.5 py-2 font-semibold text-[#060B13] text-[13px] tracking-tight shadow-[0_1px_12px_rgba(186,230,253,0.25)] transition-all hover:brightness-105 active:scale-95"
 										>
-											<span>+ New Routine</span>
-											<kbd className="hidden rounded border border-[#060B13]/25 bg-[#060B13]/10 px-1.5 py-0.5 font-mono font-semibold text-[#060B13]/80 text-[10px] leading-none sm:inline-block">
-												N
-											</kbd>
+											+ New Routine
 										</button>
 									</div>
 

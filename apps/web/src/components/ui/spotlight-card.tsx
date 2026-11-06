@@ -1,7 +1,7 @@
 "use client";
 
-import type { CSSProperties, MouseEvent, ReactNode } from "react";
-import { useRef } from "react";
+import type { CSSProperties, PointerEvent, ReactNode } from "react";
+import { useEffect, useRef } from "react";
 
 export function SpotlightCard({
 	children,
@@ -13,30 +13,62 @@ export function SpotlightCard({
 	spotlightColor?: string;
 }) {
 	const divRef = useRef<HTMLDivElement>(null);
+	const rectRef = useRef<DOMRect | null>(null);
 	const rafRef = useRef<number | null>(null);
 
-	function handleMouseMove(e: MouseEvent<HTMLDivElement>) {
+	useEffect(() => {
+		return () => {
+			if (rafRef.current !== null) {
+				cancelAnimationFrame(rafRef.current);
+			}
+		};
+	}, []);
+
+	function handlePointerEnter(e: PointerEvent<HTMLDivElement>) {
+		if (
+			e.pointerType !== "mouse" ||
+			document.documentElement.dataset.scrolling === "true"
+		) {
+			return;
+		}
+		if (divRef.current) {
+			rectRef.current = divRef.current.getBoundingClientRect();
+		}
+	}
+
+	function handlePointerMove(e: PointerEvent<HTMLDivElement>) {
+		if (
+			e.pointerType !== "mouse" ||
+			document.documentElement.dataset.scrolling === "true"
+		) {
+			return;
+		}
 		const el = divRef.current;
 		if (!el) return;
-		const rect = el.getBoundingClientRect();
+		const rect = rectRef.current ?? el.getBoundingClientRect();
+		rectRef.current = rect;
 		const x = e.clientX - rect.left;
 		const y = e.clientY - rect.top;
 
-		if (rafRef.current !== null) {
-			cancelAnimationFrame(rafRef.current);
-		}
+		if (rafRef.current !== null) return;
 		rafRef.current = requestAnimationFrame(() => {
-			if (!el) return;
-			el.style.setProperty("--mouse-x", `${x}px`);
-			el.style.setProperty("--mouse-y", `${y}px`);
+			rafRef.current = null;
+			if (!divRef.current) return;
+			divRef.current.style.setProperty("--mouse-x", `${x}px`);
+			divRef.current.style.setProperty("--mouse-y", `${y}px`);
 		});
 	}
 
+	function handlePointerLeave() {
+		rectRef.current = null;
+	}
+
 	return (
-		// biome-ignore lint/a11y/noStaticElementInteractions: decorative mouse-tracked 2D glow; children stay independently interactive
 		<div
 			ref={divRef}
-			onMouseMove={handleMouseMove}
+			onPointerEnter={handlePointerEnter}
+			onPointerMove={handlePointerMove}
+			onPointerLeave={handlePointerLeave}
 			className={`group relative flex flex-col ${className}`}
 		>
 			<div
@@ -45,7 +77,7 @@ export function SpotlightCard({
 			>
 				{/* 2D Specular Ice Glare Spotlight */}
 				<div
-					className="absolute -inset-px opacity-0 transition duration-300 group-hover:opacity-100"
+					className="spotlight-glare absolute -inset-px opacity-0 transition-opacity duration-200 group-hover:opacity-100"
 					style={
 						{
 							background: `radial-gradient(280px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), ${spotlightColor}, transparent 80%)`,

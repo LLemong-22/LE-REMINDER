@@ -444,15 +444,14 @@ export function ScheduleView({
 							key={`${event.time}-${index}`}
 							ref={isTarget ? activeCardRef : null}
 							className={cn(
-								"group relative transition-all duration-200",
-								!isTarget && !isLive && "cv-auto",
+								"group relative transition-opacity duration-200",
 								isPast && "opacity-45 hover:opacity-80",
 							)}
 						>
 							{/* Node on the timeline track */}
 							<div
 								className={cn(
-									"absolute top-4.5 -left-[25px] size-2.5 rounded-full ring-4 ring-[#0D1B2A] transition-all duration-300 sm:-left-[33px]",
+									"absolute top-4.5 -left-[25px] size-2.5 rounded-full ring-4 ring-[#0D1B2A] transition-colors duration-300 sm:-left-[33px]",
 									isLive
 										? "animate-pulse bg-[#BAE6FD] shadow-[0_0_12px_rgba(56,189,248,0.9)] ring-[#38BDF8]/40"
 										: isPast
@@ -465,7 +464,7 @@ export function ScheduleView({
 							{isLive ? (
 								<div
 									className={cn(
-										"cv-auto frost-panel relative overflow-hidden rounded-xl border border-[#BAE6FD]/50 p-4 shadow-[0_0_24px_rgba(56,189,248,0.3),inset_0_1px_0_0_rgba(224,242,254,0.35)] transition-colors sm:p-5",
+										"frost-panel relative overflow-hidden rounded-xl border border-[#BAE6FD]/50 p-4 shadow-[0_0_24px_rgba(56,189,248,0.3),inset_0_1px_0_0_rgba(224,242,254,0.35)] transition-colors sm:p-5",
 										highlightPulse && "arrival-glow-pulse",
 										isOverdrive &&
 											"border-[#7DD3FC]/75 shadow-[0_0_30px_rgba(56,189,248,0.45)]",
@@ -531,7 +530,7 @@ export function ScheduleView({
 								</div>
 							) : (
 								/* Standard Card for Normal / Upcoming / Past Events */
-								<div className="cv-auto frost-panel relative flex flex-col gap-2 overflow-hidden rounded-xl p-3.5 transition-colors duration-150 hover:border-[#BAE6FD]/30 sm:p-4">
+								<div className="frost-panel relative flex flex-col gap-2 overflow-hidden rounded-xl p-3.5 transition-colors duration-150 hover:border-[#BAE6FD]/30 sm:p-4">
 									{isOverdrive && (
 										<div
 											aria-hidden="true"

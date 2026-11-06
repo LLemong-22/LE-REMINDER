@@ -85,8 +85,8 @@ export function NexusAnimation({
 			onClick={handleClick}
 			title={
 				isOverdrive
-					? "THE-CORE [OVERDRIVE ACTIVE] · Click or press O to toggle"
-					: "THE-CORE Cryo-Energy Reactor · Click or press O to engage Overdrive"
+					? "THE-CORE [OVERDRIVE ACTIVE]"
+					: "THE-CORE Cryo-Energy Reactor"
 			}
 			className="group relative flex size-32 cursor-pointer select-none items-center justify-center border-0 bg-transparent p-0 transition-transform active:scale-95"
 			style={{ perspective: "800px" }}

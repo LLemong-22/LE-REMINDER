@@ -54,7 +54,7 @@ export function RoutineList({
 							opacity: { duration: 0.14 },
 							scale: { duration: 0.14 },
 						}}
-						className="cv-auto flex h-full flex-col"
+						className="flex h-full flex-col"
 					>
 						<SpotlightCard
 							className="flex h-full flex-col rounded-[12px]"

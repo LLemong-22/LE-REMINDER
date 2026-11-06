@@ -104,18 +104,28 @@
 		inset 0 1px 0 0 rgba(224, 242, 254, 0.45),
 		inset 0 0 24px rgba(125, 211, 252, 0.06),
 		0 12px 32px -8px rgba(4, 10, 20, 0.55);
-	transform: translateZ(0);
-	will-change: transform;
+	contain: layout style paint;
 }
 
-/* Off-screen Render Containment for Zero-Jank Fast Scrolling */
+/* Off-screen Render Containment with Cached Auto Height (Zero Scrollbar Jump) */
 .cv-auto {
 	content-visibility: auto;
-	contain-intrinsic-size: 0 140px;
+	contain-intrinsic-size: auto 168px;
 }
 
-/* Pure Architectural Midnight Glacier Canvas */
+/* Pure Architectural Midnight Glacier Canvas — GPU-Composited Fixed Layer (Zero Scroll Repaint) */
 .cryo-canvas {
+	position: relative;
+	isolation: isolate;
+	background-color: #050911;
+}
+
+.cryo-canvas::before {
+	content: "";
+	position: fixed;
+	inset: 0;
+	z-index: -20;
+	pointer-events: none;
 	background-color: #050911;
 	background-image:
 		radial-gradient(
@@ -132,15 +142,16 @@
 			transparent 60deg
 		),
 		linear-gradient(180deg, #0c1524 0%, #080e18 60%, #050911 100%);
-	background-attachment: fixed;
 	background-size: 100% 100%;
 	background-repeat: no-repeat;
+	transform: translate3d(0, 0, 0);
+	backface-visibility: hidden;
 }
 
 /* Seamless Architectural Glacial Aurora in Overdrive Mode */
-[data-overdrive="true"] .cryo-canvas,
-.cryo-canvas[data-overdrive="true"],
-[data-overdrive="true"].cryo-canvas {
+[data-overdrive="true"] .cryo-canvas::before,
+.cryo-canvas[data-overdrive="true"]::before,
+.cryo-canvas:has([data-overdrive="true"])::before {
 	background-color: #060d17;
 	background-image:
 		radial-gradient(
@@ -157,9 +168,6 @@
 			transparent 60deg
 		),
 		linear-gradient(180deg, #102238 0%, #0a1424 60%, #060d17 100%);
-	background-attachment: fixed;
-	background-size: 100% 100%;
-	background-repeat: no-repeat;
 }
 
 .frost-fracture-bg,

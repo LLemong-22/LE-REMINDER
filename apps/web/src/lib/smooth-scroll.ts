@@ -59,7 +59,7 @@ export function smoothScrollToElement(
 		const progress = Math.min(elapsed / duration, 1);
 		const ease = 1 - (1 - progress) ** 5;
 
-		window.scrollTo(0, startY + distance * ease);
+		window.scrollTo({ top: startY + distance * ease, behavior: "instant" });
 
 		if (progress < 1) {
 			animId = requestAnimationFrame(step);

@@ -78,7 +78,7 @@ export function RoutineCard({
 			ref={cardRef}
 			onClick={() => setRevealed((v) => !v)}
 			className={cn(
-				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-xl p-4 transition-colors duration-200",
+				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-xl p-4 transition-colors duration-200 [contain:layout_style_paint]",
 				// Due Cards: Authoritative smoked-glacier surface, platinum-ice border, razor-sharp top blade, icy left indicator
 				isDue &&
 					"border border-[#BAE6FD]/35 bg-[linear-gradient(180deg,rgba(20,34,54,0.92)_0%,rgba(12,21,36,0.96)_100%)] shadow-[inset_0_1px_0_0_rgba(224,242,254,0.65),0_12px_32px_-12px_rgba(0,0,0,0.7)] before:absolute before:top-4 before:bottom-4 before:left-0 before:w-[2px] before:rounded-r-sm before:bg-[#BAE6FD] before:shadow-[0_0_8px_rgba(186,230,253,0.5)] hover:border-[#BAE6FD]/60",
