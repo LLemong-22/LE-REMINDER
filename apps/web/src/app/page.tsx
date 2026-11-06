@@ -528,24 +528,14 @@ export default function Home() {
 						>
 							<svg
 								viewBox="0 0 24 24"
-								className="size-5 transition-all group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(56,189,248,0.9)]"
+								className="size-4 transition-all group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(56,189,248,0.9)]"
 								fill="none"
+								stroke="#BAE6FD"
+								strokeLinejoin="miter"
 								aria-hidden="true"
 							>
-								<defs>
-									<linearGradient id="navRiftV" x1="0" y1="0" x2="1" y2="1">
-										<stop offset="0%" stopColor="#38BDF8" />
-										<stop offset="100%" stopColor="#A855F7" />
-									</linearGradient>
-								</defs>
-								<path
-									d="M1.5 4 L6 7.5 L8 11 L10.5 13.5 L12 20.5 L13.5 13.5 L16 11 L18 7.5 L22.5 4 L17 6 L14.5 9.5 L12 14 L9.5 9.5 L7 6 Z"
-									fill="url(#navRiftV)"
-									fillOpacity="0.25"
-									stroke="url(#navRiftV)"
-									strokeWidth="1.3"
-									strokeLinejoin="miter"
-								/>
+								<polyline points="4,3 12,21 20,3" strokeWidth="2" />
+								<polyline points="7.5,6.5 12,16 16.5,6.5" strokeWidth="1" />
 							</svg>
 						</button>
 						<div className="shrink-0 font-extrabold text-[#F8FAFC] text-[17px] tracking-tight drop-shadow-[0_0_12px_rgba(56,189,248,0.35)] sm:text-[19px]">
