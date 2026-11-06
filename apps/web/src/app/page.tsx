@@ -526,17 +526,9 @@ export default function Home() {
 									: "border-[#7DD3FC]/35 bg-[#102136] text-[#7DD3FC] shadow-[0_0_10px_rgba(56,189,248,0.25)] hover:border-[#38BDF8] hover:bg-[#38BDF8]/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.5)]",
 							)}
 						>
-							<svg
-								viewBox="0 0 24 24"
-								className="size-4 transition-all group-hover:scale-110 group-hover:drop-shadow-[0_0_6px_rgba(56,189,248,0.9)]"
-								fill="none"
-								stroke="#BAE6FD"
-								strokeLinejoin="miter"
-								aria-hidden="true"
-							>
-								<polyline points="4,3 12,21 20,3" strokeWidth="2" />
-								<polyline points="7.5,6.5 12,16 16.5,6.5" strokeWidth="1" />
-							</svg>
+							<span className="transition-transform group-hover:scale-110">
+								V
+							</span>
 						</button>
 						<div className="shrink-0 font-extrabold text-[#F8FAFC] text-[17px] tracking-tight drop-shadow-[0_0_12px_rgba(56,189,248,0.35)] sm:text-[19px]">
 							<DecryptedText
