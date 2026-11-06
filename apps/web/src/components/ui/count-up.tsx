@@ -40,7 +40,6 @@ export function CountUp({
 			const current = Math.round(startVal + (targetVal - startVal) * eased);
 
 			currentValueRef.current = current;
-			startValueRef.current = current;
 			setValue(current);
 
 			if (progress < 1) {
