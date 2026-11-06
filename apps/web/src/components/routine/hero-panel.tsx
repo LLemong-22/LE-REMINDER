@@ -3,10 +3,10 @@
 import type { RoutineStatus } from "@LE-REMINDER/core/domain/routine-status";
 import { Checkbox } from "@LE-REMINDER/ui/components/checkbox";
 import { cn } from "@LE-REMINDER/ui/lib/utils";
+import { useRef } from "react";
 import { NexusAnimation } from "@/components/nexus-animation";
 import { CountUp } from "@/components/ui/count-up";
 import { DecryptedText } from "@/components/ui/decrypted-text";
-import { cryoSound } from "@/lib/cryo-sound";
 import { triggerCyberExplosion } from "@/lib/cyber-explosion";
 import type { DashboardRoutine } from "@/lib/dashboard-routine";
 import { sortByStatus } from "@/lib/sort-routines";
@@ -101,7 +101,7 @@ function CircularProgressIndicator({
 					strokeDasharray={circumference}
 					strokeDashoffset={strokeDashoffset}
 					className={cn(
-						"transition-all duration-1000 ease-out",
+						"transition-[stroke-dashoffset] duration-300 ease-out",
 						isOverdrive
 							? "drop-shadow-[0_0_20px_#38BDF8]"
 							: "drop-shadow-[0_0_14px_rgba(56,189,248,0.65)]",
@@ -130,6 +130,7 @@ export function HeroPanel({
 	isOverdrive?: boolean;
 	onToggleOverdrive?: () => void;
 }) {
+	const lastPointerTargetRef = useRef<HTMLElement | null>(null);
 	const dailyItems = sortByStatus(routines.filter(isDailyRoutine));
 
 	const counts: Record<RoutineStatus, number> = {
@@ -145,8 +146,7 @@ export function HeroPanel({
 		((counts.Done + counts.Finished) / total) * 100,
 	);
 
-	function handleCheck(routine: DashboardRoutine, target?: HTMLElement) {
-		cryoSound.playShatterComplete();
+	function handleCheck(routine: DashboardRoutine, target?: HTMLElement | null) {
 		if (target) {
 			triggerCyberExplosion(target);
 		}
@@ -155,9 +155,8 @@ export function HeroPanel({
 
 	return (
 		<div
-			style={{ willChange: "transform", transform: "translateZ(0)" }}
 			className={cn(
-				"frost-panel relative flex flex-col divide-y divide-[#BAE6FD]/15 overflow-hidden rounded-xl transition-all duration-500 md:flex-row md:divide-x md:divide-y-0",
+				"frost-panel relative flex flex-col divide-y divide-[#BAE6FD]/15 overflow-hidden rounded-xl transition-colors duration-300 md:flex-row md:divide-x md:divide-y-0",
 				isOverdrive &&
 					"border-[#7DD3FC] shadow-[0_0_35px_-5px_rgba(56,189,248,0.4),inset_0_1px_0_0_rgba(255,255,255,0.7)]",
 			)}
@@ -187,7 +186,7 @@ export function HeroPanel({
 			<div
 				aria-hidden="true"
 				className={cn(
-					"pointer-events-none absolute -inset-10 -z-10 transition-opacity duration-700",
+					"pointer-events-none absolute -inset-10 -z-10 transition-opacity duration-500",
 					isOverdrive
 						? "bg-[radial-gradient(ellipse_at_30%_50%,rgba(56,189,248,0.32),transparent_70%)] opacity-100"
 						: "bg-[radial-gradient(ellipse_at_30%_50%,rgba(56,189,248,0.12),transparent_60%)] opacity-60",
@@ -200,7 +199,7 @@ export function HeroPanel({
 					<div className="font-extrabold text-[#F8FAFC] text-[15px] tracking-tight">
 						Daily Task
 					</div>
-					<span className="font-medium font-mono text-[#BAE6FD] text-[11.5px]">
+					<span className="font-medium font-mono text-[#BAE6FD] text-[11.5px] tabular-nums">
 						{
 							dailyItems.filter(
 								(i) => i.status === "Done" || i.status === "Finished",
@@ -224,21 +223,23 @@ export function HeroPanel({
 							<div
 								key={routine.id}
 								className={cn(
-									"group/item -mx-1 flex items-center gap-2.5 rounded-lg px-2 py-1 transition-colors duration-150 hover:bg-[#BAE6FD]/10",
+									"group/item -mx-1 flex items-center gap-2.5 rounded-lg px-2 py-1 transition-colors duration-100 hover:bg-[#BAE6FD]/10",
 									done ? "opacity-60 hover:opacity-90" : "opacity-100",
 								)}
 							>
 								<Checkbox
 									checked={done}
-									onCheckedChange={() => {
-										if (!done) handleCheck(routine);
+									onPointerDown={(e) => {
+										lastPointerTargetRef.current = e.currentTarget;
 									}}
-									onClick={(e) => {
+									onCheckedChange={() => {
 										if (!done) {
-											handleCheck(routine, e.currentTarget);
+											const target = lastPointerTargetRef.current;
+											lastPointerTargetRef.current = null;
+											handleCheck(routine, target);
 										}
 									}}
-									className="size-4 cursor-pointer rounded border-[#7DD3FC]/50 transition-all duration-150 active:scale-90 group-hover/item:border-[#38BDF8] data-checked:border-[#7DD3FC] data-checked:bg-[#38BDF8] data-checked:text-[#06101E]"
+									className="size-4 cursor-pointer rounded border-[#7DD3FC]/50 transition-all duration-100 active:scale-90 group-hover/item:border-[#38BDF8] data-checked:border-[#7DD3FC] data-checked:bg-[#38BDF8] data-checked:text-[#06101E]"
 								/>
 								<button
 									type="button"
@@ -248,7 +249,7 @@ export function HeroPanel({
 										}
 									}}
 									className={cn(
-										"flex-1 cursor-pointer bg-transparent text-left font-medium text-[13.5px] transition-colors duration-150 active:scale-[0.99]",
+										"flex-1 cursor-pointer bg-transparent text-left font-medium text-[13.5px] transition-colors duration-100 active:scale-[0.99]",
 										done
 											? "text-[#64748B] line-through decoration-[#38BDF8]/30 group-hover/item:text-[#93C5FD]"
 											: "text-[#F8FAFC] hover:text-[#38BDF8]",
@@ -277,8 +278,8 @@ export function HeroPanel({
 					<div className="font-mono text-[#93C5FD] text-[11px] uppercase tracking-[0.12em]">
 						<DecryptedText
 							text="OVERALL PROGRESS"
-							speed={30}
-							maxIterations={8}
+							speed={25}
+							maxIterations={6}
 							encryptedClassName="text-[#38BDF8]"
 						/>
 					</div>
@@ -289,8 +290,8 @@ export function HeroPanel({
 					</span>
 				</div>
 
-				<div className="font-extrabold text-[#F8FAFC] text-[32px] tracking-tight">
-					<CountUp to={progressPct} duration={1.1} />
+				<div className="font-extrabold text-[#F8FAFC] text-[32px] tabular-nums tracking-tight">
+					<CountUp to={progressPct} duration={0.45} />
 				</div>
 
 				{/* Segmented Cryo Progress Bar with Overdrive Sheen */}
@@ -305,7 +306,7 @@ export function HeroPanel({
 						{STATUS_ORDER.map((status) => (
 							<div
 								key={status}
-								className="h-full transition-all duration-500 ease-out"
+								className="h-full transition-[width] duration-300 ease-out"
 								style={{
 									background: STATUS_GRADIENT[status] ?? STATUS_FILL[status],
 									width: `${(counts[status] / total) * 100}%`,
@@ -325,7 +326,7 @@ export function HeroPanel({
 				</div>
 
 				{/* Status Breakdown Legend */}
-				<div className="flex flex-wrap gap-3 font-mono text-[#BAE6FD] text-[11px]">
+				<div className="flex flex-wrap gap-3 font-mono text-[#BAE6FD] text-[11px] tabular-nums">
 					{STATUS_ORDER.map((status) => (
 						<div key={status} className="flex items-center gap-1.5">
 							<span

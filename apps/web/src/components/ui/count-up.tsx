@@ -14,12 +14,16 @@ export function CountUp({
 	className?: string;
 }) {
 	const [value, setValue] = useState(from);
-	const startValueRef = useRef(from);
+	const currentValueRef = useRef(from);
 	const startTimeRef = useRef<number | null>(null);
 	const frameRef = useRef<number | null>(null);
 
 	useEffect(() => {
-		const startVal = startValueRef.current;
+		const startVal = currentValueRef.current;
+		if (startVal === to) {
+			setValue(to);
+			return;
+		}
 		startTimeRef.current = null;
 		const targetVal = to;
 		const durationMs = duration * 1000;
@@ -35,13 +39,15 @@ export function CountUp({
 			const eased = easeOutExpo(progress);
 			const current = Math.round(startVal + (targetVal - startVal) * eased);
 
+			currentValueRef.current = current;
+			startValueRef.current = current;
 			setValue(current);
 
 			if (progress < 1) {
 				frameRef.current = requestAnimationFrame(step);
 			} else {
+				currentValueRef.current = targetVal;
 				setValue(targetVal);
-				startValueRef.current = targetVal;
 			}
 		};
 

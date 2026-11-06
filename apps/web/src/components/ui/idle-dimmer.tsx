@@ -31,26 +31,51 @@ const PHONE_QUERY = "(pointer: coarse) and (max-width: 639px)";
 // read as a glitch rather than a deliberate state change.
 export function IdleDimmer({ children }: { children: React.ReactNode }) {
 	const [idle, setIdle] = useState(false);
+	const idleRef = useRef(false);
 	const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+	const lastResetRef = useRef<number>(0);
+
+	useEffect(() => {
+		document.documentElement.dataset.pageIdle = idle ? "true" : "false";
+		return () => {
+			delete document.documentElement.dataset.pageIdle;
+		};
+	}, [idle]);
 
 	useEffect(() => {
 		if (window.matchMedia(PHONE_QUERY).matches) return;
 
-		function resetTimer() {
-			setIdle(false);
+		function scheduleIdle() {
 			clearTimeout(timerRef.current);
-			timerRef.current = setTimeout(() => setIdle(true), IDLE_TIMEOUT_MS);
+			timerRef.current = setTimeout(() => {
+				idleRef.current = true;
+				setIdle(true);
+			}, IDLE_TIMEOUT_MS);
 		}
 
-		resetTimer();
+		function handleActivity() {
+			const now = Date.now();
+			if (idleRef.current) {
+				idleRef.current = false;
+				setIdle(false);
+				lastResetRef.current = now;
+				scheduleIdle();
+				return;
+			}
+			if (now - lastResetRef.current < 1000) return;
+			lastResetRef.current = now;
+			scheduleIdle();
+		}
+
+		scheduleIdle();
 		for (const event of ACTIVITY_EVENTS) {
-			window.addEventListener(event, resetTimer);
+			window.addEventListener(event, handleActivity, { passive: true });
 		}
 
 		return () => {
 			clearTimeout(timerRef.current);
 			for (const event of ACTIVITY_EVENTS) {
-				window.removeEventListener(event, resetTimer);
+				window.removeEventListener(event, handleActivity);
 			}
 		};
 	}, []);

@@ -108,6 +108,12 @@
 	will-change: transform;
 }
 
+/* Off-screen Render Containment for Zero-Jank Fast Scrolling */
+.cv-auto {
+	content-visibility: auto;
+	contain-intrinsic-size: 0 140px;
+}
+
 /* Pure Architectural Midnight Glacier Canvas */
 .cryo-canvas {
 	background-color: #050911;
@@ -232,4 +238,12 @@
 	html {
 		@apply font-sans;
 	}
+}
+
+/* Pause All CSS Animations When Tab is Hidden or Idle (0.0% Background CPU/GPU) */
+html[data-page-hidden="true"] *,
+html[data-page-hidden="true"] *::before,
+html[data-page-hidden="true"] *::after {
+	/* biome-ignore lint/complexity/noImportantStyles: required to pause all active utility and inline CSS animations when backgrounded */
+	animation-play-state: paused !important;
 }

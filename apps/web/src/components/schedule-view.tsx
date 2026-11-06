@@ -131,9 +131,20 @@ export function ScheduleView({
 	// Low-overhead 30s ticker for accurate time block updates with 0% battery drain
 	useEffect(() => {
 		const interval = setInterval(() => {
-			setCurrentTime(new Date());
+			if (document.visibilityState === "visible") {
+				setCurrentTime(new Date());
+			}
 		}, 30000);
-		return () => clearInterval(interval);
+		function handleVisibility() {
+			if (document.visibilityState === "visible") {
+				setCurrentTime(new Date());
+			}
+		}
+		document.addEventListener("visibilitychange", handleVisibility);
+		return () => {
+			clearInterval(interval);
+			document.removeEventListener("visibilitychange", handleVisibility);
+		};
 	}, []);
 
 	const todayDayOfWeek = currentTime.getDay();
@@ -434,6 +445,7 @@ export function ScheduleView({
 							ref={isTarget ? activeCardRef : null}
 							className={cn(
 								"group relative transition-all duration-200",
+								!isTarget && !isLive && "cv-auto",
 								isPast && "opacity-45 hover:opacity-80",
 							)}
 						>
@@ -453,7 +465,7 @@ export function ScheduleView({
 							{isLive ? (
 								<div
 									className={cn(
-										"frost-panel relative overflow-hidden rounded-xl border border-[#BAE6FD]/50 p-4 shadow-[0_0_24px_rgba(56,189,248,0.3),inset_0_1px_0_0_rgba(224,242,254,0.35)] transition-all sm:p-5",
+										"cv-auto frost-panel relative overflow-hidden rounded-xl border border-[#BAE6FD]/50 p-4 shadow-[0_0_24px_rgba(56,189,248,0.3),inset_0_1px_0_0_rgba(224,242,254,0.35)] transition-colors sm:p-5",
 										highlightPulse && "arrival-glow-pulse",
 										isOverdrive &&
 											"border-[#7DD3FC]/75 shadow-[0_0_30px_rgba(56,189,248,0.45)]",
@@ -519,7 +531,7 @@ export function ScheduleView({
 								</div>
 							) : (
 								/* Standard Card for Normal / Upcoming / Past Events */
-								<div className="frost-panel relative flex flex-col gap-2 overflow-hidden rounded-xl p-3.5 transition-all duration-150 hover:border-[#BAE6FD]/30 sm:p-4">
+								<div className="cv-auto frost-panel relative flex flex-col gap-2 overflow-hidden rounded-xl p-3.5 transition-colors duration-150 hover:border-[#BAE6FD]/30 sm:p-4">
 									{isOverdrive && (
 										<div
 											aria-hidden="true"

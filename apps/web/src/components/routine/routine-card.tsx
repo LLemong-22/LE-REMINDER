@@ -3,9 +3,7 @@
 import { Badge } from "@LE-REMINDER/ui/components/badge";
 import { cn } from "@LE-REMINDER/ui/lib/utils";
 import { Check, Pause, Play, Settings2, Star } from "lucide-react";
-import { motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
-import { cryoSound } from "@/lib/cryo-sound";
 import { triggerCyberExplosion } from "@/lib/cyber-explosion";
 import type { DashboardRoutine } from "@/lib/dashboard-routine";
 import { describeTaskType } from "@/lib/describe-task-type";
@@ -64,25 +62,23 @@ export function RoutineCard({
 		routine.taskType.schedule.type === "FixedCalendar";
 
 	function handleComplete(target?: HTMLElement) {
-		cryoSound.playShatterComplete();
-		if (typeof window !== "undefined") {
-			window.dispatchEvent(new CustomEvent("core-overdrive"));
-		}
 		if (target) {
 			triggerCyberExplosion(target);
 		}
+		setRevealed(false);
 		onComplete();
 		setFlipping(true);
-		setTimeout(() => setFlipping(false), 400);
+		setTimeout(() => setFlipping(false), 380);
 	}
 
 	return (
-		<motion.div
+		// biome-ignore lint/a11y/noStaticElementInteractions: touch tap-to-reveal convenience; inner buttons remain fully keyboard-focusable via group-focus-within
+		// biome-ignore lint/a11y/useKeyWithClickEvents: inner action buttons provide complete keyboard operation
+		<div
 			ref={cardRef}
 			onClick={() => setRevealed((v) => !v)}
-			style={{ willChange: "transform", transform: "translateZ(0)" }}
 			className={cn(
-				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-xl p-4 transition-all duration-300",
+				"group relative flex h-full min-h-[165px] flex-col justify-between overflow-hidden rounded-xl p-4 transition-colors duration-200",
 				// Due Cards: Authoritative smoked-glacier surface, platinum-ice border, razor-sharp top blade, icy left indicator
 				isDue &&
 					"border border-[#BAE6FD]/35 bg-[linear-gradient(180deg,rgba(20,34,54,0.92)_0%,rgba(12,21,36,0.96)_100%)] shadow-[inset_0_1px_0_0_rgba(224,242,254,0.65),0_12px_32px_-12px_rgba(0,0,0,0.7)] before:absolute before:top-4 before:bottom-4 before:left-0 before:w-[2px] before:rounded-r-sm before:bg-[#BAE6FD] before:shadow-[0_0_8px_rgba(186,230,253,0.5)] hover:border-[#BAE6FD]/60",
@@ -121,7 +117,7 @@ export function RoutineCard({
 			{flipping && (
 				<div
 					aria-hidden="true"
-					className="pointer-events-none absolute inset-0 origin-left animate-[sweep-flip_0.4s_ease_forwards] rounded-[11px] bg-[#38BDF8]/15"
+					className="pointer-events-none absolute inset-0 origin-left animate-[sweep-flip_0.38s_ease_forwards] rounded-[11px] bg-[#38BDF8]/15"
 				/>
 			)}
 
@@ -162,7 +158,7 @@ export function RoutineCard({
 					<Badge
 						variant="outline"
 						className={cn(
-							"rounded border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 font-mono text-[#94A3B8] text-[9px] uppercase tracking-[0.12em] transition-all",
+							"rounded border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 font-mono text-[#94A3B8] text-[9px] uppercase tracking-[0.12em] transition-opacity",
 							isCompleted && "opacity-60",
 						)}
 					>
@@ -188,7 +184,7 @@ export function RoutineCard({
 					)}
 					<div
 						className={cn(
-							"line-clamp-2 font-semibold text-[15px] tracking-tight transition-colors",
+							"line-clamp-2 font-semibold text-[15px] tracking-tight transition-colors duration-150",
 							isCompleted
 								? isOverdrive
 									? "text-[#E0F2FE] line-through decoration-[#38BDF8]/40 drop-shadow-[0_0_8px_rgba(186,230,253,0.3)]"
@@ -265,6 +261,7 @@ export function RoutineCard({
 							onPointerDown={(e) => e.stopPropagation()}
 							onClick={(e) => {
 								e.stopPropagation();
+								setRevealed(false);
 								onTogglePause();
 							}}
 							aria-label={isPaused ? "Resume routine" : "Pause routine"}
@@ -283,6 +280,7 @@ export function RoutineCard({
 						onPointerDown={(e) => e.stopPropagation()}
 						onClick={(e) => {
 							e.stopPropagation();
+							setRevealed(false);
 							onEdit();
 						}}
 						aria-label="Edit routine"
@@ -293,6 +291,6 @@ export function RoutineCard({
 					</button>
 				</div>
 			</div>
-		</motion.div>
+		</div>
 	);
 }

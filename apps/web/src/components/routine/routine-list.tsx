@@ -41,20 +41,20 @@ export function RoutineList({
 				{sorted.map((routine) => (
 					<motion.div
 						key={routine.id}
-						layout
-						initial={{ opacity: 0, y: -20, scale: 0.95 }}
+						layout="position"
+						initial={{ opacity: 0, y: -12, scale: 0.97 }}
 						animate={{ opacity: 1, y: 0, scale: 1 }}
 						exit={{
 							opacity: 0,
-							scale: 0.8,
-							transition: { duration: 0.2, ease: "easeOut" },
+							scale: 0.92,
+							transition: { duration: 0.14, ease: "easeOut" },
 						}}
 						transition={{
-							layout: { duration: 0.35, ease: [0.25, 1, 0.5, 1] },
-							opacity: { duration: 0.2 },
-							scale: { duration: 0.2 },
+							layout: { duration: 0.24, ease: [0.16, 1, 0.3, 1] },
+							opacity: { duration: 0.14 },
+							scale: { duration: 0.14 },
 						}}
-						className="flex h-full flex-col"
+						className="cv-auto flex h-full flex-col"
 					>
 						<SpotlightCard
 							className="flex h-full flex-col rounded-[12px]"

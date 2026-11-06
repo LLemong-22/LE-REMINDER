@@ -27,7 +27,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type { inferRouterOutputs } from "@trpc/server";
 import { GripVertical, Inbox } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { BorderBeam } from "@/components/ui/border-beam";
 import { cryoSound } from "@/lib/cryo-sound";
@@ -55,21 +55,27 @@ function TodoRowContent({
 	onToggle?: (target?: HTMLElement) => void;
 	onDelete?: () => void;
 }) {
+	const pointerTargetRef = useRef<HTMLElement | null>(null);
+
 	return (
 		<div
 			className={cn(
-				"group/todo -mx-1.5 flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors duration-150 hover:bg-[#BAE6FD]/[0.06]",
+				"group/todo -mx-1.5 flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors duration-100 hover:bg-[#BAE6FD]/[0.06]",
 				todo.done ? "opacity-60" : "opacity-100",
 			)}
 		>
 			{grip}
 			<Checkbox
 				checked={todo.done}
-				onCheckedChange={() => onToggle?.()}
-				onClick={(e) => {
-					onToggle?.(e.currentTarget);
+				onPointerDown={(e) => {
+					pointerTargetRef.current = e.currentTarget;
 				}}
-				className="size-4 cursor-pointer rounded border-[#BAE6FD]/40 transition-all duration-150 active:scale-90 group-hover/todo:border-[#38BDF8] data-checked:border-[#38BDF8] data-checked:bg-[#38BDF8] data-checked:text-[#091524]"
+				onCheckedChange={() => {
+					const target = pointerTargetRef.current ?? undefined;
+					pointerTargetRef.current = null;
+					onToggle?.(target);
+				}}
+				className="size-4 cursor-pointer rounded border-[#BAE6FD]/40 transition-all duration-100 active:scale-90 group-hover/todo:border-[#38BDF8] data-checked:border-[#38BDF8] data-checked:bg-[#38BDF8] data-checked:text-[#091524]"
 			/>
 			<button
 				type="button"
@@ -77,7 +83,7 @@ function TodoRowContent({
 					onToggle?.(e.currentTarget);
 				}}
 				className={cn(
-					"flex-1 cursor-pointer bg-transparent text-left font-medium text-[13.5px] transition-colors duration-150 active:scale-[0.99]",
+					"flex-1 cursor-pointer bg-transparent text-left font-medium text-[13.5px] transition-colors duration-100 active:scale-[0.99]",
 					todo.done
 						? "text-[#64748B] line-through decoration-[#38BDF8]/30 group-hover/todo:text-[#93C5FD]"
 						: "text-[#F8FAFC] group-hover/todo:text-[#38BDF8]",
@@ -118,7 +124,7 @@ function GripHandle({
 // One sortable, animated row. dnd-kit's transform/transition make the
 // non-dragged rows slide out of the way smoothly; the dragged row itself
 // stays in the list as a low-opacity ghost while the fully-opaque
-// DragOverlay copy follows the cursor. framer-motion owns opacity/scale/height
+// DragOverlay copy follows the cursor. framer-motion owns opacity/scale
 // for mount/unmount and position layout when not dragging.
 function SortableTodoRow({
 	todo,
@@ -146,23 +152,21 @@ function SortableTodoRow({
 		<motion.div
 			ref={setNodeRef}
 			layout={!isDragging ? "position" : false}
-			initial={{ opacity: 0, y: -16, scale: 0.95 }}
+			initial={{ opacity: 0, y: -10, scale: 0.97 }}
 			animate={{ opacity: isDragging ? 0.3 : 1, y: 0, scale: 1 }}
 			exit={{
 				opacity: 0,
-				scale: 0.8,
-				height: 0,
-				overflow: "hidden",
-				transition: { duration: 0.2 },
+				scale: 0.9,
+				transition: { duration: 0.14 },
 			}}
-			whileTap={{ scale: 0.98 }}
+			whileTap={{ scale: 0.99 }}
 			transition={{
-				layout: { duration: 0.28, ease: [0.25, 1, 0.5, 1] },
-				duration: 0.2,
+				layout: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
+				duration: 0.14,
 			}}
 			style={{
 				transform: CSS.Transform.toString(transform),
-				transition: transition || "transform 250ms cubic-bezier(0.2, 0, 0, 1)",
+				transition: transition || "transform 220ms cubic-bezier(0.2, 0, 0, 1)",
 				position: "relative",
 			}}
 		>
@@ -203,6 +207,8 @@ export function TodoSidebar({
 	const [newText, setNewText] = useState("");
 	const [activeId, setActiveId] = useState<string | null>(null);
 	const [overId, setOverId] = useState<string | null>(null);
+	const inputRef = useRef<HTMLInputElement | null>(null);
+	const inFlightRef = useRef(0);
 
 	const listQueryOptions = trpc.todo.list.queryOptions();
 	const todosQuery = useQuery(listQueryOptions);
@@ -218,71 +224,125 @@ export function TodoSidebar({
 		}),
 	);
 
-	function invalidate() {
-		queryClient.invalidateQueries(trpc.todo.pathFilter());
+	function settleAndSync() {
+		inFlightRef.current = Math.max(0, inFlightRef.current - 1);
+		if (inFlightRef.current === 0) {
+			queryClient.invalidateQueries(trpc.todo.pathFilter());
+		}
+	}
+
+	function rollback(previous: Todo[] | undefined) {
+		if (previous) {
+			queryClient.setQueryData(listQueryOptions.queryKey, previous);
+		}
 	}
 
 	const addMutation = useMutation(
-		trpc.todo.add.mutationOptions({ onSuccess: invalidate }),
+		trpc.todo.add.mutationOptions({
+			onMutate: async ({ text }) => {
+				inFlightRef.current += 1;
+				const cancelPromise = queryClient.cancelQueries(listQueryOptions);
+				const previous = queryClient.getQueryData(listQueryOptions.queryKey);
+				const tempId = `optimistic-${crypto.randomUUID()}`;
+				const maxPosition = (previous ?? []).reduce(
+					(max, item) => Math.max(max, item.position),
+					-1,
+				);
+				const optimisticTodo: Todo = {
+					id: tempId,
+					userId: previous?.[0]?.userId ?? "optimistic",
+					text,
+					done: false,
+					position: maxPosition + 1,
+					createdAt: new Date(),
+				};
+				queryClient.setQueryData(listQueryOptions.queryKey, (old) => [
+					...(old ?? []),
+					optimisticTodo,
+				]);
+				await cancelPromise;
+				return { previous, tempId };
+			},
+			onSuccess: (created, _vars, context) => {
+				if (!created) return;
+				queryClient.setQueryData(listQueryOptions.queryKey, (old) =>
+					old?.map((todo) => (todo.id === context?.tempId ? created : todo)),
+				);
+			},
+			onError: (_error, _vars, context) => rollback(context?.previous),
+			onSettled: settleAndSync,
+		}),
 	);
 
-	// Toggling and reordering are the most frequent interactions, so both
-	// get an optimistic update instead of waiting on the Turso round-trip;
-	// add/delete stay invalidate-on-success since they're infrequent and
-	// the skeleton/list reflow is cheap either way.
 	const toggleMutation = useMutation(
 		trpc.todo.toggle.mutationOptions({
 			onMutate: async ({ todoId }) => {
-				await queryClient.cancelQueries(listQueryOptions);
+				inFlightRef.current += 1;
+				const cancelPromise = queryClient.cancelQueries(listQueryOptions);
 				const previous = queryClient.getQueryData(listQueryOptions.queryKey);
 				queryClient.setQueryData(listQueryOptions.queryKey, (old) =>
 					old?.map((todo) =>
 						todo.id === todoId ? { ...todo, done: !todo.done } : todo,
 					),
 				);
+				await cancelPromise;
 				return { previous };
 			},
-			onError: (_error, _vars, context) => {
-				if (context?.previous) {
-					queryClient.setQueryData(listQueryOptions.queryKey, context.previous);
-				}
-			},
-			onSettled: invalidate,
+			onError: (_error, _vars, context) => rollback(context?.previous),
+			onSettled: settleAndSync,
 		}),
 	);
 
 	const reorderMutation = useMutation(
 		trpc.todo.reorder.mutationOptions({
 			onMutate: async ({ todoIds }) => {
-				await queryClient.cancelQueries(listQueryOptions);
+				inFlightRef.current += 1;
+				const cancelPromise = queryClient.cancelQueries(listQueryOptions);
 				const previous = queryClient.getQueryData(listQueryOptions.queryKey);
 				if (previous) {
 					const byId = new Map(previous.map((todo) => [todo.id, todo]));
 					const reordered = todoIds
-						.map((id) => byId.get(id))
+						.map((id, idx) => {
+							const found = byId.get(id);
+							return found ? { ...found, position: idx } : undefined;
+						})
 						.filter((todo): todo is Todo => todo !== undefined);
 					queryClient.setQueryData(listQueryOptions.queryKey, reordered);
 				}
+				await cancelPromise;
 				return { previous };
 			},
-			onError: (_error, _vars, context) => {
-				if (context?.previous) {
-					queryClient.setQueryData(listQueryOptions.queryKey, context.previous);
-				}
-			},
-			onSettled: invalidate,
+			onError: (_error, _vars, context) => rollback(context?.previous),
+			onSettled: settleAndSync,
 		}),
 	);
 
 	const deleteMutation = useMutation(
-		trpc.todo.delete.mutationOptions({ onSuccess: invalidate }),
+		trpc.todo.delete.mutationOptions({
+			onMutate: async ({ todoId }) => {
+				inFlightRef.current += 1;
+				const cancelPromise = queryClient.cancelQueries(listQueryOptions);
+				const previous = queryClient.getQueryData(listQueryOptions.queryKey);
+				queryClient.setQueryData(listQueryOptions.queryKey, (old) =>
+					old?.filter((todo) => todo.id !== todoId),
+				);
+				await cancelPromise;
+				return { previous };
+			},
+			onError: (_error, _vars, context) => rollback(context?.previous),
+			onSettled: settleAndSync,
+		}),
 	);
 
 	function addTodo() {
 		const text = newText.trim();
-		if (!text) return;
-		addMutation.mutate({ text });
+		if (!text) {
+			inputRef.current?.focus();
+			return;
+		}
 		setNewText("");
+		inputRef.current?.focus();
+		addMutation.mutate({ text });
 	}
 
 	function handleDragStart(event: DragStartEvent) {
@@ -329,9 +389,8 @@ export function TodoSidebar({
 
 	return (
 		<div
-			style={{ willChange: "transform", transform: "translateZ(0)" }}
 			className={cn(
-				"frost-panel sticky top-[76px] flex max-h-[calc(100vh-96px)] w-[280px] shrink-0 flex-col gap-3.5 overflow-hidden rounded-xl p-5 transition-all duration-300",
+				"frost-panel sticky top-[76px] flex max-h-[calc(100vh-96px)] w-full shrink-0 flex-col gap-3.5 overflow-hidden rounded-xl p-5 transition-colors duration-300 lg:w-[280px]",
 				isOverdrive &&
 					"border-[#7DD3FC]/45 shadow-[0_0_28px_-6px_rgba(56,189,248,0.25)]",
 			)}
@@ -368,7 +427,9 @@ export function TodoSidebar({
 							type="button"
 							onClick={() => {
 								for (const t of sortedTodos.filter((item) => item.done)) {
-									deleteMutation.mutate({ todoId: t.id });
+									if (!t.id.startsWith("optimistic-")) {
+										deleteMutation.mutate({ todoId: t.id });
+									}
 								}
 							}}
 							className="shrink-0 cursor-pointer whitespace-nowrap font-mono font-semibold text-[#38BDF8] text-[11px] hover:underline active:scale-95"
@@ -386,7 +447,7 @@ export function TodoSidebar({
 				</div>
 			</div>
 
-			<div className="flex flex-col gap-2.5">
+			<div className="flex min-h-0 flex-1 flex-col gap-2.5 overflow-y-auto overflow-x-hidden pr-0.5 [scrollbar-width:thin]">
 				{!todosQuery.isLoading && sortedTodos.length === 0 && (
 					<div className="frost-panel flex flex-col items-center justify-center gap-2 rounded-xl border-dashed bg-[#091524]/60 px-4 py-7 text-center">
 						<div className="flex size-9 items-center justify-center rounded-full border border-[#BAE6FD]/30 bg-[#0C1A2B] text-[#93C5FD]">
@@ -419,6 +480,7 @@ export function TodoSidebar({
 											editMode={editMode}
 											indicator={indicatorFor(todo.id)}
 											onToggle={(target) => {
+												if (todo.id.startsWith("optimistic-")) return;
 												if (!todo.done) {
 													cryoSound.playShatterComplete();
 													if (typeof window !== "undefined") {
@@ -432,9 +494,10 @@ export function TodoSidebar({
 												}
 												toggleMutation.mutate({ todoId: todo.id });
 											}}
-											onDelete={() =>
-												deleteMutation.mutate({ todoId: todo.id })
-											}
+											onDelete={() => {
+												if (todo.id.startsWith("optimistic-")) return;
+												deleteMutation.mutate({ todoId: todo.id });
+											}}
 										/>
 									))}
 							</AnimatePresence>
@@ -461,17 +524,27 @@ export function TodoSidebar({
 
 			<div className="flex gap-1.5 border-[#BAE6FD]/20 border-t pt-2">
 				<input
+					ref={inputRef}
 					type="text"
 					value={newText}
 					onChange={(e) => setNewText(e.target.value)}
 					onKeyDown={(e) => {
-						if (e.key === "Enter") addTodo();
+						if (e.key === "Enter") {
+							e.preventDefault();
+							addTodo();
+						} else if (e.key === "Escape") {
+							e.currentTarget.blur();
+						}
 					}}
 					placeholder="Add a task…"
 					className="min-w-0 flex-1 rounded-lg border border-[#93C5FD]/35 bg-[#091524] px-2.5 py-1.5 font-medium font-sans text-[#F8FAFC] text-[12.5px] placeholder-[#64748B] outline-none transition-all duration-150 focus:border-[#38BDF8] focus:ring-1 focus:ring-[#38BDF8]/40"
 				/>
 				<button
 					type="button"
+					onMouseDown={(e) => {
+						// Prevent button mousedown from stealing focus out of the input field
+						e.preventDefault();
+					}}
 					onClick={addTodo}
 					aria-label="Add task"
 					className="frost-pill-btn flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-lg text-base leading-none active:scale-95"

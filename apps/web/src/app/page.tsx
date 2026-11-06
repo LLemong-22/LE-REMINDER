@@ -17,7 +17,14 @@ import {
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { HeroPanel } from "@/components/routine/hero-panel";
 import { RoutineFormDialog } from "@/components/routine/routine-form-dialog";
 import { RoutineList } from "@/components/routine/routine-list";
@@ -33,6 +40,8 @@ import { triggerCyberExplosion } from "@/lib/cyber-explosion";
 import type { DashboardRoutine } from "@/lib/dashboard-routine";
 import {
 	withCompleted,
+	withCreated,
+	withEdited,
 	withPaused,
 	withRemoved,
 } from "@/lib/optimistic-routines";
@@ -44,30 +53,43 @@ type Tab = "home" | "schedule" | "all" | "analytics";
 
 function TabButton({
 	active,
+	shortcut,
+	label,
 	onClick,
-	children,
 }: {
 	active: boolean;
+	shortcut: string;
+	label: string;
 	onClick: () => void;
-	children: React.ReactNode;
 }) {
 	return (
 		<button
 			type="button"
 			onClick={onClick}
+			title={`${label} (${shortcut})`}
 			className={cn(
-				"relative cursor-pointer whitespace-nowrap rounded-sm px-1 py-1.5 font-semibold text-sm transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]/40",
+				"group relative flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-sm px-1 py-1.5 font-semibold text-sm transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#38BDF8]/40",
 				active ? "text-[#F0F9FF]" : "text-[#93C5FD] hover:text-[#F0F9FF]",
 			)}
 		>
-			{children}
-			{active && (
-				<motion.div
-					layoutId="activeTabUnderline"
-					transition={{ type: "spring", stiffness: 450, damping: 35 }}
-					className="absolute inset-x-0 -bottom-[17px] h-[2px] rounded-full bg-[#38BDF8] shadow-[0_0_8px_#38BDF8]"
-				/>
-			)}
+			<span>{label}</span>
+			<kbd
+				className={cn(
+					"hidden rounded border px-1 py-0.5 font-mono text-[9.5px] leading-none transition-colors duration-100 sm:inline-block",
+					active
+						? "border-[#38BDF8]/45 bg-[#38BDF8]/15 text-[#BAE6FD]"
+						: "border-[#7DD3FC]/15 bg-[#102136]/70 text-[#64748B] group-hover:border-[#7DD3FC]/30 group-hover:text-[#93C5FD]",
+				)}
+			>
+				{shortcut}
+			</kbd>
+			<span
+				aria-hidden="true"
+				className={cn(
+					"pointer-events-none absolute inset-x-0 -bottom-[17px] h-[2px] origin-center rounded-full bg-[#38BDF8] shadow-[0_0_8px_#38BDF8] transition-[transform,opacity] duration-100 ease-out",
+					active ? "scale-x-100 opacity-100" : "scale-x-50 opacity-0",
+				)}
+			/>
 		</button>
 	);
 }
@@ -76,6 +98,8 @@ function TacticalClock() {
 	const [timeStr, setTimeStr] = useState<string | null>(null);
 
 	useEffect(() => {
+		let timer: ReturnType<typeof setInterval> | null = null;
+
 		function updateClock() {
 			const now = new Date();
 			const h = String(now.getHours()).padStart(2, "0");
@@ -83,9 +107,37 @@ function TacticalClock() {
 			const s = String(now.getSeconds()).padStart(2, "0");
 			setTimeStr(`${h}:${m}:${s}`);
 		}
-		updateClock();
-		const timer = setInterval(updateClock, 1000);
-		return () => clearInterval(timer);
+
+		function startClock() {
+			if (timer !== null) return;
+			updateClock();
+			timer = setInterval(updateClock, 1000);
+		}
+
+		function stopClock() {
+			if (timer !== null) {
+				clearInterval(timer);
+				timer = null;
+			}
+		}
+
+		function handleVisibility() {
+			if (document.visibilityState === "hidden") {
+				stopClock();
+			} else {
+				startClock();
+			}
+		}
+
+		if (document.visibilityState !== "hidden") {
+			startClock();
+		}
+		document.addEventListener("visibilitychange", handleVisibility);
+
+		return () => {
+			stopClock();
+			document.removeEventListener("visibilitychange", handleVisibility);
+		};
 	}, []);
 
 	if (!timeStr) {
@@ -184,10 +236,51 @@ function RoutinesErrorState({ onRetry }: { onRetry: () => void }) {
 	);
 }
 
+function SearchField({
+	inputRef,
+	value,
+	onChange,
+}: {
+	inputRef: React.RefObject<HTMLInputElement | null>;
+	value: string;
+	onChange: (next: string) => void;
+}) {
+	return (
+		<div className="relative flex w-full max-w-xs items-center">
+			<Search className="pointer-events-none absolute left-3 size-3.5 text-[#64748B]" />
+			<input
+				ref={inputRef}
+				type="text"
+				placeholder="Search tasks & routines..."
+				title="Search tasks & routines (Press / or Ctrl+K)"
+				value={value}
+				onChange={(e) => onChange(e.target.value)}
+				className="peer w-full rounded-lg border border-[#93C5FD]/35 bg-[#091524] py-1.5 pr-9 pl-8.5 font-medium font-sans text-[#F8FAFC] text-[13px] placeholder-[#64748B] outline-none transition-colors duration-150 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/25"
+			/>
+			{value ? (
+				<button
+					type="button"
+					onClick={() => {
+						onChange("");
+						inputRef.current?.focus();
+					}}
+					className="absolute right-2.5 cursor-pointer text-[#64748B] transition-colors hover:text-[#F8FAFC]"
+					aria-label="Clear search"
+					title="Clear search"
+				>
+					<X className="size-3.5" />
+				</button>
+			) : (
+				<kbd className="pointer-events-none absolute right-2 select-none rounded border border-[#7DD3FC]/20 bg-[#102136]/85 px-1.5 py-0.5 font-mono text-[#64748B] text-[10px] leading-none transition-opacity duration-100 peer-focus:opacity-0">
+					[/]
+				</kbd>
+			)}
+		</div>
+	);
+}
+
 // Step 14: real tRPC + Turso backend. Routines and Today's To-Do are both
-// server state now (useQuery + mutations, invalidated on writes) — see
-// todo-sidebar.tsx. The hero's Daily Task checklist is still a local-only
-// scratchpad by design — see hero-panel.tsx.
+// server state now (useQuery + 0ms optimistic mutations) — see todo-sidebar.tsx.
 export default function Home() {
 	const router = useRouter();
 	// Always trigger the 1.25s razor crest reveal on reload & on 2-min return
@@ -204,7 +297,11 @@ export default function Home() {
 		setShowVillainIntro(true);
 	}, []);
 
+	// Sync html[data-page-hidden] on visibilitychange so background tabs drop to 0.0% CPU/GPU
 	useEffect(() => {
+		document.documentElement.dataset.pageHidden =
+			document.visibilityState === "hidden" ? "true" : "false";
+
 		function checkAndTriggerAway() {
 			const now = Date.now();
 			if (
@@ -217,9 +314,11 @@ export default function Home() {
 		}
 
 		function handleVisibilityChange() {
-			if (document.visibilityState === "hidden") {
+			const isHidden = document.visibilityState === "hidden";
+			document.documentElement.dataset.pageHidden = isHidden ? "true" : "false";
+			if (isHidden) {
 				hiddenAtRef.current = Date.now();
-			} else if (document.visibilityState === "visible") {
+			} else {
 				checkAndTriggerAway();
 			}
 		}
@@ -253,6 +352,7 @@ export default function Home() {
 		});
 
 		return () => {
+			delete document.documentElement.dataset.pageHidden;
 			document.removeEventListener("visibilitychange", handleVisibilityChange);
 			window.removeEventListener("blur", handleBlur);
 			window.removeEventListener("focus", handleFocus);
@@ -261,30 +361,24 @@ export default function Home() {
 			window.removeEventListener("touchstart", handleUserActivity);
 		};
 	}, [triggerIntro]);
+
 	const [searchInput, setSearchInput] = useState("");
-	const [debouncedSearch, setDebouncedSearch] = useState("");
+	const searchInputRef = useRef<HTMLInputElement | null>(null);
+	const pendingSearchFocusRef = useRef(false);
 
-	useEffect(() => {
-		const timer = setTimeout(() => {
-			setDebouncedSearch(searchInput);
-		}, 300);
-		return () => clearTimeout(timer);
-	}, [searchInput]);
-
-	const listQueryOptions = trpc.routine.list.queryOptions({
-		searchQuery: debouncedSearch || undefined,
-	});
+	// Single canonical routine.list cache: keeps HeroPanel progress accurate and enables
+	// 0ms client-side search filtering + 0ms deterministic optimistic cache mutations.
+	const listQueryOptions = trpc.routine.list.queryOptions({});
+	const routineListFilter = trpc.routine.list.queryFilter();
 	const routinesQuery = useQuery(listQueryOptions);
-	const routines: DashboardRoutine[] = (routinesQuery.data ?? []).map(
-		toDashboardRoutine,
+	const routines: DashboardRoutine[] = useMemo(
+		() => (routinesQuery.data ?? []).map(toDashboardRoutine),
+		[routinesQuery.data],
 	);
 
 	// proxy.ts only checks that a session cookie is present, not that it's
 	// still valid — an expired/revoked session reaches this page and the
-	// first protectedProcedure call throws UNAUTHORIZED. Without this, that
-	// showed as "Couldn't load routines from the database" with a Retry
-	// button that would fail forever, instead of sending the user back to
-	// where they can actually fix it.
+	// first protectedProcedure call throws UNAUTHORIZED.
 	useEffect(() => {
 		const error = routinesQuery.error;
 		if (
@@ -301,106 +395,175 @@ export default function Home() {
 	const [editingRoutine, setEditingRoutine] = useState<DashboardRoutine | null>(
 		null,
 	);
+	const inFlightMutationsRef = useRef(0);
 
-	function invalidateRoutines() {
-		queryClient.invalidateQueries(trpc.routine.pathFilter());
+	// Focus search input synchronously before paint when `/` or Cmd/Ctrl+K switches tabs
+	useLayoutEffect(() => {
+		if (
+			pendingSearchFocusRef.current &&
+			(activeTab === "home" || activeTab === "all")
+		) {
+			pendingSearchFocusRef.current = false;
+			searchInputRef.current?.focus();
+			searchInputRef.current?.select();
+		}
+	}, [activeTab]);
+
+	function settleAndInvalidateRoutines() {
+		inFlightMutationsRef.current = Math.max(
+			0,
+			inFlightMutationsRef.current - 1,
+		);
+		if (inFlightMutationsRef.current === 0) {
+			queryClient.invalidateQueries(routineListFilter);
+		}
 	}
 
-	// Shared onMutate/onError plumbing for the three highest-frequency
-	// actions (complete/pause/delete are single taps on the main grid —
-	// waiting on a Turso round-trip before anything visibly happens reads
-	// as broken). create/edit stay invalidate-only: they're dialog-based,
-	// lower-frequency, and a temp-id insert isn't worth the complexity.
-	async function cancelAndSnapshot() {
-		await queryClient.cancelQueries(listQueryOptions);
-		return queryClient.getQueryData(listQueryOptions.queryKey);
+	function snapshotRoutines() {
+		inFlightMutationsRef.current += 1;
+		const cancelPromise = queryClient.cancelQueries(routineListFilter);
+		const previous =
+			queryClient.getQueriesData<RoutineView[]>(routineListFilter);
+		return { cancelPromise, previous };
 	}
 
-	function rollback(previous: RoutineView[] | undefined) {
-		if (previous) {
-			queryClient.setQueryData(listQueryOptions.queryKey, previous);
+	function rollbackRoutines(
+		previous:
+			| Array<[readonly unknown[], RoutineView[] | undefined]>
+			| undefined,
+	) {
+		if (!previous) return;
+		for (const [queryKey, data] of previous) {
+			queryClient.setQueryData(queryKey, data);
 		}
 	}
 
 	const createMutation = useMutation(
-		trpc.routine.create.mutationOptions({ onSuccess: invalidateRoutines }),
+		trpc.routine.create.mutationOptions({
+			onMutate: async (input) => {
+				const { cancelPromise, previous } = snapshotRoutines();
+				const now = new Date();
+				const tempId = `optimistic-${crypto.randomUUID()}` as RoutineId;
+				queryClient.setQueriesData<RoutineView[]>(routineListFilter, (old) =>
+					old ? withCreated(old, { id: tempId, ...input }, now) : old,
+				);
+				await cancelPromise;
+				return { previous };
+			},
+			onError: (_error, _vars, context) => rollbackRoutines(context?.previous),
+			onSettled: settleAndInvalidateRoutines,
+		}),
 	);
+
 	const editMutation = useMutation(
-		trpc.routine.edit.mutationOptions({ onSuccess: invalidateRoutines }),
+		trpc.routine.edit.mutationOptions({
+			onMutate: async (input) => {
+				const { cancelPromise, previous } = snapshotRoutines();
+				const now = new Date();
+				queryClient.setQueriesData<RoutineView[]>(routineListFilter, (old) =>
+					old
+						? withEdited(
+								old,
+								{ ...input, routineId: input.routineId as RoutineId },
+								now,
+							)
+						: old,
+				);
+				await cancelPromise;
+				return { previous };
+			},
+			onError: (_error, _vars, context) => rollbackRoutines(context?.previous),
+			onSettled: settleAndInvalidateRoutines,
+		}),
 	);
 
 	const deleteMutation = useMutation(
 		trpc.routine.delete.mutationOptions({
 			onMutate: async ({ routineId }) => {
-				const previous = await cancelAndSnapshot();
-				queryClient.setQueryData(listQueryOptions.queryKey, (old) =>
+				const { cancelPromise, previous } = snapshotRoutines();
+				queryClient.setQueriesData<RoutineView[]>(routineListFilter, (old) =>
 					old ? withRemoved(old, routineId as RoutineId) : old,
 				);
+				await cancelPromise;
 				return { previous };
 			},
-			onError: (_error, _vars, context) => rollback(context?.previous),
-			onSettled: invalidateRoutines,
+			onError: (_error, _vars, context) => rollbackRoutines(context?.previous),
+			onSettled: settleAndInvalidateRoutines,
 		}),
 	);
 
 	const setPausedMutation = useMutation(
 		trpc.routine.setPaused.mutationOptions({
 			onMutate: async ({ routineId, isPaused }) => {
-				const previous = await cancelAndSnapshot();
-				queryClient.setQueryData(listQueryOptions.queryKey, (old) =>
-					old
-						? withPaused(old, routineId as RoutineId, isPaused, new Date())
-						: old,
+				const { cancelPromise, previous } = snapshotRoutines();
+				const now = new Date();
+				queryClient.setQueriesData<RoutineView[]>(routineListFilter, (old) =>
+					old ? withPaused(old, routineId as RoutineId, isPaused, now) : old,
 				);
+				await cancelPromise;
 				return { previous };
 			},
-			onError: (_error, _vars, context) => rollback(context?.previous),
-			onSettled: invalidateRoutines,
+			onError: (_error, _vars, context) => rollbackRoutines(context?.previous),
+			onSettled: settleAndInvalidateRoutines,
 		}),
 	);
 
 	const completeMutation = useMutation(
 		trpc.routine.complete.mutationOptions({
 			onMutate: async ({ routineId }) => {
-				const previous = await cancelAndSnapshot();
-				queryClient.setQueryData(listQueryOptions.queryKey, (old) =>
-					old ? withCompleted(old, routineId as RoutineId, new Date()) : old,
+				const { cancelPromise, previous } = snapshotRoutines();
+				const now = new Date();
+				queryClient.setQueriesData<RoutineView[]>(routineListFilter, (old) =>
+					old ? withCompleted(old, routineId as RoutineId, now) : old,
 				);
+				await cancelPromise;
 				return { previous };
 			},
-			onError: (_error, _vars, context) => rollback(context?.previous),
-			onSettled: invalidateRoutines,
+			onError: (_error, _vars, context) => rollbackRoutines(context?.previous),
+			onSettled: settleAndInvalidateRoutines,
 		}),
 	);
 
-	function handleComplete(routine: DashboardRoutine) {
-		cryoSound.playShatterComplete();
-		if (typeof window !== "undefined") {
-			window.dispatchEvent(new CustomEvent("core-overdrive"));
-		}
-		completeMutation.mutate({ routineId: routine.id });
-	}
+	const handleComplete = useCallback(
+		(routine: DashboardRoutine) => {
+			if (routine.id.startsWith("optimistic-")) return;
+			cryoSound.playShatterComplete();
+			if (typeof window !== "undefined") {
+				window.dispatchEvent(new CustomEvent("core-overdrive"));
+			}
+			completeMutation.mutate({ routineId: routine.id });
+		},
+		[completeMutation],
+	);
 
-	function handleTogglePause(routine: DashboardRoutine) {
-		setPausedMutation.mutate({
-			routineId: routine.id,
-			isPaused: routine.status !== "Paused",
-		});
-	}
+	const handleTogglePause = useCallback(
+		(routine: DashboardRoutine) => {
+			if (routine.id.startsWith("optimistic-")) return;
+			setPausedMutation.mutate({
+				routineId: routine.id,
+				isPaused: routine.status !== "Paused",
+			});
+		},
+		[setPausedMutation],
+	);
 
-	function handleOpenCreate() {
+	const handleOpenCreate = useCallback(() => {
 		setEditingRoutine(null);
 		setDialogOpen(true);
-	}
+	}, []);
 
-	function handleOpenEdit(routine: DashboardRoutine) {
+	const handleOpenEdit = useCallback((routine: DashboardRoutine) => {
 		setEditingRoutine(routine);
 		setDialogOpen(true);
-	}
+	}, []);
 
-	function handleDelete(routine: DashboardRoutine) {
-		deleteMutation.mutate({ routineId: routine.id });
-	}
+	const handleDelete = useCallback(
+		(routine: DashboardRoutine) => {
+			if (routine.id.startsWith("optimistic-")) return;
+			deleteMutation.mutate({ routineId: routine.id });
+		},
+		[deleteMutation],
+	);
 
 	function handleSubmit(
 		values: Pick<
@@ -415,15 +578,27 @@ export default function Home() {
 		createMutation.mutate(values);
 	}
 
-	const allCategories = Array.from(
-		new Set(routines.map((r) => r.category).filter(Boolean)),
+	const allCategories = useMemo(
+		() => Array.from(new Set(routines.map((r) => r.category).filter(Boolean))),
+		[routines],
 	);
 
-	const filteredRoutines = selectedCategory
-		? routines.filter((r) => r.category === selectedCategory)
-		: routines;
+	const normalizedSearch = searchInput.trim().toLowerCase();
 
-	const sortedRoutines = sortByStatus(filteredRoutines);
+	const sortedRoutines = useMemo(() => {
+		const filtered = routines.filter((r) => {
+			if (selectedCategory && r.category !== selectedCategory) return false;
+			if (
+				normalizedSearch &&
+				!r.name.toLowerCase().includes(normalizedSearch) &&
+				!r.category.toLowerCase().includes(normalizedSearch)
+			) {
+				return false;
+			}
+			return true;
+		});
+		return sortByStatus(filtered);
+	}, [routines, selectedCategory, normalizedSearch]);
 
 	const [manualOverdrive, setManualOverdrive] = useState<boolean | null>(null);
 
@@ -459,9 +634,112 @@ export default function Home() {
 	const isOverdrive =
 		manualOverdrive !== null ? manualOverdrive : isHundredPercent;
 
-	function handleToggleOverdrive() {
+	const handleToggleOverdrive = useCallback(() => {
 		setManualOverdrive((prev) => !(prev !== null ? prev : isHundredPercent));
-	}
+	}, [isHundredPercent]);
+
+	// Single lightweight Linear-style global keyboard shortcut listener
+	useEffect(() => {
+		function focusSearchFromShortcut() {
+			if (activeTab === "home" || activeTab === "all") {
+				searchInputRef.current?.focus();
+				searchInputRef.current?.select();
+				return;
+			}
+			pendingSearchFocusRef.current = true;
+			setActiveTab("home");
+		}
+
+		function handleGlobalKeyDown(e: KeyboardEvent) {
+			// 1. Escape: close open dialog or blur active search input
+			if (e.key === "Escape") {
+				if (dialogOpen) {
+					e.preventDefault();
+					setDialogOpen(false);
+					return;
+				}
+				if (
+					searchInputRef.current &&
+					document.activeElement === searchInputRef.current
+				) {
+					e.preventDefault();
+					searchInputRef.current.blur();
+				}
+				return;
+			}
+
+			// 2. Cmd+K / Ctrl+K: jump to search from anywhere when no modal is open
+			if (
+				(e.metaKey || e.ctrlKey) &&
+				!e.altKey &&
+				e.key.toLowerCase() === "k"
+			) {
+				if (dialogOpen) return;
+				e.preventDefault();
+				focusSearchFromShortcut();
+				return;
+			}
+
+			if (dialogOpen) return;
+
+			// 3. Ignore single-key shortcuts inside editable controls or with modifiers
+			const target = e.target as HTMLElement | null;
+			if (
+				target &&
+				(target.tagName === "INPUT" ||
+					target.tagName === "TEXTAREA" ||
+					target.tagName === "SELECT" ||
+					target.isContentEditable)
+			) {
+				return;
+			}
+			if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+			switch (e.key) {
+				case "1":
+					setActiveTab("home");
+					break;
+				case "2":
+					setActiveTab("schedule");
+					break;
+				case "3":
+					setActiveTab("all");
+					break;
+				case "4":
+					setActiveTab("analytics");
+					break;
+				case "/":
+					e.preventDefault();
+					focusSearchFromShortcut();
+					break;
+				case "n":
+				case "N":
+					e.preventDefault();
+					handleOpenCreate();
+					break;
+				case "o":
+				case "O":
+					e.preventDefault();
+					cryoSound.playReactorPulse();
+					handleToggleOverdrive();
+					break;
+				case "v":
+				case "V":
+					e.preventDefault();
+					triggerIntro();
+					break;
+			}
+		}
+
+		window.addEventListener("keydown", handleGlobalKeyDown);
+		return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+	}, [
+		activeTab,
+		dialogOpen,
+		handleOpenCreate,
+		handleToggleOverdrive,
+		triggerIntro,
+	]);
 
 	return (
 		<div
@@ -480,7 +758,7 @@ export default function Home() {
 			<div
 				aria-hidden="true"
 				className={cn(
-					"pointer-events-none fixed inset-x-0 top-0 -z-10 h-96 transition-opacity duration-1000",
+					"pointer-events-none fixed inset-x-0 top-0 -z-10 h-96 transition-opacity duration-700",
 					isOverdrive
 						? "bg-[radial-gradient(ellipse_at_50%_0%,rgba(56,189,248,0.35)_0%,rgba(14,165,233,0.15)_40%,transparent_75%)] opacity-100"
 						: "bg-[radial-gradient(ellipse_at_50%_0%,rgba(56,189,248,0.12)_0%,transparent_60%)] opacity-40",
@@ -498,7 +776,7 @@ export default function Home() {
 
 			<div
 				className={cn(
-					"sticky top-0 z-20 border-b bg-[#0D1B2A]/90 backdrop-blur-md transition-all duration-500",
+					"sticky top-0 z-20 border-b bg-[#0D1B2A]/90 backdrop-blur-md transition-colors duration-300",
 					isOverdrive
 						? "border-[#7DD3FC]/55 shadow-[0_0_28px_rgba(56,189,248,0.25)]"
 						: "border-[#BAE6FD]/15",
@@ -518,9 +796,9 @@ export default function Home() {
 						<button
 							type="button"
 							onClick={triggerIntro}
-							title="Replay Cryo-Boot Sequence"
+							title="Replay Cryo-Boot Sequence (V)"
 							className={cn(
-								"group flex size-7 shrink-0 items-center justify-center rounded border font-bold font-mono text-[12px] transition-all hover:scale-105 active:scale-95",
+								"group flex size-7 shrink-0 cursor-pointer items-center justify-center rounded border font-bold font-mono text-[12px] transition-all hover:scale-105 active:scale-95",
 								isOverdrive
 									? "animate-pulse border-[#38BDF8] bg-[#38BDF8]/25 text-[#E0F2FE] shadow-[0_0_18px_rgba(56,189,248,0.85)]"
 									: "border-[#7DD3FC]/35 bg-[#102136] text-[#7DD3FC] shadow-[0_0_10px_rgba(56,189,248,0.25)] hover:border-[#38BDF8] hover:bg-[#38BDF8]/20 hover:shadow-[0_0_15px_rgba(56,189,248,0.5)]",
@@ -539,41 +817,43 @@ export default function Home() {
 							/>
 						</div>
 					</div>
-					<div className="flex items-center gap-5 overflow-x-auto [scrollbar-width:none] sm:gap-8">
+					<div className="flex items-center gap-5 overflow-x-auto [scrollbar-width:none] sm:gap-7">
 						<TabButton
 							active={activeTab === "home"}
+							shortcut="1"
+							label="Home"
 							onClick={() => setActiveTab("home")}
-						>
-							Home
-						</TabButton>
+						/>
 						<TabButton
 							active={activeTab === "schedule"}
+							shortcut="2"
+							label="Schedule"
 							onClick={() => setActiveTab("schedule")}
-						>
-							Schedule
-						</TabButton>
+						/>
 						<TabButton
 							active={activeTab === "all"}
+							shortcut="3"
+							label="All Tasks"
 							onClick={() => setActiveTab("all")}
-						>
-							All Tasks
-						</TabButton>
+						/>
 						<TabButton
 							active={activeTab === "analytics"}
+							shortcut="4"
+							label="Analytics"
 							onClick={() => setActiveTab("analytics")}
-						>
-							Analytics
-						</TabButton>
+						/>
 					</div>
 					<div className="flex w-auto shrink-0 items-center justify-end gap-2">
 						{isOverdrive && (
-							<div
-								title="Overdrive Mode Active"
-								className="hidden shrink-0 animate-pulse items-center gap-1.5 whitespace-nowrap rounded-full border border-[#38BDF8]/60 bg-[#38BDF8]/20 px-2 py-0.5 font-bold font-mono text-[#E0F2FE] text-[10.5px] shadow-[0_0_12px_rgba(56,189,248,0.5)] sm:flex"
+							<button
+								type="button"
+								onClick={handleToggleOverdrive}
+								title="Overdrive Mode Active · Press O to toggle"
+								className="hidden shrink-0 animate-pulse cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border border-[#38BDF8]/60 bg-[#38BDF8]/20 px-2 py-0.5 font-bold font-mono text-[#E0F2FE] text-[10.5px] shadow-[0_0_12px_rgba(56,189,248,0.5)] transition-transform active:scale-95 sm:flex"
 							>
 								<span>⚡</span>
 								<span>OVERDRIVE</span>
-							</div>
+							</button>
 						)}
 						<TacticalClock />
 						<AudioToggle />
@@ -594,51 +874,45 @@ export default function Home() {
 
 			<div className="mx-auto flex max-w-[1600px] flex-col gap-5 px-4 pt-5 pb-14 sm:px-6">
 				{activeTab === "home" && (
-					<HeroPanel
-						routines={routines}
-						onComplete={handleComplete}
-						isOverdrive={isOverdrive}
-						onToggleOverdrive={handleToggleOverdrive}
-					/>
+					<div className="tab-panel-enter">
+						<HeroPanel
+							routines={routines}
+							onComplete={handleComplete}
+							isOverdrive={isOverdrive}
+							onToggleOverdrive={handleToggleOverdrive}
+						/>
+					</div>
 				)}
 
 				<div className="flex flex-col items-start gap-[22px] lg:flex-row">
-					<div className="flex min-w-0 flex-1 flex-col gap-6">
+					<div className="flex w-full min-w-0 flex-1 flex-col gap-6">
 						{activeTab === "home" && (
-							<>
+							<div
+								key="tab-home"
+								className="tab-panel-enter flex flex-col gap-6"
+							>
 								<div className="flex flex-col gap-2.5">
 									<div className="flex items-center justify-between gap-4">
 										<div className="flex flex-1 items-center gap-4">
 											<div className="shrink-0 font-extrabold text-[#F8FAFC] text-[18px] tracking-tight">
 												Routines
 											</div>
-											<div className="relative flex w-full max-w-xs items-center">
-												<Search className="pointer-events-none absolute left-3 size-3.5 text-[#64748B]" />
-												<input
-													type="text"
-													placeholder="Search tasks & routines..."
-													value={searchInput}
-													onChange={(e) => setSearchInput(e.target.value)}
-													className="w-full rounded-lg border border-[#93C5FD]/35 bg-[#091524] py-1.5 pr-8 pl-8.5 font-medium font-sans text-[#F8FAFC] text-[13px] placeholder-[#64748B] outline-none transition-all duration-200 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/25"
-												/>
-												{searchInput && (
-													<button
-														type="button"
-														onClick={() => setSearchInput("")}
-														className="absolute right-2.5 cursor-pointer text-[#64748B] transition-colors hover:text-[#F8FAFC]"
-														aria-label="Clear search"
-													>
-														<X className="size-3.5" />
-													</button>
-												)}
-											</div>
+											<SearchField
+												inputRef={searchInputRef}
+												value={searchInput}
+												onChange={setSearchInput}
+											/>
 										</div>
 										<button
 											type="button"
 											onClick={handleOpenCreate}
-											className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg border border-white/80 bg-gradient-to-b from-[#F0F9FF] to-[#BAE6FD] px-4 py-2 font-semibold text-[#060B13] text-[13px] tracking-tight shadow-[0_1px_12px_rgba(186,230,253,0.25)] transition-all hover:brightness-105 active:scale-95"
+											title="Create new routine (N)"
+											className="inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-white/80 bg-gradient-to-b from-[#F0F9FF] to-[#BAE6FD] px-3.5 py-2 font-semibold text-[#060B13] text-[13px] tracking-tight shadow-[0_1px_12px_rgba(186,230,253,0.25)] transition-all hover:brightness-105 active:scale-95"
 										>
-											+ New Routine
+											<span>+ New Routine</span>
+											<kbd className="hidden rounded border border-[#060B13]/25 bg-[#060B13]/10 px-1.5 py-0.5 font-mono font-semibold text-[#060B13]/80 text-[10px] leading-none sm:inline-block">
+												N
+											</kbd>
 										</button>
 									</div>
 
@@ -648,7 +922,7 @@ export default function Home() {
 												type="button"
 												onClick={() => setSelectedCategory(null)}
 												className={cn(
-													"cursor-pointer rounded-md px-3 py-1 font-mono text-xs tracking-wide transition-all duration-150 active:scale-95",
+													"cursor-pointer rounded-md px-3 py-1 font-mono text-xs tracking-wide transition-all duration-100 active:scale-95",
 													selectedCategory === null
 														? "border border-[#E0F2FE] bg-[#E0F2FE] font-semibold text-[#070C15] shadow-[0_0_16px_rgba(224,242,254,0.25)]"
 														: "border border-white/[0.07] bg-[#0F1B2D]/80 font-medium text-[#94A3B8] hover:border-[#BAE6FD]/30 hover:text-[#F0F9FF]",
@@ -666,7 +940,7 @@ export default function Home() {
 														)
 													}
 													className={cn(
-														"cursor-pointer rounded-md px-3 py-1 font-mono text-xs tracking-wide transition-all duration-150 active:scale-95",
+														"cursor-pointer rounded-md px-3 py-1 font-mono text-xs tracking-wide transition-all duration-100 active:scale-95",
 														selectedCategory === cat
 															? "border border-[#E0F2FE] bg-[#E0F2FE] font-semibold text-[#070C15] shadow-[0_0_16px_rgba(224,242,254,0.25)]"
 															: "border border-white/[0.07] bg-[#0F1B2D]/80 font-medium text-[#94A3B8] hover:border-[#BAE6FD]/30 hover:text-[#F0F9FF]",
@@ -676,7 +950,7 @@ export default function Home() {
 												</button>
 											))}
 											{(searchInput || selectedCategory) && (
-												<span className="ml-2 font-mono text-[#93C5FD] text-[11px]">
+												<span className="ml-2 font-mono text-[#93C5FD] text-[11px] tabular-nums">
 													Showing {sortedRoutines.length} of {routines.length}
 												</span>
 											)}
@@ -720,42 +994,43 @@ export default function Home() {
 										isOverdrive={isOverdrive}
 									/>
 								)}
-							</>
+							</div>
 						)}
 
 						{activeTab === "schedule" && (
-							<ScheduleView isOverdrive={isOverdrive} />
+							<div key="tab-schedule" className="tab-panel-enter">
+								<ScheduleView isOverdrive={isOverdrive} />
+							</div>
 						)}
 
 						{activeTab === "all" && (
-							<div className="flex flex-col gap-4">
+							<div
+								key="tab-all"
+								className="tab-panel-enter flex flex-col gap-4"
+							>
 								<div className="flex flex-col gap-2.5">
 									<div className="flex items-center justify-between gap-4">
 										<div className="flex flex-1 items-center gap-4">
 											<div className="shrink-0 font-extrabold text-[#F8FAFC] text-[18px] tracking-tight">
 												All Tasks
 											</div>
-											<div className="relative flex w-full max-w-xs items-center">
-												<Search className="pointer-events-none absolute left-3 size-3.5 text-[#64748B]" />
-												<input
-													type="text"
-													placeholder="Search tasks & routines..."
-													value={searchInput}
-													onChange={(e) => setSearchInput(e.target.value)}
-													className="w-full rounded-lg border border-[#93C5FD]/35 bg-[#091524] py-1.5 pr-8 pl-8.5 font-medium font-sans text-[#F8FAFC] text-[13px] placeholder-[#64748B] outline-none transition-all duration-200 focus:border-[#38BDF8] focus:ring-2 focus:ring-[#38BDF8]/25"
-												/>
-												{searchInput && (
-													<button
-														type="button"
-														onClick={() => setSearchInput("")}
-														className="absolute right-2.5 cursor-pointer text-[#64748B] transition-colors hover:text-[#F8FAFC]"
-														aria-label="Clear search"
-													>
-														<X className="size-3.5" />
-													</button>
-												)}
-											</div>
+											<SearchField
+												inputRef={searchInputRef}
+												value={searchInput}
+												onChange={setSearchInput}
+											/>
 										</div>
+										<button
+											type="button"
+											onClick={handleOpenCreate}
+											title="Create new routine (N)"
+											className="inline-flex shrink-0 cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-white/80 bg-gradient-to-b from-[#F0F9FF] to-[#BAE6FD] px-3.5 py-2 font-semibold text-[#060B13] text-[13px] tracking-tight shadow-[0_1px_12px_rgba(186,230,253,0.25)] transition-all hover:brightness-105 active:scale-95"
+										>
+											<span>+ New Routine</span>
+											<kbd className="hidden rounded border border-[#060B13]/25 bg-[#060B13]/10 px-1.5 py-0.5 font-mono font-semibold text-[#060B13]/80 text-[10px] leading-none sm:inline-block">
+												N
+											</kbd>
+										</button>
 									</div>
 
 									{allCategories.length > 0 && (
@@ -764,7 +1039,7 @@ export default function Home() {
 												type="button"
 												onClick={() => setSelectedCategory(null)}
 												className={cn(
-													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
+													"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-100 active:scale-95",
 													selectedCategory === null
 														? "border-[#7DD3FC] bg-[#1A385C] font-semibold text-[#F8FAFC] shadow-[0_0_12px_rgba(56,189,248,0.35)]"
 														: "border-[#7DD3FC]/25 bg-[#102136] text-[#BAE6FD] hover:border-[#7DD3FC]/50 hover:text-[#F8FAFC]",
@@ -782,7 +1057,7 @@ export default function Home() {
 														)
 													}
 													className={cn(
-														"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-150 active:scale-95",
+														"cursor-pointer rounded-full border px-2.5 py-0.5 font-mono text-[11px] transition-all duration-100 active:scale-95",
 														selectedCategory === cat
 															? "border-[#7DD3FC] bg-[#1A385C] font-semibold text-[#F8FAFC] shadow-[0_0_12px_rgba(56,189,248,0.35)]"
 															: "border-[#7DD3FC]/25 bg-[#102136] text-[#BAE6FD] hover:border-[#7DD3FC]/50 hover:text-[#F8FAFC]",
@@ -792,7 +1067,7 @@ export default function Home() {
 												</button>
 											))}
 											{(searchInput || selectedCategory) && (
-												<span className="ml-2 font-mono text-[#93C5FD] text-[11px]">
+												<span className="ml-2 font-mono text-[#93C5FD] text-[11px] tabular-nums">
 													Showing {sortedRoutines.length} of {routines.length}
 												</span>
 											)}
@@ -826,7 +1101,7 @@ export default function Home() {
 								) : (
 									<div
 										className={cn(
-											"frost-panel relative overflow-hidden rounded-xl transition-all duration-300",
+											"frost-panel relative overflow-hidden rounded-xl transition-colors duration-300",
 											isOverdrive &&
 												"border-[#7DD3FC]/45 shadow-[0_0_28px_-6px_rgba(56,189,248,0.25)]",
 										)}
@@ -844,23 +1119,25 @@ export default function Home() {
 											{sortedRoutines.map((routine) => (
 												<motion.div
 													key={routine.id}
-													layout
-													initial={{ opacity: 0, y: -10 }}
+													layout="position"
+													initial={{ opacity: 0, y: -8 }}
 													animate={{ opacity: 1, y: 0 }}
 													exit={{
 														opacity: 0,
-														height: 0,
-														overflow: "hidden",
-														transition: { duration: 0.2 },
+														scale: 0.98,
+														transition: { duration: 0.14 },
 													}}
 													transition={{
-														layout: { duration: 0.28, ease: [0.25, 1, 0.5, 1] },
-														duration: 0.2,
+														layout: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
+														duration: 0.14,
 													}}
 												>
 													<RoutineListRow
 														routine={routine}
 														isOverdrive={isOverdrive}
+														onComplete={handleComplete}
+														onTogglePause={handleTogglePause}
+														onEdit={handleOpenEdit}
 													/>
 												</motion.div>
 											))}
@@ -871,7 +1148,10 @@ export default function Home() {
 						)}
 
 						{activeTab === "analytics" && (
-							<div className="flex flex-col gap-5">
+							<div
+								key="tab-analytics"
+								className="tab-panel-enter flex flex-col gap-5"
+							>
 								<div className="flex items-center gap-2">
 									<BarChart2 className="size-5 text-[#38BDF8]" />
 									<div className="font-extrabold text-[#F0F9FF] text-[18px] tracking-tight">
@@ -881,7 +1161,7 @@ export default function Home() {
 								<div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
 									<div
 										className={cn(
-											"frost-panel relative flex flex-col gap-1 overflow-hidden rounded-xl p-4 transition-all duration-300",
+											"frost-panel relative flex flex-col gap-1 overflow-hidden rounded-xl p-4 transition-colors duration-300",
 											isOverdrive &&
 												"border-[#7DD3FC]/45 shadow-[0_0_24px_-6px_rgba(56,189,248,0.25)]",
 										)}
@@ -906,7 +1186,7 @@ export default function Home() {
 										</div>
 										<div
 											className={cn(
-												"font-extrabold text-2xl text-[#F0F9FF]",
+												"font-extrabold text-2xl text-[#F0F9FF] tabular-nums",
 												isOverdrive &&
 													"text-[#E0F2FE] drop-shadow-[0_0_10px_#38BDF8]",
 											)}
@@ -924,7 +1204,7 @@ export default function Home() {
 									</div>
 									<div
 										className={cn(
-											"frost-panel relative flex flex-col gap-1 overflow-hidden rounded-xl p-4 transition-all duration-300",
+											"frost-panel relative flex flex-col gap-1 overflow-hidden rounded-xl p-4 transition-colors duration-300",
 											isOverdrive &&
 												"border-[#7DD3FC]/45 shadow-[0_0_24px_-6px_rgba(56,189,248,0.25)]",
 										)}
@@ -950,7 +1230,7 @@ export default function Home() {
 										</div>
 										<div
 											className={cn(
-												"font-extrabold text-2xl text-[#F0F9FF]",
+												"font-extrabold text-2xl text-[#F0F9FF] tabular-nums",
 												isOverdrive &&
 													"text-[#E0F2FE] drop-shadow-[0_0_10px_#38BDF8]",
 											)}
@@ -978,7 +1258,7 @@ export default function Home() {
 									</div>
 									<div
 										className={cn(
-											"frost-panel relative flex flex-col gap-1 overflow-hidden rounded-xl p-4 transition-all duration-300",
+											"frost-panel relative flex flex-col gap-1 overflow-hidden rounded-xl p-4 transition-colors duration-300",
 											isOverdrive &&
 												"border-[#7DD3FC]/45 shadow-[0_0_24px_-6px_rgba(56,189,248,0.25)]",
 										)}
@@ -1004,7 +1284,7 @@ export default function Home() {
 										</div>
 										<div
 											className={cn(
-												"font-extrabold text-2xl text-[#F0F9FF]",
+												"font-extrabold text-2xl text-[#F0F9FF] tabular-nums",
 												isOverdrive &&
 													"text-[#E0F2FE] drop-shadow-[0_0_10px_#38BDF8]",
 											)}
